@@ -14763,10 +14763,7 @@ void CTFPlayer::CheatImpulseCommands( int iImpulse )
 
 					pWeapon->GiveDefaultAmmo();
 
-					if ( pWeapon->IsEnergyWeapon() )
-					{
-						pWeapon->WeaponRegenerate();
-					}
+					pWeapon->WeaponRegenerate();
 				}
 
 				m_Shared.m_flRageMeter = 100.f;
