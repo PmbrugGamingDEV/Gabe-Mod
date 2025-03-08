@@ -788,6 +788,8 @@ CTFPlayerShared::CTFPlayerShared()
 	m_flPrevInvisibility = 0.f;
 	m_flTmpDamageBonusAmount = 1.0f;
 
+	m_bScattergunJump = false;
+
 	m_bFeignDeathReady = false;
 
 	m_fCloakConsumeRate = tf_spy_cloak_consume_rate.GetFloat();

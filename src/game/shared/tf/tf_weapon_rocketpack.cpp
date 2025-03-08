@@ -536,6 +536,7 @@ bool CTFRocketPack::Launch( void )
 	m_vecLaunchDir = CalcRocketForceFromPlayer( pOwner );
 	RocketLaunchPlayer( pOwner, m_vecLaunchDir, false );
 
+
 #ifdef GAME_DLL
 	SetContextThink( &CTFRocketPack::PassengerDelayLaunchThink, gpGlobals->curtime + TF_ROCKETPACK_PASSENGER_DELAY_LAUNCH, "PassengerDelayLaunchThink" );
 #endif
