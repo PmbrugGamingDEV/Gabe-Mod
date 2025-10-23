@@ -321,7 +321,7 @@ void CArmoryPanel::OnCommand( const char *command )
 		UpdateItemList();
 		UpdateSelectedItem();
 	}
-	if (!Q_stricmp(command, "prevpageskip"))
+	else if (!Q_stricmp(command, "prevpageskip"))
 	{
 		for (int i = 0; i < tf_armory_page_skip.GetInt(); i++)
 		{
@@ -337,7 +337,7 @@ void CArmoryPanel::OnCommand( const char *command )
 		UpdateItemList();
 		UpdateSelectedItem();
 	}
-	if (!Q_stricmp(command, "skiptostart"))
+	else if (!Q_stricmp(command, "skiptostart"))
 	{
 		m_iFilterPage = 0;
 		UpdateItemList();
