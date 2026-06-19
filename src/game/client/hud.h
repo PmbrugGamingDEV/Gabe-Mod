@@ -183,6 +183,8 @@ public:
 	Color						m_clrCaution;
 	Color						m_clrYellowish;
 
+	bool						m_bSkipClear;
+
 	CUtlVector< CHudElement * >	m_HudList;
 
 private:

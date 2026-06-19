@@ -416,15 +416,23 @@ void ClientModeShared::Shutdown()
 // Input  : frametime - 
 //			*cmd - 
 //-----------------------------------------------------------------------------
-bool ClientModeShared::CreateMove( float flInputSampleTime, CUserCmd *cmd )
+bool ClientModeShared::CreateMove(float flInputSampleTime, CUserCmd* cmd)
 {
-	// Let the player override the view.
-	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
-	if(!pPlayer)
+	if (!cmd)
 		return true;
 
-	// Let the player at it
-	return pPlayer->CreateMove( flInputSampleTime, cmd );
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	if (!pPlayer)
+		return true;
+
+	C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+	if (pWeapon && pWeapon->OverrideViewAngles())
+	{
+		cmd->viewangles = pPlayer->m_vecUseAngles;
+		engine->SetViewAngles(cmd->viewangles);
+	}
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -985,6 +993,31 @@ void ClientModeShared::Layout()
 		}
 	}
 }
+
+#ifdef ARGG
+//-----------------------------------------------------------------------------
+// Purpose: Allow weapons to override mouse input to view angles (for orbiting)
+//-----------------------------------------------------------------------------
+// adnan
+// control the mouse input in the grav gun through this
+bool ClientModeShared::OverrideViewAngles(void)
+{
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+	if (!pPlayer)
+		return false;
+
+	C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+	if (!pWeapon)
+		return false;
+
+	if (!pWeapon->OverrideViewAngles())
+		return false;
+
+	engine->SetViewAngles(pPlayer->m_vecUseAngles);
+	return true;
+}
+// end adnan
+#endif
 
 float ClientModeShared::GetViewModelFOV( void )
 {

@@ -1,0 +1,66 @@
+DebugMenu
+{
+	"width"		"1250"
+	"height"	"880"
+
+	"Physgun Beam Colors"
+	{
+		"Red"        "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 255 0 0"
+		"Orange"     "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 255 165 0"
+		"Yellow"     "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 255 255 0"
+		"Green"      "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 0 255 0"
+		"Blue"       "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 0 0 255"
+		"Indigo"     "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 75 0 130"
+		"Purple"     "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 128 0 255"
+		"Violet"     "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 238 130 238"
+		"Pink"       "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 255 105 180"
+		"Black"      "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 0 0 0"
+
+		"Rainbow (On)"   "gabe_physgun_beam_rainbow 1"
+		"Rainbow (Off)"  "gabe_physgun_beam_rainbow 0"
+	}
+
+	"Physgun Beam Settings"
+	{
+		"Width: Thin"       "physgun_beamwidth 2.5"
+		"Width: Default"    "physgun_beamwidth 6.5"
+		"Width: Thick"      "physgun_beamwidth 12.0"
+		"Reset Beam (Cyan)" "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 0 255 255; physgun_beamwidth 6.5"
+	}
+
+	"Watermark Colors"
+	{
+		"Red"       "gabe_watermark_r 255; gabe_watermark_g 0;   gabe_watermark_b 0;   gabe_watermark_a 255"
+		"Orange"    "gabe_watermark_r 255; gabe_watermark_g 165; gabe_watermark_b 0;   gabe_watermark_a 255"
+		"Yellow"    "gabe_watermark_r 255; gabe_watermark_g 255; gabe_watermark_b 0;   gabe_watermark_a 255"
+		"Green"     "gabe_watermark_r 0;   gabe_watermark_g 255; gabe_watermark_b 0;   gabe_watermark_a 255"
+		"Blue"      "gabe_watermark_r 0;   gabe_watermark_g 0;   gabe_watermark_b 255; gabe_watermark_a 255"
+		"Indigo"    "gabe_watermark_r 75;  gabe_watermark_g 0;   gabe_watermark_b 130; gabe_watermark_a 255"
+		"Purple"    "gabe_watermark_r 128; gabe_watermark_g 0;   gabe_watermark_b 255; gabe_watermark_a 255"
+		"Violet"    "gabe_watermark_r 238; gabe_watermark_g 130; gabe_watermark_b 238; gabe_watermark_a 255"
+		"Pink"      "gabe_watermark_r 255; gabe_watermark_g 105; gabe_watermark_b 180; gabe_watermark_a 255"
+		"Black"     "gabe_watermark_r 0;   gabe_watermark_g 0;   gabe_watermark_b 0;   gabe_watermark_a 255"
+	}
+
+	"Watermark Alpha"
+	{
+		"Alpha 100%" "gabe_watermark_a 255"
+		"Alpha 75%"  "gabe_watermark_a 191"
+		"Alpha 50%"  "gabe_watermark_a 128"
+		"Alpha 25%"  "gabe_watermark_a 64"
+		"Alpha 0%"   "gabe_watermark_a 0"
+	}
+
+	"MOTD / Changelog"
+	{
+		"Show MOTD at spawn (On)"   "gabe_chlog 1"
+		"Show MOTD at spawn (Off)"  "gabe_chlog 0"
+		"Open MOTD Now"             "gabe_chlog_open 1"
+	}
+
+	"Quick Resets"
+	{
+		"Reset Beam"      "gabe_physgun_beam_rainbow 0; gabe_physgun_beamcolor 0 255 255; physgun_beamwidth 6.5"
+		"Reset Watermark" "gabe_watermark_r 255; gabe_watermark_g 255; gabe_watermark_b 255; gabe_watermark_a 255"
+	}
+}

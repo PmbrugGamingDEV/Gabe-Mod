@@ -1,0 +1,61 @@
+// Physics Gun
+
+WeaponData
+{
+	// Weapon data is loaded by both the Game and Client DLLs.
+	"printname"	"PHYSICS GUN"
+	"viewmodel"				"models/weapons/v_physgun.mdl"
+	"playermodel"			"models/weapons/w_physics.mdl"
+	"anim_prefix"			"pistol"
+	"bucket"				"0"
+	"bucket_position"		"3"
+
+	"clip_size"				"1"
+	"clip2_size"			"8"
+	"primary_ammo"			"None"
+	"secondary_ammo"		"None"
+	"default_clip2"			"8"
+
+	"weight"				"0"
+	"item_flags"			"2"
+
+	SoundData
+	{
+		"single_shot"		"Weapon_Physgun.On"
+		"reload"			"Weapon_Physgun.Off"
+		"special1"			"Weapon_Physgun.Special1"
+	}
+
+	// Weapon Sprite data is loaded by the Client DLL.
+	TextureData
+	{
+		"weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"!"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"!"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIcons"
+				"character"	"q"
+		}
+		"crosshair"
+		{
+				"font"		"Crosshairs"
+				"character"	"Q"
+		}
+		"autoaim"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"48"
+				"width"		"24"
+				"height"	"24"
+		}
+	}
+}

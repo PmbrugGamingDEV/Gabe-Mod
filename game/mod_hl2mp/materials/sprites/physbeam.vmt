@@ -1,0 +1,9 @@
+"Sprite"
+{
+	"$spriteorientation" "parallel_upright"
+	"$spriteorigin" "[ 0.50 0.50 ]"
+	"$basetexture" "sprites/physbeam"
+	"$spriterendermode" 5
+	"$vertexcolor" "1"
+    	"$vertexalpha" "1"
+}

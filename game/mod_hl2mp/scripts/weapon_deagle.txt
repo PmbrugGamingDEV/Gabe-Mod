@@ -1,0 +1,83 @@
+// 357
+
+WeaponData
+{
+	// Weapon data is loaded by both the Game and Client DLLs.
+	"printname"			"Desert Eagle"
+	"viewmodel"		"models/weapons/v_pist_deagle.mdl"
+	"playermodel"		"models/weapons/w_pist_deagle.mdl"
+	"anim_prefix"		"python"
+	"bucket"			"5"
+	"bucket_position"	"3"
+
+	"clip_size"			"999"
+	"default_clip"		"999"
+	"primary_ammo"		"357"
+	"secondary_ammo"	"None"
+
+	"weight"		"7"
+	"rumble"		"2"
+	"item_flags"		"0"
+	"BuiltRightHanded" 	"0" 
+
+	IronSight
+	{
+		"forward"	"-5"
+		"right"		"5.15"
+		"up"		"2.7"
+		"roll"		"0"
+		"fov"		"-5"
+	}
+
+	// Sounds for the weapon. There is a max of 16 sounds per category (i.e. max 16 "single_shot" sounds)
+	SoundData
+	{
+		//Laser on
+		"special1"			"Weapon_RPG.LaserOn"
+		//Laser off
+		"special2"			"Weapon_RPG.LaserOff"
+
+		"empty"		"Weapon_Pistol.Empty"
+		"single_shot"	"Weapon_DEagle.Single"
+		"single_shot_npc"	"Weapon_DEagle.Single"
+		"reload_npc"		"Weapon_Pistol.NPC_Reload"
+	}
+
+	// Weapon Sprite data is loaded by the Client DLL.
+	TextureData
+	{
+		"weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"e"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"e"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"e"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"q"
+		}
+		"crosshair"
+		{
+				"font"		"Crosshairs"
+				"character"	"Q"
+		}
+		"autoaim"
+		{
+				"file"		"sprites/crosshairs"
+				"x"			"0"
+				"y"			"48"
+				"width"		"24"
+				"height"	"24"
+		}
+	}
+}

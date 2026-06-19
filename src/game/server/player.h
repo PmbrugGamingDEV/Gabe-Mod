@@ -762,6 +762,15 @@ public:
 	int		GetFOVForNetworking( void );										// Get the current FOV used for network computations
 	bool	SetFOV( CBaseEntity *pRequester, int FOV, float zoomRate = 0.0f, int iZoomStart = 0 );	// Alters the base FOV of the player (must have a valid requester)
 	void	SetDefaultFOV( int FOV );											// Sets the base FOV if nothing else is affecting it by zooming
+
+	// adnan
+// send the use angles for the current player... set when they press use
+// UPDATE: this could be improved somehow by only storing these on the server side
+//  - set a flag on the client and send that, stating that the viewangles shouldnt change
+//  - ... maybe not
+	CNetworkQAngle(m_vecUseAngles);
+	// end adnan
+
 	CBaseEntity *GetFOVOwner( void ) { return m_hZoomOwner; }
 	float	GetFOVDistanceAdjustFactor(); // shared between client and server
 	float	GetFOVDistanceAdjustFactorForNetworking();

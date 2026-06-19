@@ -97,6 +97,8 @@ public:
 	// The mode can choose to not draw fog
 	virtual bool	ShouldDrawFog( void );
 	
+	bool OverrideViewAngles(void);
+
 	virtual float	GetViewModelFOV( void );
 	virtual vgui::Panel* GetViewport() { return m_pViewport; }
 	// Gets at the viewports vgui panel animation controller, if there is one...

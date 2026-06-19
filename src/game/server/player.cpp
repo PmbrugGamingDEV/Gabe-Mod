@@ -8143,8 +8143,17 @@ void CMovementSpeedMod::InputSpeedMod(inputdata_t &data)
 
 		SendPropVector		( SENDINFO( m_vecBaseVelocity ), 32, SPROP_NOSCALE ),
 
+#ifdef ARGG
+		// adnan
+		// send the use angles
+		// set when the player presses use
+		SendPropVector(SENDINFO(m_vecUseAngles), 0, SPROP_NOSCALE),
+		// end adnan
+#endif
+
 		SendPropEHandle		( SENDINFO( m_hConstraintEntity)),
 		SendPropVector		( SENDINFO( m_vecConstraintCenter), 0, SPROP_NOSCALE ),
+
 		SendPropFloat		( SENDINFO( m_flConstraintRadius ), 0, SPROP_NOSCALE ),
 		SendPropFloat		( SENDINFO( m_flConstraintWidth ), 0, SPROP_NOSCALE ),
 		SendPropFloat		( SENDINFO( m_flConstraintSpeedFactor ), 0, SPROP_NOSCALE ),

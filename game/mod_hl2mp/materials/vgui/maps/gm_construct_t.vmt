@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$baseTexture" "vgui/maps/gm_construct_t"
+	"$vertexalpha" 1
+}

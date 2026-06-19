@@ -245,6 +245,13 @@ END_RECV_TABLE()
 
 		RecvPropVector		( RECVINFO( m_vecBaseVelocity ) ),
 
+#ifdef ARGG
+	// adnan
+	// get the use angles
+	RecvPropVector(RECVINFO(m_vecUseAngles)),
+	// end adnan
+#endif
+
 		RecvPropEHandle		( RECVINFO( m_hConstraintEntity)),
 		RecvPropVector		( RECVINFO( m_vecConstraintCenter) ),
 		RecvPropFloat		( RECVINFO( m_flConstraintRadius )),
@@ -289,6 +296,13 @@ END_RECV_TABLE()
 
 		RecvPropInt		(RECVINFO(m_iHealth)),
 		RecvPropInt		(RECVINFO(m_lifeState)),
+
+#ifdef ARGG
+		// adnan
+		// get the use angles
+		RecvPropVector(RECVINFO(m_vecUseAngles)),
+		// end adnan
+#endif
 
 		RecvPropInt		(RECVINFO(m_iBonusProgress)),
 		RecvPropInt		(RECVINFO(m_iBonusChallenge)),
@@ -1416,11 +1430,22 @@ void C_BasePlayer::CreateWaterEffects( void )
 	}
 }
 
-//-----------------------------------------------------------------------------
-// Called when not in tactical mode. Allows view to be overriden for things like driving a tank.
-//-----------------------------------------------------------------------------
-void C_BasePlayer::OverrideView( CViewSetup *pSetup )
+void C_BasePlayer::OverrideView(CViewSetup* pSetup)
 {
+#ifdef ARGG
+	C_BaseCombatWeapon* pWeapon = GetActiveWeapon();
+	if (!pWeapon)
+		return;
+
+	if (!pWeapon->OverrideViewAngles())
+		return;
+
+	// Fix rendered camera angle
+	pSetup->angles = m_vecUseAngles;
+
+	// Fix actual client view angle
+	engine->SetViewAngles(m_vecUseAngles);
+#endif
 }
 
 bool C_BasePlayer::ShouldInterpolate()

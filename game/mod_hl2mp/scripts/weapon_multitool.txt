@@ -1,0 +1,63 @@
+// Multi tool
+
+WeaponData
+{
+	// Weapon data is loaded by both the Game and Client DLLs.
+	"printname"	"MULTITOOL"
+	"viewmodel"				"models/weapons/v_toolgun.mdl"
+	"playermodel"			"models/weapons/w_toolgun.mdl"
+	"anim_prefix"			"crossbow"
+	"bucket"				"1"
+	"bucket_position"		"2"
+
+	"clip_size"				"99999"
+	"clip2_size"			"99999"
+	"primary_ammo"			""
+	"default_clip2"			"99999"
+
+	"weight"				"0"
+	"item_flags"			"2"
+
+	SoundData
+	{
+		"single_shot"		"Weapon_357.Single"
+	}
+
+	// Weapon Sprite data is loaded by the Client DLL.
+	TextureData
+	{
+		"weapon"
+		{
+				"font"		"WeaponIcons"
+				"character"	"g"
+		}
+		"weapon_s"
+		{	
+				"font"		"WeaponIconsSelected"
+				"character"	"g"
+		}
+		"weapon_small"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"g"
+		}
+		"ammo"
+		{
+				"font"		"WeaponIconsSmall"
+				"character"	"w"
+		}
+		"crosshair"
+		{
+				"font"		"Crosshairs"
+				"character"	"Q"
+		}		
+		"autoaim"
+		{
+			"file"		"sprites/crosshairs"
+			"x"		"0"
+			"y"		"96"
+			"width"		"24"
+			"height"	"24"
+		}
+	}
+}

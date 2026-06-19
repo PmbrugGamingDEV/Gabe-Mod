@@ -1,0 +1,6 @@
+"JellyFish"
+{
+	"$basetexture" "models/MissingInfo_E3/hydra/gut"
+	"$gradienttexture" "models/MissingInfo_E3/hydra/gutgradient"
+	"$model" 1
+}
