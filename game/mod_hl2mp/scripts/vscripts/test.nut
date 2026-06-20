@@ -1,5 +1,1 @@
-::hud <- HUD_CreateElement("MyHud")
-hud.SetHUDText("Hello HUD")
-hud.SetHUDTextPos(50, 50)
-hud.SetHUDTextColor(0, 255, 0, 255)
-hud.SetHUDVisible(true)
+AssertMsg(false, "Give me some fuckin chicken m8");
