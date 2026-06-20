@@ -20,7 +20,6 @@ WeaponData
 
 	SoundData
 	{
-		"single_shot"		"Weapon_357.Single"
 	}
 
 	// Weapon Sprite data is loaded by the Client DLL.

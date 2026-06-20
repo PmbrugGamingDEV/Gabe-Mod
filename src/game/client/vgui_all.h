@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cbase.h"
+
 #include <vgui/VGUI.h>
 #include <vgui/ISurface.h>
 
@@ -46,7 +48,7 @@
 #include <vgui_controls/querybox.h>
 #include <vgui_controls/messagebox.h>
 #include <vgui_controls/wizardpanel.h>
-
+#include <vgui_controls/Tooltip.h>
 // HUD
 #include "hudelement.h"
 #include "hud_element_helper.h"
@@ -61,6 +63,7 @@
 #include "vgui/ihtml.h"
 #include "vgui/iimage.h"
 #include "vgui/iinput.h"
+#include "inputsystem/iinputsystem.h"
 #include "vgui/iinputinternal.h"
 #include "vgui/ilocalize.h"
 #include "vgui/ipanel.h"
@@ -73,3 +76,9 @@
 #include "vgui/keycode.h"
 #include "vgui/mousecode.h"
 #include "vgui/point.h"
+
+#include "ienginevgui.h"
+
+#include "vgui_controls/RadioButton.h"
+#include "vgui_controls/URLLabel.h"
+#include "vgui_controls/Divider.h"

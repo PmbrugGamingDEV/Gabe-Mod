@@ -100,11 +100,17 @@ IPhysicsObject* GetPhysObjFromPhysicsBone(CBaseEntity* pEntity, short physicsbon
 			{
 				ragdoll_t* pRagdollT = pCRagdoll->GetRagdoll();
 
-				if (physicsbone < pRagdollT->listCount)
+				if (!pRagdollT)
+					return pEntity->VPhysicsGetObject();
+
+				if (physicsbone >= 0 &&
+					physicsbone < pRagdollT->listCount &&
+					pRagdollT->list[physicsbone].pObject)
 				{
-					pPhysicsObject = pRagdollT->list[physicsbone].pObject;
+					return pRagdollT->list[physicsbone].pObject;
 				}
-				return pPhysicsObject;
+
+				return pEntity->VPhysicsGetObject();
 			}
 #ifdef CLIENT_DLL
 			}
@@ -1523,21 +1529,21 @@ void CWeaponGravityGun::SecondaryAttack(void)
 // =====================================================
 
 ConVar gabe_physgun_r(
-	"gabe+_physgun_r",
+	"gabe_physgun_r",
 	"1.0",
 	FCVAR_REPLICATED,
 	"Physgun color red (0-1)"
 );
 
 ConVar gabe_physgun_g(
-	"gabe+_physgun_g",
+	"gabe_physgun_g",
 	"1.0",
 	FCVAR_REPLICATED,
 	"Physgun color green (0-1)"
 );
 
 ConVar gabe_physgun_b(
-	"gabe+_physgun_b",
+	"gabe_physgun_b",
 	"1.0",
 	FCVAR_REPLICATED,
 	"Physgun color blue (0-1)"
@@ -1562,8 +1568,8 @@ static void VectorToColor32(const Vector& in, color32& out)
 	out.a = 255;
 }
 
-ConVar gabeplus_physgun_beamwidth("gabe+_physgun_beamwidth", "1", FCVAR_ARCHIVE);
-ConVar gabeplus_physgun_spritesize("gabe+_physgun_spritesize", "1", FCVAR_ARCHIVE);
+ConVar gabeplus_physgun_beamwidth("gabe_physgun_beamwidth", "1", FCVAR_ARCHIVE);
+ConVar gabeplus_physgun_spritesize("gabe_physgun_spritesize", "1", FCVAR_ARCHIVE);
 
 //-----------------------------------------------------------------------------
 // Purpose: Third-person function call to render world model

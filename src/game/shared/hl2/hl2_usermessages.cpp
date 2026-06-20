@@ -28,8 +28,9 @@ void RegisterUserMessages( void )
 	usermessages->Register( "GameTitle", 0 );
 	usermessages->Register( "ItemPickup", -1 );
 	usermessages->Register( "ShowMenu", -1 );
-	Msg("REGISTERING MultitoolHUD\n");
 	usermessages->Register("MultitoolHUD", 7);
+	usermessages->Register("KillFeed", -1);
+	usermessages->Register("DamageFeed", -1);
 	usermessages->Register( "Shake", 13 );
 	usermessages->Register( "Fade", 10 );
 	usermessages->Register( "VGUIMenu", -1 );	// Show VGUI menu

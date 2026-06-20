@@ -160,7 +160,7 @@ static Vector GetDuplicateSpawnPos(CBasePlayer* pPlayer)
 	return pPlayer->EyePosition() + forward * 96.0f;
 }
 
-ConVar gabeplus_multitool_pmessagetext("gabe+_multitool_pmessagetext", "Customize me with gabe+_multitool_pmessagetext!", FCVAR_ARCHIVE);
+ConVar gabeplus_multitool_pmessagetext("gabe_multitool_pmessagetext", "Customize me with gabe+_multitool_pmessagetext!", FCVAR_ARCHIVE);
 
 class CL_Watermelon : public CBaseAnimating
 {

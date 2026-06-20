@@ -32,6 +32,7 @@
 #include "hud_basechat.h"
 #include "hud_crosshair.h"
 #include "view_shared.h"
+#include "c_gabe_vscript.h"
 #include "env_wind_shared.h"
 #include "detailobjectsystem.h"
 #include "clienteffectprecachesystem.h"
@@ -1116,6 +1117,9 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		RegisterSecureLaunchProcessFunc( pfnUnsafeCmdLineProcessor );
 	}
 
+	VScriptClientSetFactory(appSystemFactory);
+	VScriptClientInit();
+
 	return true;
 }
 
@@ -1258,6 +1262,8 @@ void CHLClient::Shutdown( void )
 	// NVNT Disconnect haptics system
 	DisconnectHaptics();
 #endif
+
+	VScriptClientTerm();
 }
 
 

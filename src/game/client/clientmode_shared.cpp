@@ -31,6 +31,7 @@
 #include "c_rumble.h"
 #include "fmtstr.h"
 #include "achievementmgr.h"
+#include "con_nprint.h"
 #include "c_playerresource.h"
 #include "cam_thirdperson.h"
 #include <vgui/ILocalize.h>
@@ -653,6 +654,21 @@ void ClientModeShared::Update()
 
 		engine->Con_NPrintf( 0, "# Active particle systems: %i", nCount );
 	}
+
+	float t = gpGlobals->curtime * 2.0f;
+
+	static con_nprint_s gabeDevTestPrint;
+
+	gabeDevTestPrint.index = 0;
+	gabeDevTestPrint.time_to_live = 0.01f;
+	gabeDevTestPrint.color[0] = 0.5f + 0.5f * sinf(t);
+	gabeDevTestPrint.color[1] = 0.5f + 0.5f * sinf(t + 2.0943951f);
+	gabeDevTestPrint.color[2] = 0.5f + 0.5f * sinf(t + 4.1887902f);
+
+	engine->Con_NXPrintf(
+		&gabeDevTestPrint,
+		"Gabe Mod DEVTEST"
+	);
 }
 
 //-----------------------------------------------------------------------------

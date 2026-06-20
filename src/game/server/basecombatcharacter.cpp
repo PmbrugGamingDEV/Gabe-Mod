@@ -1684,6 +1684,33 @@ void CBaseCombatCharacter::Event_Killed( const CTakeDamageInfo &info )
 #ifdef GLOWS_ENABLE
 	RemoveGlowEffect();
 #endif // GLOWS_ENABLE
+
+	CBaseEntity* pAttacker = info.GetAttacker();
+	CBaseEntity* pVictim = this;
+
+	if (pAttacker && pVictim)
+	{
+		const char* attackerName = nullptr;
+
+		// If attacker is a player, use their player name
+		if (pAttacker->IsPlayer())
+		{
+			attackerName = ToBasePlayer(pAttacker)->GetPlayerName();
+		}
+		else
+		{
+			// fallback to classname for NPCs, props, etc.
+			attackerName = pAttacker->GetClassname();
+		}
+
+		const char* victimName = pVictim->GetClassname();
+
+		CBroadcastRecipientFilter filter;
+		UserMessageBegin(filter, "KillFeed");
+		WRITE_STRING(attackerName);
+		WRITE_STRING(victimName);
+		MessageEnd();
+	}
 }
 
 void CBaseCombatCharacter::Event_Dying( const CTakeDamageInfo &info )
@@ -2390,6 +2417,99 @@ When a NPC is poisoned via an arrow etc it takes all the poison damage at once.
 GLOBALS ASSUMED SET:  g_iSkillLevel
 ============
 */
+
+static CBasePlayer* GetPlayerFromDamageInfo(const CTakeDamageInfo& info)
+{
+	CBaseEntity* pAttacker = info.GetAttacker();
+	if (!pAttacker)
+		return NULL;
+
+	if (pAttacker->IsPlayer())
+		return ToBasePlayer(pAttacker);
+
+	CBaseEntity* pOwner = pAttacker->GetOwnerEntity();
+	if (pOwner && pOwner->IsPlayer())
+		return ToBasePlayer(pOwner);
+
+	CBaseEntity* pInflictor = info.GetInflictor();
+	if (pInflictor)
+	{
+		if (pInflictor->IsPlayer())
+			return ToBasePlayer(pInflictor);
+
+		CBaseEntity* pInflictorOwner = pInflictor->GetOwnerEntity();
+		if (pInflictorOwner && pInflictorOwner->IsPlayer())
+			return ToBasePlayer(pInflictorOwner);
+	}
+
+	return NULL;
+}
+
+const char* DamageTypeToString(int t)
+{
+	if (t & DMG_BULLET)     return "bullet";
+	if (t & DMG_BLAST)      return "blast";
+	if (t & DMG_SLASH)      return "slash";
+	if (t & DMG_BURN)       return "fire";
+	if (t & DMG_SHOCK)      return "shock";
+	if (t & DMG_ENERGYBEAM) return "beam";
+	if (t & DMG_DROWN)      return "drown";
+	if (t & DMG_FALL)       return "fall";
+	if (t & DMG_CRUSH)      return "crush";
+	if (t & DMG_CLUB)       return "club";
+	if (t & DMG_SONIC)      return "sonic";
+	if (t & DMG_RADIATION)  return "radiation";
+	if (t & DMG_ACID)       return "acid";
+	if (t & DMG_NERVEGAS)   return "nerve gas";
+	if (t & DMG_POISON)     return "poison";
+	if (t & DMG_PLASMA)     return "plasma";
+	if (t & DMG_SLOWBURN)   return "slow burn";
+	if (t & DMG_PHYSGUN)    return "physgun";
+	if (t & DMG_VEHICLE)    return "vehicle";
+	if (t & DMG_DIRECT)     return "direct";
+	return "generic";
+}
+
+
+static void SendDamageFeed(const CTakeDamageInfo& info, CBaseEntity* pVictim)
+{
+	if (!pVictim)
+		return;
+
+	CBasePlayer* pPlayer = GetPlayerFromDamageInfo(info);
+	if (!pPlayer)
+		return;
+
+	char attackerName[64];
+	char victimName[64];
+
+	if (info.GetAttacker() && info.GetAttacker()->IsPlayer())
+		Q_strncpy(attackerName, ToBasePlayer(info.GetAttacker())->GetPlayerName(), sizeof(attackerName));
+	else
+		Q_strncpy(attackerName, info.GetAttacker() ? info.GetAttacker()->GetClassname() : "world", sizeof(attackerName));
+
+	if (pVictim->IsPlayer())
+		Q_strncpy(victimName, ToBasePlayer(pVictim)->GetPlayerName(), sizeof(victimName));
+	else
+		Q_strncpy(victimName, pVictim->GetClassname(), sizeof(victimName));
+
+	int dmg = (int)(info.GetDamage() + 0.5f);
+	if (dmg <= 0)
+		return;
+
+	const char* dmgTypeStr = DamageTypeToString(info.GetDamageType());
+
+	CSingleUserRecipientFilter filter(pPlayer);
+	filter.MakeReliable();
+
+	UserMessageBegin(filter, "DamageFeed");
+	WRITE_STRING(attackerName);
+	WRITE_STRING(victimName);
+	WRITE_SHORT(dmg);
+	WRITE_STRING(dmgTypeStr);
+	MessageEnd();
+}
+
 int CBaseCombatCharacter::OnTakeDamage( const CTakeDamageInfo &info )
 {
 	int retVal = 0;
@@ -2512,6 +2632,8 @@ int CBaseCombatCharacter::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 		m_iHealth -= flIntegerDamage;
 	}
+
+	SendDamageFeed(info, this);
 
 	return 1;
 }
