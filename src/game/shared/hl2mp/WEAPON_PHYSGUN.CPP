@@ -61,7 +61,7 @@ static int g_physgunGlow;
 
 class CWeaponGravityGun;
 
-ConVar phys_guntogglesound("gabe+_physgun_togglesound", "0", FCVAR_REPLICATED); // 
+ConVar phys_guntogglesound("gabe_physgun_togglesound", "0", FCVAR_REPLICATED); // 
 
 #ifdef CLIENT_DLL
 CLIENTEFFECT_REGISTER_BEGIN(PrecacheEffectGravityGun)

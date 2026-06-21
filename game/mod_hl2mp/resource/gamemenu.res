@@ -32,9 +32,28 @@
 	"6"
 	{
 		"label" "#GameUI_GameMenu_CreateServer"
-		"command" "OpenCreateMultiplayerGameDialog"
+		"command" "engine gabe_newgame"
 	}
+
 	"7"
+	{
+		"label"	"FRIENDS"
+		"command"	"engine gabe_friends"
+		"ingameorder"	"7"
+	}
+	"8"
+	{
+		"label"	"TOGGLE CREDITS"
+		"command"	"engine gabe_thanks"
+		"ingameorder"	"8"
+	}
+	"9"
+	{
+		"label"	"TUTORIALS"
+		"command"	"engine gabe_tutorial"
+		"ingameorder"	"9"
+	}
+	"10"
 	{
 		"label" "#GameUI_GameMenu_ActivateVR"
 		"command" "engine vr_activate"
@@ -42,7 +61,7 @@
 		"OnlyWhenVREnabled" "1"
 		"OnlyWhenVRInactive" "1"
 	}
-	"8"
+	"11"
 	{
 		"label" "#GameUI_GameMenu_DeactivateVR"
 		"command" "engine vr_deactivate"
@@ -50,22 +69,22 @@
 		"OnlyWhenVREnabled" "1"
 		"OnlyWhenVRActive" "1"
 	}
-	"10"
+	"12"
 	{
 		"label" "#GameUI_GameMenu_Options"
 		"command" "OpenOptionsDialog"
 	}
-	"11"
+	"13"
 	{
 		"label" "#GameUI_GameMenu_Quit"
 		"command" "Quit"
 	}
-	"12"
+	"14"
 	{
 		"label" ""
 		"command" ""
 	}
-	"13"
+	"15"
 	{
 		"label" "SCRIPT MENU"
 		"command" "engine gabe_loadscripts"

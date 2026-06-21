@@ -2311,6 +2311,34 @@ static const char* Surface_GetFontFamilyName(int font)
 	return vgui::surface()->GetFontFamilyName((vgui::HFont)font);
 }
 
+static const char* Script_GetMapListString()
+{
+	static char out[32768];
+	out[0] = 0;
+
+	FileFindHandle_t fh = FILESYSTEM_INVALID_FIND_HANDLE;
+	const char* file = g_pFullFileSystem->FindFirstEx("maps/*.bsp", "GAME", &fh);
+
+	while (file)
+	{
+		char mapname[256];
+		Q_strncpy(mapname, file, sizeof(mapname));
+		V_StripExtension(mapname, mapname, sizeof(mapname));
+
+		if (out[0])
+			Q_strncat(out, "\n", sizeof(out));
+
+		Q_strncat(out, mapname, sizeof(out));
+
+		file = g_pFullFileSystem->FindNext(fh);
+	}
+
+	if (fh != FILESYSTEM_INVALID_FIND_HANDLE)
+		g_pFullFileSystem->FindClose(fh);
+
+	return out;
+}
+
 static void RegisterClientScriptFunctions()
 {
 	if (!g_pScriptVM)
@@ -2519,6 +2547,13 @@ static void RegisterClientScriptFunctions()
 
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Con_NPrintf, "Con_NPrintf", "Prints debug text at indexed screen position");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Con_NXPrintf, "Con_NXPrintf", "Prints colored debug text at indexed screen position");
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_GetMapListString,
+		"GetMapListString",
+		"Returns newline separated maps from maps/*.bsp"
+	);
 
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_FS_FindFirst, "FS_FindFirst", "Finds first matching GAME file");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_FS_FindNext, "FS_FindNext", "Finds next matching GAME file");

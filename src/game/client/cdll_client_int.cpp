@@ -1683,6 +1683,7 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 }
 
 
+ConVar gabe_chlogatspawn("gabe_chlogatspawn", "0", FCVAR_CHEAT, "If set, will show the MOTD.");
 //-----------------------------------------------------------------------------
 // Purpose: Per level init
 //-----------------------------------------------------------------------------
@@ -1692,7 +1693,7 @@ void CHLClient::LevelInitPostEntity( )
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
 
-	if (g_pScriptVM)
+	if (g_pScriptVM && gabe_chlogatspawn.GetBool())
 	{
 		VScriptClientRunScript("motd.nut");
 	}
