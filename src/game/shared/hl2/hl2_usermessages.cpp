@@ -29,6 +29,7 @@ void RegisterUserMessages( void )
 	usermessages->Register( "ItemPickup", -1 );
 	usermessages->Register( "ShowMenu", -1 );
 	usermessages->Register("MultitoolHUD", 7);
+	usermessages->Register("CamBlur", 1);
 	usermessages->Register("KillFeed", -1);
 	usermessages->Register("DamageFeed", -1);
 	usermessages->Register( "Shake", 13 );

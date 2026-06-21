@@ -11,6 +11,7 @@
 #include "cbase.h"
 #include "clientmode_shared.h"
 #include "iinput.h"
+#include "cl_camerablur.h"
 #include "view_shared.h"
 #include "iviewrender.h"
 #include "hud_basechat.h"
@@ -390,6 +391,8 @@ void ClientModeShared::Init()
 
 	HOOK_MESSAGE( VGUIMenu );
 	HOOK_MESSAGE( Rumble );
+
+	CamBlur_Init();
 }
 
 
@@ -450,6 +453,8 @@ void ClientModeShared::OverrideView( CViewSetup *pSetup )
 		return;
 
 	pPlayer->OverrideView( pSetup );
+
+	CamBlur_OnOverrideView(pSetup);
 
 	if( ::input->CAM_IsThirdPerson() )
 	{
@@ -611,6 +616,7 @@ void ClientModeShared::PostRender()
 {
 	// Let the particle manager simulate things that haven't been simulated.
 	ParticleMgr()->PostRender();
+	CamBlur_PostRender();
 }
 
 void ClientModeShared::PostRenderVGui()

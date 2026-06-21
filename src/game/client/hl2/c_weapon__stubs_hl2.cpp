@@ -29,6 +29,9 @@ STUB_WEAPON_CLASS( weapon_citizensuitcase, WeaponCitizenSuitcase, C_WeaponCitize
 
 STUB_WEAPON_CLASS(weapon_hax, WeaponHax, C_BaseHLCombatWeapon);
 STUB_WEAPON_CLASS(weapon_multitool, WeaponMultitool, C_BaseHL2MPCombatWeapon);
+STUB_WEAPON_CLASS(weapon_stickylauncher, WeaponStickyLauncher, C_BaseHLCombatWeapon);
+STUB_WEAPON_CLASS(weapon_eattach, WeaponEAttach, C_BaseHLCombatWeapon);
+STUB_WEAPON_CLASS(weapon_lasergun, WeaponLaserGun, C_BaseHLCombatWeapon);
 
 /* End Gabe Mod */
 #ifndef HL2MP
