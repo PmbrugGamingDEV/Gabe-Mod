@@ -8,12 +8,7 @@
 #include "cbase.h"
 #include "vscript_client.h"
 #include "c_gabe_vscript.h"
-#include "eiface.h"
-#include "icommandline.h"
-#include "filesystem.h"
-#include "tier1/fmtstr.h"
-#include "tier1/utlbuffer.h"
-#include "../../public/vscript/vscript_templates.h"
+#include "gabe_vscript_shared.h"
 #include <vgui/VGUI.h>
 #include <vgui/ISurface.h>
 #include <vgui_controls/panel.h>
@@ -30,6 +25,7 @@
 #include <vgui_controls/propertysheet.h>
 #include <vgui_controls/propertypage.h>
 #include <vgui_controls/imagepanel.h>
+#include <vgui_controls/HTML.h>
 #include <vgui_controls/richtext.h>
 #include <vgui_controls/menu.h>
 #include "con_nprint.h"
@@ -72,17 +68,12 @@
 #include "vgui_controls/URLLabel.h"
 #include "vgui_controls/Divider.h"
 #include "vgui_controls/Controls.h"
-#include "mathlib/mathlib.h"
-#include "convar.h"
-#include "iclientmode.h"
-#include "KeyValues.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 static IScriptManager* s_pScriptManager = NULL;
 static CreateInterfaceFn s_AppSystemFactory = NULL;
-static FileFindHandle_t g_ScriptFindHandle = FILESYSTEM_INVALID_FIND_HANDLE;
 
 IScriptVM* g_pScriptVM = NULL;
 
@@ -118,72 +109,15 @@ static vgui::Panel* GetScriptHUDParent()
 	return s_pHudRoot;
 }
 
+static vgui::HTML* Script_GetHTML(CScriptVPanel* pPanel); // complained
+
 //-----------------------------------------------------------------------------
 // Client script functions
 //-----------------------------------------------------------------------------
 
+class CScripted_HudElement;
 
-class CScriptVPanel;
-
-static HSCRIPT Script_VGUI_CreatePanel(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateLabel(CScriptVPanel* pParent, const char* text, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateButton(CScriptVPanel* pParent, const char* text, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateTextEntry(CScriptVPanel* pParent, const char* text, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateCheckButton(CScriptVPanel* pParent, const char* text, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateComboBox(CScriptVPanel* pParent, int x, int y, int w, int h, int maxItems);
-static HSCRIPT Script_VGUI_CreateSlider(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateProgressBar(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateImagePanel(CScriptVPanel* pParent, const char* image, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateRichText(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateRadioButton(CScriptVPanel* pParent, const char* text, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateMenu(CScriptVPanel* pParent);
-static HSCRIPT Script_VGUI_CreateMenuButton(CScriptVPanel* pParent, const char* text, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateListPanel(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateSectionedListPanel(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateURLLabel(CScriptVPanel* pParent, const char* text, const char* url, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreateDivider(CScriptVPanel* pParent, int x, int y, int w, int h);
-static HSCRIPT Script_VGUI_CreatePropertySheet(CScriptVPanel* pParent, int x, int y, int w, int h);
-
-static void Script_VGUI_SetText(CScriptVPanel* pPanel, const char* text);
-static const char* Script_VGUI_GetText(CScriptVPanel* pPanel);
-static void Script_VGUI_SetChecked(CScriptVPanel* pPanel, bool bChecked);
-static bool Script_VGUI_IsChecked(CScriptVPanel* pPanel);
-static void Script_VGUI_ComboAddItem(CScriptVPanel* pPanel, const char* text);
-static void Script_VGUI_ComboActivateItem(CScriptVPanel* pPanel, int itemID);
-static int Script_VGUI_ComboGetActiveItem(CScriptVPanel* pPanel);
-static void Script_VGUI_SetSliderRange(CScriptVPanel* pPanel, int min, int max);
-static void Script_VGUI_SetSliderValue(CScriptVPanel* pPanel, int value);
-static int Script_VGUI_GetSliderValue(CScriptVPanel* pPanel);
-static void Script_VGUI_SetProgress(CScriptVPanel* pPanel, float progress);
-static void Script_VGUI_RichTextInsert(CScriptVPanel* pPanel, const char* text);
-static void Script_VGUI_RichTextClear(CScriptVPanel* pPanel);
-static bool Script_VGUI_IsVisible(CScriptVPanel* pPanel);
-static bool Script_VGUI_IsEnabled(CScriptVPanel* pPanel);
-static void Script_VGUI_SetAlpha(CScriptVPanel* pPanel, int a);
-static int Script_VGUI_GetAlpha(CScriptVPanel* pPanel);
-static void Script_VGUI_SetZPos(CScriptVPanel* pPanel, int z);
-static int Script_VGUI_GetZPos(CScriptVPanel* pPanel);
-static void Script_VGUI_SetMouseInputEnabled(CScriptVPanel* pPanel, bool bEnabled);
-static void Script_VGUI_SetKeyboardInputEnabled(CScriptVPanel* pPanel, bool bEnabled);
-static void Script_VGUI_SetPaintBackgroundEnabled(CScriptVPanel* pPanel, bool bEnabled);
-static void Script_VGUI_SetPaintBorderEnabled(CScriptVPanel* pPanel, bool bEnabled);
-static void Script_VGUI_CenterOnScreen(CScriptVPanel* pPanel);
-static void Script_VGUI_SetImage(CScriptVPanel* pPanel, const char* image);
-static void Script_VGUI_SetEditable(CScriptVPanel* pPanel, bool bEditable);
-static void Script_VGUI_SelectAllText(CScriptVPanel* pPanel);
-
-static HSCRIPT Script_VGUI_CreateTreeView(CScriptVPanel* pParent, int x, int y, int w, int h);
-
-static int Script_VGUI_TreeAddItem(CScriptVPanel* pPanel, int parentItem, const char* text);
-static void Script_VGUI_TreeRemoveItem(CScriptVPanel* pPanel, int item);
-static void Script_VGUI_TreeRemoveAll(CScriptVPanel* pPanel);
-static int Script_VGUI_TreeGetSelectedItem(CScriptVPanel* pPanel);
-static void Script_VGUI_TreeExpandItem(CScriptVPanel* pPanel, int item, bool expand);
-
-static const char* Script_FS_FindFirst(const char* wildcard);
-static const char* Script_FS_FindNext();
-static void Script_FS_FindClose();
-static bool Script_FS_IsDirectory(const char* path);
+static CUtlVector<CScripted_HudElement*> g_ScriptedHUDs;
 
 class CScripted_HudElement : public vgui::Panel, public CHudElement
 {
@@ -199,18 +133,20 @@ public:
 		SetPaintBackgroundEnabled(false);
 		SetMouseInputEnabled(false);
 		SetKeyBoardInputEnabled(false);
+		g_ScriptedHUDs.AddToTail(this);
 
-		m_hFont = vgui::INVALID_FONT;
-		m_Text[0] = 0;
-		m_TextColor = Color(255, 255, 255, 255);
-		m_nTextX = 20;
-		m_nTextY = 20;
+		m_szPaintFunc[0] = 0;
+		m_hScope = INVALID_HSCRIPT;
+	}
+
+	~CScripted_HudElement()
+	{
+		g_ScriptedHUDs.FindAndRemove(this);
 	}
 
 	virtual void ApplySchemeSettings(vgui::IScheme* pScheme)
 	{
 		BaseClass::ApplySchemeSettings(pScheme);
-		m_hFont = pScheme->GetFont("Default", true);
 	}
 
 	virtual bool ShouldDraw()
@@ -218,36 +154,24 @@ public:
 		return CHudElement::ShouldDraw();
 	}
 
+	void SetPaintFunction(const char* funcName)
+	{
+		Q_strncpy(m_szPaintFunc, funcName ? funcName : "", sizeof(m_szPaintFunc));
+	}
+
 	virtual void Paint()
 	{
 		BaseClass::Paint();
 
-		if (!m_Text[0] || m_hFont == vgui::INVALID_FONT)
+		if (!m_szPaintFunc[0] || !g_pScriptVM)
 			return;
 
-		wchar_t wszText[1024];
-		g_pVGuiLocalize->ConvertANSIToUnicode(m_Text, wszText, sizeof(wszText));
+		HSCRIPT hFunc = g_pScriptVM->LookupFunction(m_szPaintFunc);
 
-		vgui::surface()->DrawSetTextFont(m_hFont);
-		vgui::surface()->DrawSetTextColor(m_TextColor);
-		vgui::surface()->DrawSetTextPos(m_nTextX, m_nTextY);
-		vgui::surface()->DrawPrintText(wszText, wcslen(wszText));
-	}
-
-	void SetHUDText(const char* text)
-	{
-		Q_strncpy(m_Text, text ? text : "", sizeof(m_Text));
-	}
-
-	void SetHUDTextPos(int x, int y)
-	{
-		m_nTextX = x;
-		m_nTextY = y;
-	}
-
-	void SetHUDTextColor(int r, int g, int b, int a)
-	{
-		m_TextColor = Color(r, g, b, a);
+		if (hFunc)
+		{
+			g_pScriptVM->Call(hFunc, NULL, true, NULL, this);
+		}
 	}
 
 	void SetHUDVisible(bool bVisible)
@@ -507,6 +431,8 @@ public:
 
 	void HUD_Remove()
 	{
+		g_ScriptedHUDs.FindAndRemove(this);
+
 		SetVisible(false);
 		SetActive(false);
 		SetNeedsRemove(true);
@@ -532,17 +458,12 @@ public:
 	}
 
 private:
-	char m_Text[1024];
-	Color m_TextColor;
-	vgui::HFont m_hFont;
-	int m_nTextX;
-	int m_nTextY;
+	char m_szPaintFunc[128];
+	HSCRIPT m_hScope;
 };
 
 BEGIN_SCRIPTDESC_ROOT(CScripted_HudElement, "Scripted HUD element")
-DEFINE_SCRIPTFUNC(SetHUDText, "Sets HUD text")
-DEFINE_SCRIPTFUNC(SetHUDTextPos, "Sets HUD text position")
-DEFINE_SCRIPTFUNC(SetHUDTextColor, "Sets HUD text color")
+DEFINE_SCRIPTFUNC(SetPaintFunction, "Sets Squirrel paint callback")
 DEFINE_SCRIPTFUNC(SetHUDVisible, "Sets HUD visible/active")
 DEFINE_SCRIPTFUNC(IsHUDVisible, "Returns true if HUD visible")
 DEFINE_SCRIPTFUNC(GetHUDName, "Gets HUD element name")
@@ -596,6 +517,19 @@ DEFINE_SCRIPTFUNC(HUD_ForceShow, "")
 DEFINE_SCRIPTFUNC(HUD_ForceHide, "")
 DEFINE_SCRIPTFUNC(HUD_IsDrawableNow, "")
 END_SCRIPTDESC();
+
+static void Script_HUD_ClearAll()
+{
+	FOR_EACH_VEC(g_ScriptedHUDs, i)
+	{
+		CScripted_HudElement* pHud = g_ScriptedHUDs[i];
+
+		if (pHud)
+			pHud->HUD_Remove();
+	}
+
+	g_ScriptedHUDs.RemoveAll();
+}
 
 static HSCRIPT Script_HUD_CreateElement(const char* name)
 {
@@ -959,6 +893,35 @@ public:
 		return Script_VGUI_CreatePropertySheet(this, x, y, w, h);
 	}
 
+	void HTMLOpenURL(const char* url, const char* postData, bool force) { Script_HTML_OpenURL(this, url, postData, force); }
+	bool HTMLStopLoading() { return Script_HTML_StopLoading(this); }
+	bool HTMLRefresh() { return Script_HTML_Refresh(this); }
+	void HTMLOnMove() { Script_HTML_OnMove(this); }
+	void HTMLRunJavascript(const char* js) { Script_HTML_RunJavascript(this, js); }
+	void HTMLGoBack() { Script_HTML_GoBack(this); }
+	void HTMLGoForward() { Script_HTML_GoForward(this); }
+	bool HTMLCanGoBack() { return Script_HTML_BCanGoBack(this); }
+	bool HTMLCanGoForward() { return Script_HTML_BCanGoForward(this); }
+
+	void HTMLSetScrollbarsEnabled(bool b) { Script_HTML_SetScrollbarsEnabled(this, b); }
+	void HTMLSetContextMenuEnabled(bool b) { Script_HTML_SetContextMenuEnabled(this, b); }
+	void HTMLSetViewSourceEnabled(bool b) { Script_HTML_SetViewSourceEnabled(this, b); }
+	void HTMLNewWindowsOnly(bool b) { Script_HTML_NewWindowsOnly(this, b); }
+	bool HTMLIsScrolledToBottom() { return Script_HTML_IsScrolledToBottom(this); }
+	bool HTMLIsScrollbarVisible() { return Script_HTML_IsScrollbarVisible(this); }
+
+	void HTMLAddHeader(const char* h, const char* v) { Script_HTML_AddHeader(this, h, v); }
+	void HTMLFind(const char* s) { Script_HTML_Find(this, s); }
+	void HTMLStopFind() { Script_HTML_StopFind(this); }
+	void HTMLFindNext() { Script_HTML_FindNext(this); }
+	void HTMLFindPrevious() { Script_HTML_FindPrevious(this); }
+	void HTMLShowFindDialog() { Script_HTML_ShowFindDialog(this); }
+	void HTMLHideFindDialog() { Script_HTML_HideFindDialog(this); }
+	bool HTMLFindDialogVisible() { return Script_HTML_FindDialogVisible(this); }
+	int HTMLHorizontalScrollMax() { return Script_HTML_HorizontalScrollMax(this); }
+	int HTMLVerticalScrollMax() { return Script_HTML_VerticalScrollMax(this); }
+	void HTMLGetLinkAtPosition(int x, int y) { Script_HTML_GetLinkAtPosition(this, x, y); }
+
 	void SetText(const char* text)
 	{
 		Script_VGUI_SetText(this, text);
@@ -1054,6 +1017,16 @@ public:
 		Script_VGUI_TreeExpandItem(this, item, expand);
 	}
 
+	HSCRIPT CreateHTML(int x, int y, int w, int h, bool allowJS)
+	{
+		return Script_VGUI_CreateHTML(this, x, y, w, h, allowJS);
+	}
+
+	void SetSizeable(bool state)
+	{
+		Script_VGUI_SetSizeable(this, state);
+	}
+
 	vgui::Panel* m_pPanel;
 };
 
@@ -1078,6 +1051,8 @@ DEFINE_SCRIPTFUNC(SetTooltip, "Sets tooltip")
 DEFINE_SCRIPTFUNC(SetBgColor, "Sets background color")
 DEFINE_SCRIPTFUNC(SetFgColor, "Sets foreground color")
 
+DEFINE_SCRIPTFUNC(SetSizeable, "Sets frame resizeability (broken)")
+
 DEFINE_SCRIPTFUNC(CreatePanel, "Creates child panel")
 DEFINE_SCRIPTFUNC(CreateLabel, "Creates child label")
 DEFINE_SCRIPTFUNC(CreateButton, "Creates child button")
@@ -1096,6 +1071,8 @@ DEFINE_SCRIPTFUNC(CreateSectionedListPanel, "Creates child sectioned list panel"
 DEFINE_SCRIPTFUNC(CreateURLLabel, "Creates child URL label")
 DEFINE_SCRIPTFUNC(CreateDivider, "Creates child divider")
 DEFINE_SCRIPTFUNC(CreatePropertySheet, "Creates child property sheet")
+
+DEFINE_SCRIPTFUNC(CreateHTML, "Creates child HTML panel")
 
 DEFINE_SCRIPTFUNC(SetText, "Sets text")
 DEFINE_SCRIPTFUNC(GetText, "Gets text")
@@ -1134,6 +1111,33 @@ DEFINE_SCRIPTFUNC(TreeRemoveAll, "Removes all tree items")
 DEFINE_SCRIPTFUNC(TreeGetSelectedItem, "Gets selected tree item")
 DEFINE_SCRIPTFUNC(TreeExpandItem, "Expands or collapses tree item")
 
+DEFINE_SCRIPTFUNC(HTMLOpenURL, "")
+DEFINE_SCRIPTFUNC(HTMLStopLoading, "")
+DEFINE_SCRIPTFUNC(HTMLRefresh, "")
+DEFINE_SCRIPTFUNC(HTMLOnMove, "")
+DEFINE_SCRIPTFUNC(HTMLRunJavascript, "")
+DEFINE_SCRIPTFUNC(HTMLGoBack, "")
+DEFINE_SCRIPTFUNC(HTMLGoForward, "")
+DEFINE_SCRIPTFUNC(HTMLCanGoBack, "")
+DEFINE_SCRIPTFUNC(HTMLCanGoForward, "")
+DEFINE_SCRIPTFUNC(HTMLSetScrollbarsEnabled, "")
+DEFINE_SCRIPTFUNC(HTMLSetContextMenuEnabled, "")
+DEFINE_SCRIPTFUNC(HTMLSetViewSourceEnabled, "")
+DEFINE_SCRIPTFUNC(HTMLNewWindowsOnly, "")
+DEFINE_SCRIPTFUNC(HTMLIsScrolledToBottom, "")
+DEFINE_SCRIPTFUNC(HTMLIsScrollbarVisible, "")
+DEFINE_SCRIPTFUNC(HTMLAddHeader, "")
+DEFINE_SCRIPTFUNC(HTMLFind, "")
+DEFINE_SCRIPTFUNC(HTMLStopFind, "")
+DEFINE_SCRIPTFUNC(HTMLFindNext, "")
+DEFINE_SCRIPTFUNC(HTMLFindPrevious, "")
+DEFINE_SCRIPTFUNC(HTMLShowFindDialog, "")
+DEFINE_SCRIPTFUNC(HTMLHideFindDialog, "")
+DEFINE_SCRIPTFUNC(HTMLFindDialogVisible, "")
+DEFINE_SCRIPTFUNC(HTMLHorizontalScrollMax, "")
+DEFINE_SCRIPTFUNC(HTMLVerticalScrollMax, "")
+DEFINE_SCRIPTFUNC(HTMLGetLinkAtPosition, "")
+
 END_SCRIPTDESC();
 
 extern vgui::IPanel* vgui_ipanel;
@@ -1157,6 +1161,17 @@ static vgui::Panel* UnwrapParent(CScriptVPanel* pParent)
 		return pParent->m_pPanel;
 
 	return NULL;
+}
+
+static void Script_VGUI_SetSizeable(CScriptVPanel* pPanel, bool state)
+{
+	if (!pPanel || !pPanel->m_pPanel)
+		return;
+
+	vgui::Frame* pFrame = dynamic_cast<vgui::Frame*>(pPanel->m_pPanel);
+
+	if (pFrame)
+		pFrame->SetSizeable(state);
 }
 
 static HSCRIPT Script_VGUI_CreatePanel(CScriptVPanel* pParent, int x, int y, int w, int h)
@@ -1322,6 +1337,16 @@ static HSCRIPT Script_VGUI_CreatePropertySheet(CScriptVPanel* pParent, int x, in
 	vgui::PropertySheet* p = new vgui::PropertySheet(UnwrapParent(pParent), "ScriptPropertySheet");
 	p->SetBounds(x, y, w, h);
 	p->SetVisible(true);
+	return WrapPanel(p);
+}
+
+static HSCRIPT Script_VGUI_CreateHTML(CScriptVPanel* pParent, int x, int y, int w, int h, bool allowJS)
+{
+	vgui::HTML* p = new vgui::HTML(UnwrapParent(pParent), "ScriptHTML", allowJS, false);
+
+	p->SetBounds(x, y, w, h);
+	p->SetVisible(true);
+
 	return WrapPanel(p);
 }
 
@@ -1672,58 +1697,330 @@ static void Script_VGUI_TreeExpandItem(CScriptVPanel* pPanel, int item, bool exp
 		pTree->ExpandItem(item, expand);
 }
 
-static const char* Script_FS_FindFirst(const char* wildcard)
+static vgui::HTML* Script_GetHTML(CScriptVPanel* pPanel)
 {
-	static char buf[MAX_PATH];
-	buf[0] = 0;
+	if (!pPanel || !pPanel->m_pPanel)
+		return NULL;
 
-	if (g_ScriptFindHandle != FILESYSTEM_INVALID_FIND_HANDLE)
-	{
-		filesystem->FindClose(g_ScriptFindHandle);
-		g_ScriptFindHandle = FILESYSTEM_INVALID_FIND_HANDLE;
-	}
-
-	if (!wildcard || !wildcard[0])
-		return "";
-
-	const char* found = filesystem->FindFirst(wildcard, &g_ScriptFindHandle);
-
-	if (!found)
-		return "";
-
-	Q_strncpy(buf, found, sizeof(buf));
-	return buf;
+	return dynamic_cast<vgui::HTML*>(pPanel->m_pPanel);
 }
 
-static const char* Script_FS_FindNext()
+static void Script_HTML_OpenURL(CScriptVPanel* pPanel, const char* url, const char* postData, bool force)
 {
-	static char buf[MAX_PATH];
-	buf[0] = 0;
-
-	if (g_ScriptFindHandle == FILESYSTEM_INVALID_FIND_HANDLE)
-		return "";
-
-	const char* found = filesystem->FindNext(g_ScriptFindHandle);
-
-	if (!found)
-		return "";
-
-	Q_strncpy(buf, found, sizeof(buf));
-	return buf;
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p && url && url[0])
+		p->OpenURL(url, postData ? postData : "", force);
 }
 
-static void Script_FS_FindClose()
+static bool Script_HTML_StopLoading(CScriptVPanel* pPanel)
 {
-	if (g_ScriptFindHandle != FILESYSTEM_INVALID_FIND_HANDLE)
-	{
-		filesystem->FindClose(g_ScriptFindHandle);
-		g_ScriptFindHandle = FILESYSTEM_INVALID_FIND_HANDLE;
-	}
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->StopLoading() : false;
 }
 
-static bool Script_FS_IsDirectory(const char* path)
+static bool Script_HTML_Refresh(CScriptVPanel* pPanel)
 {
-	return path && path[0] && filesystem->IsDirectory(path, "GAME");
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->Refresh() : false;
+}
+
+static void Script_HTML_OnMove(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnMove();
+}
+
+static void Script_HTML_RunJavascript(CScriptVPanel* pPanel, const char* js)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p && js)
+		p->RunJavascript(js);
+}
+
+static void Script_HTML_GoBack(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->GoBack();
+}
+
+static void Script_HTML_GoForward(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->GoForward();
+}
+
+static bool Script_HTML_BCanGoBack(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->BCanGoBack() : false;
+}
+
+static bool Script_HTML_BCanGoForward(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->BCanGoFoward() : false;
+}
+
+static bool Script_HTML_OnStartRequest(CScriptVPanel* pPanel, const char* url, const char* target, const char* postData, bool redirect)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->OnStartRequest(url ? url : "", target ? target : "", postData ? postData : "", redirect) : false;
+}
+
+static void Script_HTML_OnSetHTMLTitle(CScriptVPanel* pPanel, const char* title)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnSetHTMLTitle(title ? title : "");
+}
+
+static void Script_HTML_OnLinkAtPosition(CScriptVPanel* pPanel, const char* url)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnLinkAtPosition(url ? url : "");
+}
+
+static void Script_HTML_OnURLChanged(CScriptVPanel* pPanel, const char* url, const char* postData, bool redirect)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnURLChanged(url ? url : "", postData ? postData : "", redirect);
+}
+
+static bool Script_HTML_OnOpenNewTab(CScriptVPanel* pPanel, const char* url, bool foreground)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->OnOpenNewTab(url ? url : "", foreground) : false;
+}
+
+static void Script_HTML_SetScrollbarsEnabled(CScriptVPanel* pPanel, bool state)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->SetScrollbarsEnabled(state);
+}
+
+static void Script_HTML_SetContextMenuEnabled(CScriptVPanel* pPanel, bool state)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->SetContextMenuEnabled(state);
+}
+
+static void Script_HTML_SetViewSourceEnabled(CScriptVPanel* pPanel, bool state)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->SetViewSourceEnabled(state);
+}
+
+static void Script_HTML_NewWindowsOnly(CScriptVPanel* pPanel, bool state)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->NewWindowsOnly(state);
+}
+
+static bool Script_HTML_IsScrolledToBottom(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->IsScrolledToBottom() : false;
+}
+
+static bool Script_HTML_IsScrollbarVisible(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->IsScrollbarVisible() : false;
+}
+
+static void Script_HTML_AddCustomURLHandler(CScriptVPanel* pPanel, const char* protocol, CScriptVPanel* pTarget)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p && protocol && pTarget && pTarget->m_pPanel)
+		p->AddCustomURLHandler(protocol, pTarget->m_pPanel);
+}
+
+static void Script_HTML_Paint(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->Paint();
+}
+
+static void Script_HTML_OnSizeChanged(CScriptVPanel* pPanel, int wide, int tall)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnSizeChanged(wide, tall);
+}
+
+static void Script_HTML_OnMousePressed(CScriptVPanel* pPanel, int code)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnMousePressed((vgui::MouseCode)code);
+}
+
+static void Script_HTML_OnMouseReleased(CScriptVPanel* pPanel, int code)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnMouseReleased((vgui::MouseCode)code);
+}
+
+static void Script_HTML_OnCursorMoved(CScriptVPanel* pPanel, int x, int y)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnCursorMoved(x, y);
+}
+
+static void Script_HTML_OnMouseDoublePressed(CScriptVPanel* pPanel, int code)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnMouseDoublePressed((vgui::MouseCode)code);
+}
+
+static void Script_HTML_OnKeyTyped(CScriptVPanel* pPanel, int unichar)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnKeyTyped((wchar_t)unichar);
+}
+
+static void Script_HTML_OnKeyCodeTyped(CScriptVPanel* pPanel, int code)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnKeyCodeTyped((vgui::KeyCode)code);
+}
+
+static void Script_HTML_OnKeyCodeReleased(CScriptVPanel* pPanel, int code)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnKeyCodeReleased((vgui::KeyCode)code);
+}
+
+static void Script_HTML_PerformLayout(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->PerformLayout();
+}
+
+static void Script_HTML_OnMouseWheeled(CScriptVPanel* pPanel, int delta)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnMouseWheeled(delta);
+}
+
+static void Script_HTML_PostChildPaint(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->PostChildPaint();
+}
+
+static void Script_HTML_OnCommand(CScriptVPanel* pPanel, const char* command)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnCommand(command ? command : "");
+}
+
+static void Script_HTML_AddHeader(CScriptVPanel* pPanel, const char* header, const char* value)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p && header && value)
+		p->AddHeader(header, value);
+}
+
+static void Script_HTML_OnKillFocus(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnKillFocus();
+}
+
+static void Script_HTML_OnSetFocus(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->OnSetFocus();
+}
+
+static void Script_HTML_Find(CScriptVPanel* pPanel, const char* text)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p && text)
+		p->Find(text);
+}
+
+static void Script_HTML_StopFind(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->StopFind();
+}
+
+static void Script_HTML_FindNext(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->FindNext();
+}
+
+static void Script_HTML_FindPrevious(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->FindPrevious();
+}
+
+static void Script_HTML_ShowFindDialog(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->ShowFindDialog();
+}
+
+static void Script_HTML_HideFindDialog(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->HideFindDialog();
+}
+
+static bool Script_HTML_FindDialogVisible(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->FindDialogVisible() : false;
+}
+
+static int Script_HTML_HorizontalScrollMax(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->HorizontalScrollMax() : 0;
+}
+
+static int Script_HTML_VerticalScrollMax(CScriptVPanel* pPanel)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	return p ? p->VerticalScrollMax() : 0;
+}
+
+static void Script_HTML_GetLinkAtPosition(CScriptVPanel* pPanel, int x, int y)
+{
+	vgui::HTML* p = Script_GetHTML(pPanel);
+	if (p)
+		p->GetLinkAtPosition(x, y);
 }
 
 static void Script_MessageBox(const char* pszTitle, const char* pszText)
@@ -1736,307 +2033,6 @@ static void Script_MessageBox(const char* pszTitle, const char* pszText)
 	pBox->MakePopup();
 	pBox->MoveToFront();
 	pBox->SetVisible(true);
-}
-static float Script_Time()
-{
-	return gpGlobals ? gpGlobals->curtime : 0.0f;
-}
-
-static void Script_Msg(const char* s) { Msg("%s", s ? s : ""); }
-static void Script_Warning(const char* s) { Warning("%s", s ? s : ""); }
-static void Script_Log(const char* s) { Log("%s", s ? s : ""); }
-static void Script_EngineError(const char* s) { Error("%s", s ? s : ""); }
-
-static void Script_DMsg(const char* group, int level, const char* s)
-{
-	DMsg(group ? group : "script", level, "%s", s ? s : "");
-}
-
-static void Script_DWarning(const char* group, int level, const char* s)
-{
-	DWarning(group ? group : "script", level, "%s", s ? s : "");
-}
-
-static void Script_DLog(const char* group, int level, const char* s)
-{
-	DLog(group ? group : "script", level, "%s", s ? s : "");
-}
-
-static void Script_DevMsg(int level, const char* s)
-{
-	DevMsg(level, "%s", s ? s : "");
-}
-
-static void Script_DevWarning(int level, const char* s)
-{
-	DevWarning(level, "%s", s ? s : "");
-}
-
-static void Script_DevLog(int level, const char* s)
-{
-	DevLog(level, "%s", s ? s : "");
-}
-
-static void Script_ConMsg(int level, const char* s)
-{
-	ConMsg(level, "%s", s ? s : "");
-}
-
-static void Script_ConWarning(int level, const char* s)
-{
-	ConWarning(level, "%s", s ? s : "");
-}
-
-static void Script_ConLog(int level, const char* s)
-{
-	ConLog(level, "%s", s ? s : "");
-}
-
-static void Script_ConColorMsg(int level, int r, int g, int b, int a, const char* s)
-{
-	ConColorMsg(level, Color(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255), clamp(a, 0, 255)), "%s", s ? s : "");
-}
-
-static void Script_ConDMsg(const char* s)
-{
-	ConDMsg("%s", s ? s : "");
-}
-
-static void Script_ConDWarning(const char* s)
-{
-	ConDWarning("%s", s ? s : "");
-}
-
-static void Script_ConDLog(const char* s)
-{
-	ConDLog("%s", s ? s : "");
-}
-
-static void Script_ConDColorMsg(int r, int g, int b, int a, const char* s)
-{
-	ConDColorMsg(Color(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255), clamp(a, 0, 255)), "%s", s ? s : "");
-}
-
-static void Script_NetMsg(int level, const char* s)
-{
-	NetMsg(level, "%s", s ? s : "");
-}
-
-static void Script_NetWarning(int level, const char* s)
-{
-	NetWarning(level, "%s", s ? s : "");
-}
-
-static void Script_NetLog(int level, const char* s)
-{
-	NetLog(level, "%s", s ? s : "");
-}
-
-static void Script_Assert(bool condition)
-{
-	Assert(condition);
-}
-
-static void Script_AssertMsg(bool condition, const char* msg)
-{
-	AssertMsg(condition, "%s", msg ? msg : "Script assertion failed");
-}
-
-static void Script_AssertMsgOnce(bool condition, const char* msg)
-{
-	AssertMsgOnce(condition, "%s", msg ? msg : "Script assertion failed once");
-}
-
-static void Script_AssertFatalMsg(bool condition, const char* msg)
-{
-	AssertFatalMsg(condition, "%s", msg ? msg : "Fatal script assertion failed");
-}
-
-static void Script_Verify(bool condition)
-{
-	Verify(condition);
-}
-
-static void Script_ErrorIfNot(bool condition, const char* msg)
-{
-	if (!condition)
-		Error("%s", msg ? msg : "Script ErrorIfNot failed");
-}
-
-static void Script_DebuggerBreakIfDebugging()
-{
-	DebuggerBreakIfDebugging();
-}
-
-static const char* Script_GetMapName()
-{
-	return engine->GetLevelName();
-}
-
-static int Script_GetLocalPlayerIndex()
-{
-	return engine->GetLocalPlayer();
-}
-
-static bool Script_IsInGame()
-{
-	return engine->IsInGame();
-}
-
-static bool Script_IsConnected()
-{
-	return engine->IsConnected();
-}
-
-static int Script_GetScreenWidth()
-{
-	int w, h;
-	engine->GetScreenSize(w, h);
-	return w;
-}
-
-static int Script_GetScreenHeight()
-{
-	int w, h;
-	engine->GetScreenSize(w, h);
-	return h;
-}
-
-static void Script_ClientCommand(const char* pszCommand)
-{
-	if (pszCommand && pszCommand[0])
-	{
-		engine->ClientCmd(pszCommand);
-	}
-}
-
-static void Script_ConCommand(const char* pszCommand)
-{
-	if (pszCommand && pszCommand[0])
-	{
-		engine->ClientCmd_Unrestricted(pszCommand);
-	}
-}
-
-static void Script_PlaySound(const char* pszSound)
-{
-	if (pszSound && pszSound[0])
-	{
-		vgui::surface()->PlaySound(pszSound);
-	}
-}
-
-static float Script_FrameTime()
-{
-	return gpGlobals ? gpGlobals->frametime : 0.0f;
-}
-
-static int Script_MaxClients()
-{
-	return gpGlobals ? gpGlobals->maxClients : 0;
-}
-
-static float Script_RealTime() { return gpGlobals ? gpGlobals->realtime : 0.0f; }
-static int Script_FrameCount() { return gpGlobals ? gpGlobals->framecount : 0; }
-static int Script_TickCount() { return gpGlobals ? gpGlobals->tickcount : 0; }
-static float Script_IntervalPerTick() { return gpGlobals ? gpGlobals->interval_per_tick : 0.0f; }
-static float Script_CurTime() { return gpGlobals ? gpGlobals->curtime : 0.0f; }
-
-static float Script_Sin(float x) { return sinf(x); }
-static float Script_Cos(float x) { return cosf(x); }
-static float Script_Tan(float x) { return tanf(x); }
-static float Script_Sqrt(float x) { return sqrtf(x); }
-static float Script_Abs(float x) { return fabsf(x); }
-static float Script_Floor(float x) { return floorf(x); }
-static float Script_Ceil(float x) { return ceilf(x); }
-
-static float Script_Min(float a, float b) { return MIN(a, b); }
-static float Script_Max(float a, float b) { return MAX(a, b); }
-static float Script_Clamp(float x, float a, float b) { return clamp(x, a, b); }
-
-static float Script_Deg2Rad(float x) { return DEG2RAD(x); }
-static float Script_Rad2Deg(float x) { return RAD2DEG(x); }
-
-static const char* Script_GetGameDirectory()
-{
-	return engine->GetGameDirectory();
-}
-
-static int Script_GetAppID()
-{
-	return engine->GetAppID();
-}
-
-static bool Script_IsDrawingLoadingImage()
-{
-	return engine->IsDrawingLoadingImage();
-}
-
-static float Script_TimeScale()
-{
-	static ConVarRef host_timescale("host_timescale");
-	return host_timescale.IsValid() ? host_timescale.GetFloat() : 1.0f;
-}
-
-static const char* Script_GetConVarString(const char* name)
-{
-	static char buf[256];
-
-	if (!name || !name[0])
-		return "";
-
-	ConVarRef ref(name);
-
-	if (!ref.IsValid())
-		return "";
-
-	Q_strncpy(buf, ref.GetString(), sizeof(buf));
-	return buf;
-}
-
-static float Script_GetConVarFloat(const char* name)
-{
-	ConVarRef ref(name);
-	return ref.IsValid() ? ref.GetFloat() : 0.0f;
-}
-
-static int Script_GetConVarInt(const char* name)
-{
-	ConVarRef ref(name);
-	return ref.IsValid() ? ref.GetInt() : 0;
-}
-
-static bool Script_GetConVarBool(const char* name)
-{
-	ConVarRef ref(name);
-	return ref.IsValid() ? ref.GetBool() : false;
-}
-
-static void Script_SetConVarString(const char* name, const char* value)
-{
-	if (!name || !value)
-		return;
-
-	ConVarRef ref(name);
-
-	if (ref.IsValid())
-		ref.SetValue(value);
-}
-
-static void Script_SetConVarFloat(const char* name, float value)
-{
-	ConVarRef ref(name);
-
-	if (ref.IsValid())
-		ref.SetValue(value);
-}
-
-static void Script_SetConVarInt(const char* name, int value)
-{
-	ConVarRef ref(name);
-
-	if (ref.IsValid())
-		ref.SetValue(value);
 }
 
 static bool Script_IsKeyDown(int buttonCode)
@@ -2078,106 +2074,10 @@ static bool Script_IsConsoleVisible()
 	return enginevgui->IsGameUIVisible();
 }
 
-static int Script_GetBuildNumber()
+static void Script_SetClipboardText(const char* text)
 {
-	return engine->GetEngineBuildNumber();
-}
-
-static void Script_ServerCommand(const char* cmd)
-{
-	if (cmd && cmd[0])
-		engine->ServerCmd(cmd);
-}
-
-static void Script_ClearConsole()
-{
-	engine->ClientCmd_Unrestricted("clear");
-}
-
-static void Script_ToggleConsole()
-{
-	engine->ClientCmd_Unrestricted("toggleconsole");
-}
-
-static void Script_Disconnect()
-{
-	engine->ClientCmd_Unrestricted("disconnect");
-}
-
-static void Script_Quit()
-{
-	engine->ClientCmd_Unrestricted("quit");
-}
-
-static const char* Script_GetLanguage()
-{
-	static ConVarRef ref("cl_language");
-	return ref.IsValid() ? ref.GetString() : "";
-}
-
-static bool Script_FileExists(const char* path)
-{
-	return path && filesystem->FileExists(path, "GAME");
-}
-
-static const char* Script_ReadTextFile(const char* path)
-{
-	static CUtlBuffer buf;
-
-	buf.Clear();
-
-	if (!path || !filesystem->ReadFile(path, "GAME", buf))
-		return "";
-
-	buf.PutChar(0);
-	return (const char*)buf.Base();
-}
-
-static void Script_WriteTextFile(const char* path, const char* text)
-{
-	if (!path || !text)
-		return;
-
-	CUtlBuffer buf;
-	buf.PutString(text);
-
-	filesystem->WriteFile(path, "GAME", buf);
-}
-
-static float Script_VectorLength(float x, float y, float z)
-{
-	return Vector(x, y, z).Length();
-}
-
-static float Script_VectorDistance(
-	float ax, float ay, float az,
-	float bx, float by, float bz)
-{
-	Vector a(ax, ay, az);
-	Vector b(bx, by, bz);
-	return a.DistTo(b);
-}
-
-static float Script_DotProduct(
-	float ax, float ay, float az,
-	float bx, float by, float bz)
-{
-	return DotProduct(Vector(ax, ay, az), Vector(bx, by, bz));
-}
-
-static float Script_AngleNormalize(float angle)
-{
-	return AngleNormalize(angle);
-}
-
-static float Script_Approach(float target, float value, float speed)
-{
-	return Approach(target, value, speed);
-}
-
-static float Script_ApproachAngle(float target, float value, float speed)
-{
-	return ApproachAngle(target, value, speed);
+	if (text)
+		vgui::system()->SetClipboardText(text, Q_strlen(text));
 }
 
 static const char* Script_GetClipboardText()
@@ -2187,335 +2087,6 @@ static const char* Script_GetClipboardText()
 
 	vgui::system()->GetClipboardText(0, buf, sizeof(buf));
 	return buf;
-}
-
-static void Script_SetClipboardText(const char* text)
-{
-	if (text)
-		vgui::system()->SetClipboardText(text, Q_strlen(text));
-}
-
-static bool Script_IsTakingScreenshot()
-{
-	return engine->IsTakingScreenshot();
-}
-
-static void Script_TakeScreenshot()
-{
-	engine->ClientCmd_Unrestricted("jpeg");
-}
-
-// IVEngineClient Exposures
-
-static float Script_EngineTime() { return engine ? engine->Time() : 0.0f; }
-static float Script_GetLastTimeStamp() { return engine ? engine->GetLastTimeStamp() : 0.0f; }
-
-static float Script_GetViewPitch()
-{
-	QAngle ang;
-	engine->GetViewAngles(ang);
-	return ang.x;
-}
-
-static float Script_GetViewYaw()
-{
-	QAngle ang;
-	engine->GetViewAngles(ang);
-	return ang.y;
-}
-
-static float Script_GetViewRoll()
-{
-	QAngle ang;
-	engine->GetViewAngles(ang);
-	return ang.z;
-}
-
-static void Script_SetViewAngles(float pitch, float yaw, float roll)
-{
-	QAngle ang(pitch, yaw, roll);
-	engine->SetViewAngles(ang);
-}
-
-static const char* Script_GetLevelName()
-{
-	return engine ? engine->GetLevelName() : "";
-}
-
-static int Script_GetLevelVersion()
-{
-	return engine ? engine->GetLevelVersion() : 0;
-}
-
-static int Script_LevelLeafCount()
-{
-	return engine ? engine->LevelLeafCount() : 0;
-}
-
-static bool Script_IsPaused()
-{
-	return engine ? engine->IsPaused() : false;
-}
-
-static bool Script_IsHLTV()
-{
-	return engine ? engine->IsHLTV() : false;
-}
-
-static bool Script_IsPlayingDemo()
-{
-	return engine ? engine->IsPlayingDemo() : false;
-}
-
-static bool Script_IsRecordingDemo()
-{
-	return engine ? engine->IsRecordingDemo() : false;
-}
-
-static bool Script_IsPlayingTimeDemo()
-{
-	return engine ? engine->IsPlayingTimeDemo() : false;
-}
-
-static int Script_GetDemoRecordingTick()
-{
-	return engine ? engine->GetDemoRecordingTick() : 0;
-}
-
-static int Script_GetDemoPlaybackTick()
-{
-	return engine ? engine->GetDemoPlaybackTick() : 0;
-}
-
-static int Script_GetDemoPlaybackStartTick()
-{
-	return engine ? engine->GetDemoPlaybackStartTick() : 0;
-}
-
-static float Script_GetDemoPlaybackTimeScale()
-{
-	return engine ? engine->GetDemoPlaybackTimeScale() : 0.0f;
-}
-
-static int Script_GetDemoPlaybackTotalTicks()
-{
-	return engine ? engine->GetDemoPlaybackTotalTicks() : 0;
-}
-
-static bool Script_IsLevelMainMenuBackground()
-{
-	return engine ? engine->IsLevelMainMenuBackground() : false;
-}
-
-static const char* Script_GetMainMenuBackgroundName()
-{
-	static char buf[256];
-	buf[0] = 0;
-
-	if (engine)
-		engine->GetMainMenuBackgroundName(buf, sizeof(buf));
-
-	return buf;
-}
-
-static float Script_GetScreenAspectRatio()
-{
-	return engine ? engine->GetScreenAspectRatio() : 0.0f;
-}
-
-static unsigned int Script_GetEngineBuildNumber()
-{
-	return engine ? engine->GetEngineBuildNumber() : 0;
-}
-
-static const char* Script_GetProductVersionString()
-{
-	return engine ? engine->GetProductVersionString() : "";
-}
-
-static int Script_GetDXSupportLevel()
-{
-	return engine ? engine->GetDXSupportLevel() : 0;
-}
-
-static bool Script_SupportsHDR()
-{
-	return engine ? engine->SupportsHDR() : false;
-}
-
-static bool Script_MapHasHDRLighting()
-{
-	return engine ? engine->MapHasHDRLighting() : false;
-}
-
-static bool Script_IsHammerRunning()
-{
-	return engine ? engine->IsHammerRunning() : false;
-}
-
-static bool Script_IsWindowedMode()
-{
-	return engine ? engine->IsWindowedMode() : false;
-}
-
-static bool Script_IsActiveApp()
-{
-	return engine ? engine->IsActiveApp() : false;
-}
-
-static int Script_GetClientVersion()
-{
-	return engine ? engine->GetClientVersion() : 0;
-}
-
-static int Script_GetInstancesRunningCount()
-{
-	return engine ? engine->GetInstancesRunningCount() : 0;
-}
-
-static void Script_ExecuteClientCmd(const char* cmd)
-{
-	if (engine && cmd && cmd[0])
-		engine->ExecuteClientCmd(cmd);
-}
-
-static void Script_ServerCmd(const char* cmd)
-{
-	if (engine && cmd && cmd[0])
-		engine->ServerCmd(cmd, true);
-}
-
-static void Script_ClientCmd(const char* cmd)
-{
-	if (engine && cmd && cmd[0])
-		engine->ClientCmd(cmd);
-}
-
-static void Script_ClientCmdUnrestricted(const char* cmd)
-{
-	if (engine && cmd && cmd[0])
-		engine->ClientCmd_Unrestricted(cmd);
-}
-
-static const char* Script_KeyLookupBinding(const char* binding)
-{
-	if (!engine || !binding)
-		return "";
-
-	const char* out = engine->Key_LookupBinding(binding);
-	return out ? out : "";
-}
-
-static const char* Script_KeyLookupBindingExact(const char* binding)
-{
-	if (!engine || !binding)
-		return "";
-
-	const char* out = engine->Key_LookupBindingExact(binding);
-	return out ? out : "";
-}
-
-static int Script_GetPlayerForUserID(int userid)
-{
-	return engine ? engine->GetPlayerForUserID(userid) : 0;
-}
-
-static const char* Script_GetPlayerName(int entIndex)
-{
-	static char buf[MAX_PLAYER_NAME_LENGTH];
-	buf[0] = 0;
-
-	if (!engine)
-		return "";
-
-	player_info_t info;
-	if (!engine->GetPlayerInfo(entIndex, &info))
-		return "";
-
-	Q_strncpy(buf, info.name, sizeof(buf));
-	return buf;
-}
-
-static int Script_GetPlayerUserID(int entIndex)
-{
-	if (!engine)
-		return 0;
-
-	player_info_t info;
-	if (!engine->GetPlayerInfo(entIndex, &info))
-		return 0;
-
-	return info.userID;
-}
-
-static bool Script_IsPlayerFake(int entIndex)
-{
-	if (!engine)
-		return false;
-
-	player_info_t info;
-	if (!engine->GetPlayerInfo(entIndex, &info))
-		return false;
-
-	return info.fakeplayer;
-}
-
-static bool Script_IsPlayerHLTV(int entIndex)
-{
-	if (!engine)
-		return false;
-
-	player_info_t info;
-	if (!engine->GetPlayerInfo(entIndex, &info))
-		return false;
-
-	return info.ishltv;
-}
-
-static void Script_CheckPoint(const char* name)
-{
-	if (engine && name && name[0])
-		engine->CheckPoint(name);
-}
-
-static void Script_DrawPortals()
-{
-	if (engine)
-		engine->DrawPortals();
-}
-
-static void Script_FlashWindow()
-{
-	if (engine)
-		engine->FlashWindow();
-}
-
-static void Script_TakeNamedScreenshot(const char* filename)
-{
-	if (engine && filename && filename[0])
-		engine->TakeScreenshot(filename);
-}
-
-static bool Script_StartDemoRecording(const char* filename)
-{
-	if (!engine || !filename || !filename[0])
-		return false;
-
-	return engine->StartDemoRecording(filename);
-}
-
-static void Script_StopDemoRecording()
-{
-	if (engine)
-		engine->StopDemoRecording();
-}
-
-static void Script_Con_NPrintf(int pos, const char* text)
-{
-	if (!engine || !text)
-		return;
-
-	engine->Con_NPrintf(pos, "%s", text);
 }
 
 static void Script_Con_NXPrintf(
@@ -2540,29 +2111,204 @@ static void Script_Con_NXPrintf(
 	engine->Con_NXPrintf(&info, "%s", text);
 }
 
-static int Script_RandomInt(int min, int max)
+static void Surface_SetDrawColor(int r, int g, int b, int a) { vgui::surface()->DrawSetColor(r, g, b, a); }
+static void Surface_DrawFilledRect(int x0, int y0, int x1, int y1) { vgui::surface()->DrawFilledRect(x0, y0, x1, y1); }
+static void Surface_DrawOutlinedRect(int x0, int y0, int x1, int y1) { vgui::surface()->DrawOutlinedRect(x0, y0, x1, y1); }
+static void Surface_DrawLine(int x0, int y0, int x1, int y1) { vgui::surface()->DrawLine(x0, y0, x1, y1); }
+static void Surface_DrawOutlinedCircle(int x, int y, int radius, int segments) { vgui::surface()->DrawOutlinedCircle(x, y, radius, segments); }
+static void Surface_DrawFilledRectFade(int x0, int y0, int x1, int y1, int a0, int a1, bool horizontal) { vgui::surface()->DrawFilledRectFade(x0, y0, x1, y1, a0, a1, horizontal); }
+static void Surface_DrawFilledRectFastFade(int x0, int y0, int x1, int y1, int fadeStart, int fadeEnd, int a0, int a1, bool horizontal) { vgui::surface()->DrawFilledRectFastFade(x0, y0, x1, y1, fadeStart, fadeEnd, a0, a1, horizontal); }
+
+static int Surface_CreateFont()
 {
-	return RandomInt(min, max);
+	return vgui::surface()->CreateFont();
 }
 
-static float Script_RandomFloat(float min, float max)
+static bool Surface_SetFontGlyphSet(int font, const char* name, int tall, int weight, int blur, int scanlines, int flags)
 {
-	return RandomFloat(min, max);
+	return vgui::surface()->SetFontGlyphSet((vgui::HFont)font, name ? name : "Tahoma", tall, weight, blur, scanlines, flags);
 }
 
-static float Script_RandomFloatExp(float min, float max)
+static void Surface_SetTextFont(int font)
 {
-	return RandomFloatExp(min, max);
+	g_hScriptSurfaceFont = (vgui::HFont)font;
+	vgui::surface()->DrawSetTextFont(g_hScriptSurfaceFont);
 }
 
-static float Script_RandomGaussianFloat(float mean, float stddev)
+static void Surface_SetTextColor(int r, int g, int b, int a) { vgui::surface()->DrawSetTextColor(r, g, b, a); }
+static void Surface_SetTextPos(int x, int y) { vgui::surface()->DrawSetTextPos(x, y); }
+
+static void Surface_PrintText(const char* text)
 {
-	return RandomGaussianFloat(mean, stddev);
+	if (!text) return;
+
+	wchar_t wsz[2048];
+	g_pVGuiLocalize->ConvertANSIToUnicode(text, wsz, sizeof(wsz));
+	vgui::surface()->DrawPrintText(wsz, wcslen(wsz));
 }
 
-static void Script_RandomSeed(int seed)
+static void Surface_DrawUnicodeChar(int ch)
 {
-	RandomSeed(seed);
+	vgui::surface()->DrawUnicodeChar((wchar_t)ch);
+}
+
+static void Surface_DrawFlushText()
+{
+	vgui::surface()->DrawFlushText();
+}
+
+static int Surface_GetFontTall(int font)
+{
+	return vgui::surface()->GetFontTall((vgui::HFont)font);
+}
+
+static int Surface_GetCharacterWidth(int font, int ch)
+{
+	return vgui::surface()->GetCharacterWidth((vgui::HFont)font, ch);
+}
+
+static int Surface_GetTextWide(int font, const char* text)
+{
+	if (!text) return 0;
+
+	wchar_t wsz[2048];
+	int w, h;
+	g_pVGuiLocalize->ConvertANSIToUnicode(text, wsz, sizeof(wsz));
+	vgui::surface()->GetTextSize((vgui::HFont)font, wsz, w, h);
+	return w;
+}
+
+static int Surface_GetTextTall(int font, const char* text)
+{
+	if (!text) return 0;
+
+	wchar_t wsz[2048];
+	int w, h;
+	g_pVGuiLocalize->ConvertANSIToUnicode(text, wsz, sizeof(wsz));
+	vgui::surface()->GetTextSize((vgui::HFont)font, wsz, w, h);
+	return h;
+}
+
+static int Surface_CreateTextureID(bool procedural)
+{
+	return vgui::surface()->CreateNewTextureID(procedural);
+}
+
+static bool Surface_IsTextureIDValid(int id)
+{
+	return vgui::surface()->IsTextureIDValid(id);
+}
+
+static void Surface_SetTexture(int id)
+{
+	vgui::surface()->DrawSetTexture(id);
+}
+
+static void Surface_SetTextureFile(int id, const char* file, bool hardwareFilter, bool forceReload)
+{
+	if (file && file[0])
+		vgui::surface()->DrawSetTextureFile(id, file, hardwareFilter, forceReload);
+}
+
+static void Surface_DrawTexturedRect(int x0, int y0, int x1, int y1)
+{
+	vgui::surface()->DrawTexturedRect(x0, y0, x1, y1);
+}
+
+static bool Surface_DeleteTextureByID(int id)
+{
+	return vgui::surface()->DeleteTextureByID(id);
+}
+
+static void Surface_DestroyTextureID(int id)
+{
+	vgui::surface()->DestroyTextureID(id);
+}
+
+static int Surface_GetTextureWide(int id)
+{
+	int w, h;
+	vgui::surface()->DrawGetTextureSize(id, w, h);
+	return w;
+}
+
+static int Surface_GetTextureTall(int id)
+{
+	int w, h;
+	vgui::surface()->DrawGetTextureSize(id, w, h);
+	return h;
+}
+
+static int Surface_GetScreenWide()
+{
+	int w, h;
+	vgui::surface()->GetScreenSize(w, h);
+	return w;
+}
+
+static int Surface_GetScreenTall()
+{
+	int w, h;
+	vgui::surface()->GetScreenSize(w, h);
+	return h;
+}
+
+static void Surface_SetCursorAlwaysVisible(bool visible) { vgui::surface()->SetCursorAlwaysVisible(visible); }
+static bool Surface_IsCursorVisible() { return vgui::surface()->IsCursorVisible(); }
+static void Surface_LockCursor() { vgui::surface()->LockCursor(); }
+static void Surface_UnlockCursor() { vgui::surface()->UnlockCursor(); }
+static bool Surface_IsCursorLocked() { return vgui::surface()->IsCursorLocked(); }
+static bool Surface_HasFocus() { return vgui::surface()->HasFocus(); }
+static bool Surface_IsWithin(int x, int y) { return vgui::surface()->IsWithin(x, y); }
+
+static int Surface_GetCursorX()
+{
+	int x, y;
+	vgui::surface()->SurfaceGetCursorPos(x, y);
+	return x;
+}
+
+static int Surface_GetCursorY()
+{
+	int x, y;
+	vgui::surface()->SurfaceGetCursorPos(x, y);
+	return y;
+}
+
+static void Surface_SetCursorPos(int x, int y)
+{
+	vgui::surface()->SurfaceSetCursorPos(x, y);
+}
+
+static void Surface_PlaySound(const char* file)
+{
+	if (file && file[0])
+		vgui::surface()->PlaySound(file);
+}
+
+static void Surface_SetAlphaMultiplier(float a)
+{
+	vgui::surface()->DrawSetAlphaMultiplier(clamp(a, 0.0f, 1.0f));
+}
+
+static float Surface_GetAlphaMultiplier()
+{
+	return vgui::surface()->DrawGetAlphaMultiplier();
+}
+
+static const char* Surface_GetResolutionKey()
+{
+	return vgui::surface()->GetResolutionKey();
+}
+
+static const char* Surface_GetFontName(int font)
+{
+	return vgui::surface()->GetFontName((vgui::HFont)font);
+}
+
+static const char* Surface_GetFontFamilyName(int font)
+{
+	return vgui::surface()->GetFontFamilyName((vgui::HFont)font);
 }
 
 static void RegisterClientScriptFunctions()
@@ -2574,7 +2320,7 @@ static void RegisterClientScriptFunctions()
 		g_pScriptVM,
 		Script_MessageBox,
 		"MessageBox",
-		"Shows a client VGUI message box"
+		"Shows a message box"
 	);
 
 	ScriptRegisterFunctionNamed(
@@ -2629,7 +2375,6 @@ static void RegisterClientScriptFunctions()
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetScreenHeight, "GetScreenHeight", "Returns screen height");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_ClientCommand, "ClientCommand", "Runs a client command");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConCommand, "ConCommand", "Runs an unrestricted client command");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_PlaySound, "PlaySound", "Plays a UI sound");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_FrameTime, "FrameTime", "Returns client frametime");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_MaxClients, "MaxClients", "Returns max clients");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RealTime, "RealTime", "");
@@ -2685,7 +2430,7 @@ static void RegisterClientScriptFunctions()
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_IsConsoleVisible, "IsConsoleVisible", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetBuildNumber, "GetBuildNumber", "");
 
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_ServerCommand, "ServerCommand", "");
+	//ScriptRegisterFunctionNamed(g_pScriptVM, Script_ServerCommand, "ServerCommand", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_ClearConsole, "ClearConsole", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_ToggleConsole, "ToggleConsole", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Disconnect, "Disconnect", "");
@@ -2787,6 +2532,58 @@ static void RegisterClientScriptFunctions()
 	g_pScriptVM->RegisterClass(GetScriptDescForClass(CScripted_HudElement));
 
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_HUD_CreateElement, "HUD_CreateElement", "Creates scripted HUD element");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_HUD_ClearAll, "HUD_ClearAll", "Removes all scripted HUD elements");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetDrawColor, "Surface_SetDrawColor", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawFilledRect, "Surface_DrawFilledRect", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawOutlinedRect, "Surface_DrawOutlinedRect", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawLine, "Surface_DrawLine", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawOutlinedCircle, "Surface_DrawOutlinedCircle", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawFilledRectFade, "Surface_DrawFilledRectFade", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawFilledRectFastFade, "Surface_DrawFilledRectFastFade", "");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_CreateFont, "Surface_CreateFont", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetFontGlyphSet, "Surface_SetFontGlyphSet", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetTextFont, "Surface_SetTextFont", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetTextColor, "Surface_SetTextColor", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetTextPos, "Surface_SetTextPos", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_PrintText, "Surface_PrintText", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawUnicodeChar, "Surface_DrawUnicodeChar", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawFlushText, "Surface_DrawFlushText", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetFontTall, "Surface_GetFontTall", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetCharacterWidth, "Surface_GetCharacterWidth", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetTextWide, "Surface_GetTextWide", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetTextTall, "Surface_GetTextTall", "");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_CreateTextureID, "Surface_CreateTextureID", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_IsTextureIDValid, "Surface_IsTextureIDValid", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetTexture, "Surface_SetTexture", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetTextureFile, "Surface_SetTextureFile", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DrawTexturedRect, "Surface_DrawTexturedRect", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DeleteTextureByID, "Surface_DeleteTextureByID", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_DestroyTextureID, "Surface_DestroyTextureID", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetTextureWide, "Surface_GetTextureWide", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetTextureTall, "Surface_GetTextureTall", "");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetScreenWide, "Surface_GetScreenWide", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetScreenTall, "Surface_GetScreenTall", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetCursorAlwaysVisible, "Surface_SetCursorAlwaysVisible", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_IsCursorVisible, "Surface_IsCursorVisible", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_LockCursor, "Surface_LockCursor", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_UnlockCursor, "Surface_UnlockCursor", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_IsCursorLocked, "Surface_IsCursorLocked", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_HasFocus, "Surface_HasFocus", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_IsWithin, "Surface_IsWithin", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetCursorX, "Surface_GetCursorX", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetCursorY, "Surface_GetCursorY", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetCursorPos, "Surface_SetCursorPos", "");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_PlaySound, "Surface_PlaySound", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_SetAlphaMultiplier, "Surface_SetAlphaMultiplier", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetAlphaMultiplier, "Surface_GetAlphaMultiplier", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetResolutionKey, "Surface_GetResolutionKey", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetFontName, "Surface_GetFontName", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetFontFamilyName, "Surface_GetFontFamilyName", "");
 }
 
 //-----------------------------------------------------------------------------
@@ -2965,22 +2762,31 @@ public:
 		m_pList->AddColumnHeader(4, "desc", "Description", 260, 0);
 
 		m_pEntry = new vgui::TextEntry(this, "ManualEntry");
-		m_pEntry->SetBounds(15, 435, 360, 26);
+		m_pEntry->SetBounds(15, 435, 300, 26);
 
 		m_pLog = new vgui::RichText(this, "Log");
 		m_pLog->SetBounds(590, 35, 290, 390);
 
-		(new vgui::Button(this, "RunSelected", "Run Selected", this, "RunSelected"))
-			->SetBounds(390, 435, 120, 30);
+		(new vgui::Button(this, "RunClient", "Sel Client", this, "RunClient"))
+			->SetBounds(325, 435, 85, 30);
 
-		(new vgui::Button(this, "RunTyped", "Run Typed", this, "RunTyped"))
-			->SetBounds(520, 435, 100, 30);
+		(new vgui::Button(this, "RunServer", "Sel Server", this, "RunServer"))
+			->SetBounds(415, 435, 85, 30);
+
+		(new vgui::Button(this, "RunBoth", "Sel Both", this, "RunBoth"))
+			->SetBounds(505, 435, 85, 30);
+
+		(new vgui::Button(this, "TypedClient", "Typed Client", this, "TypedClient"))
+			->SetBounds(595, 435, 95, 30);
+
+		(new vgui::Button(this, "TypedServer", "Typed Server", this, "TypedServer"))
+			->SetBounds(695, 435, 95, 30);
 
 		(new vgui::Button(this, "Refresh", "Refresh", this, "Refresh"))
-			->SetBounds(630, 435, 90, 30);
+			->SetBounds(325, 470, 85, 30);
 
 		(new vgui::Button(this, "Close", "Close", this, "Close"))
-			->SetBounds(730, 435, 90, 30);
+			->SetBounds(415, 470, 85, 30);
 
 		RefreshScripts();
 
@@ -2992,15 +2798,33 @@ public:
 
 	void OnCommand(const char* cmd) OVERRIDE
 	{
-		if (!Q_stricmp(cmd, "RunSelected"))
+		if (!Q_stricmp(cmd, "RunClient"))
 		{
-			RunSelected();
+			RunSelectedClient();
 			return;
 		}
 
-		if (!Q_stricmp(cmd, "RunTyped"))
+		if (!Q_stricmp(cmd, "RunServer"))
 		{
-			RunTyped();
+			RunSelectedServer();
+			return;
+		}
+
+		if (!Q_stricmp(cmd, "RunBoth"))
+		{
+			RunSelectedBoth();
+			return;
+		}
+
+		if (!Q_stricmp(cmd, "TypedClient"))
+		{
+			RunTypedClient();
+			return;
+		}
+
+		if (!Q_stricmp(cmd, "TypedServer"))
+		{
+			RunTypedServer();
 			return;
 		}
 
@@ -3123,6 +2947,7 @@ private:
 			char date[64];
 
 			CFmtStr fullPath("scripts/vscripts/%s", file);
+
 			ReadMetadata(fullPath.Access(), author, sizeof(author),
 				desc, sizeof(desc), version, sizeof(version),
 				date, sizeof(date));
@@ -3156,7 +2981,7 @@ private:
 		}
 	}
 
-	void RunScriptEverywhere(const char* scriptName)
+	void RunScriptClient(const char* scriptName)
 	{
 		if (!scriptName || !scriptName[0])
 		{
@@ -3168,42 +2993,94 @@ private:
 		Q_strncpy(script, scriptName, sizeof(script));
 		NormalizeScriptName(script, sizeof(script));
 
-		Log("Running: %s", script);
-
-		VScriptClientRunScript(script);
+		Log("Running CLIENT: %s", script);
 
 		CFmtStr clCmd("cl_script_execute %s", script);
 		engine->ClientCmd_Unrestricted(clCmd.Access());
+	}
+
+	void RunScriptServer(const char* scriptName)
+	{
+		if (!scriptName || !scriptName[0])
+		{
+			Log("No script name.");
+			return;
+		}
+
+		char script[MAX_PATH];
+		Q_strncpy(script, scriptName, sizeof(script));
+		NormalizeScriptName(script, sizeof(script));
+
+		Log("Running SERVER: %s", script);
 
 		CFmtStr serverCmd("script_execute %s", script);
-		engine->ClientCmd_Unrestricted(serverCmd.Access());
 		engine->ServerCmd(serverCmd.Access());
 	}
 
-	void RunSelected()
+	void RunScriptBoth(const char* scriptName)
+	{
+		RunScriptClient(scriptName);
+		RunScriptServer(scriptName);
+	}
+
+	const char* GetSelectedScript()
 	{
 		int item = m_pList->GetSelectedItem(0);
 		if (item < 0)
 		{
 			Log("No selected script.");
-			return;
+			return NULL;
 		}
 
 		KeyValues* kv = m_pList->GetItem(item);
 		if (!kv)
 		{
 			Log("Selected row had no data.");
-			return;
+			return NULL;
 		}
 
-		RunScriptEverywhere(kv->GetString("file", ""));
+		return kv->GetString("file", "");
 	}
 
-	void RunTyped()
+	void GetTypedScript(char* out, int outSize)
+	{
+		out[0] = 0;
+		m_pEntry->GetText(out, outSize);
+	}
+
+	void RunSelectedClient()
+	{
+		const char* script = GetSelectedScript();
+		if (script)
+			RunScriptClient(script);
+	}
+
+	void RunSelectedServer()
+	{
+		const char* script = GetSelectedScript();
+		if (script)
+			RunScriptServer(script);
+	}
+
+	void RunSelectedBoth()
+	{
+		const char* script = GetSelectedScript();
+		if (script)
+			RunScriptBoth(script);
+	}
+
+	void RunTypedClient()
 	{
 		char text[MAX_PATH];
-		m_pEntry->GetText(text, sizeof(text));
-		RunScriptEverywhere(text);
+		GetTypedScript(text, sizeof(text));
+		RunScriptClient(text);
+	}
+
+	void RunTypedServer()
+	{
+		char text[MAX_PATH];
+		GetTypedScript(text, sizeof(text));
+		RunScriptServer(text);
 	}
 };
 

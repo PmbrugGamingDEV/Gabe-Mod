@@ -20,6 +20,7 @@
 #include "smoke_fog_overlay.h"
 #include "view.h"
 #include "ienginevgui.h"
+#include "c_gabe_vscript.h"
 #include "iefx.h"
 #include "enginesprite.h"
 #include "networkstringtable_clientdll.h"
@@ -1690,6 +1691,11 @@ void CHLClient::LevelInitPostEntity( )
 	IGameSystem::LevelInitPostEntityAllSystems();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
+
+	if (g_pScriptVM)
+	{
+		VScriptClientRunScript("motd.nut");
+	}
 }
 
 //-----------------------------------------------------------------------------

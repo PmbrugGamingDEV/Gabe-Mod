@@ -21,6 +21,7 @@
 #include "gamerules.h"
 #include "particle_parse.h"
 #include "usermessages.h"
+#include "gabe_vscript_shared.h"
 #include "engine/IEngineSound.h"
 #include "vscript_utils.h"
 #include "netpropmanager.h"
@@ -2058,6 +2059,28 @@ bool Script_IsDedicatedServer()
 	return engine->IsDedicatedServer();
 }
 
+static void Script_EmitAmbientSound(
+	const char* sound,
+	float x,
+	float y,
+	float z,
+	float volume = 1.0f,
+	int pitch = 100)
+{
+	if (!sound || !sound[0])
+		return;
+
+	UTIL_EmitAmbientSound(
+		-1,
+		Vector(x, y, z),
+		sound,
+		volume,
+		SNDLVL_140dB,
+		0,
+		pitch
+	);
+}
+
 HSCRIPT Script_GetListenServerHost()
 {
 	return ToHScript( UTIL_GetLocalPlayerOrListenServerHost() );
@@ -2454,6 +2477,112 @@ int SetMapAsPlayed( void )
 }
 #endif // PORTAL2_PUZZLEMAKER
 
+static void Script_DebugOverlay_Cross3D_Size(
+	const Vector& pos,
+	float size,
+	int r,
+	int g,
+	int b,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Cross3D(pos, size, r, g, b, noDepth, duration);
+}
+
+static void Script_DebugOverlay_Cross3D_Bounds(
+	const Vector& pos,
+	const Vector& mins,
+	const Vector& maxs,
+	int r,
+	int g,
+	int b,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Cross3D(pos, mins, maxs, r, g, b, noDepth, duration);
+}
+
+static void Script_DebugOverlay_Cross3DOriented(
+	const Vector& pos,
+	const QAngle& ang,
+	float size,
+	int r,
+	int g,
+	int b,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Cross3DOriented(pos, ang, size, r, g, b, noDepth, duration);
+}
+
+static void Script_DebugOverlay_Sphere(
+	const Vector& pos,
+	float radius,
+	int r,
+	int g,
+	int b,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Sphere(pos, radius, r, g, b, noDepth, duration);
+}
+
+static void Script_DebugOverlay_SphereAngles(
+	const Vector& pos,
+	const QAngle& ang,
+	float radius,
+	int r,
+	int g,
+	int b,
+	int a,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Sphere(pos, ang, radius, r, g, b, a, noDepth, duration);
+}
+
+static void Script_DebugOverlay_CircleSimple(
+	const Vector& pos,
+	float radius,
+	int r,
+	int g,
+	int b,
+	int a,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Circle(pos, radius, r, g, b, a, noDepth, duration);
+}
+
+static void Script_DebugOverlay_CircleAngles(
+	const Vector& pos,
+	const QAngle& ang,
+	float radius,
+	int r,
+	int g,
+	int b,
+	int a,
+	bool noDepth,
+	float duration)
+{
+	NDebugOverlay::Circle(pos, ang, radius, r, g, b, a, noDepth, duration);
+}
+
+static void Script_DebugOverlay_SweptBox(
+	const Vector& start,
+	const Vector& end,
+	const Vector& mins,
+	const Vector& maxs,
+	const QAngle& ang,
+	int r,
+	int g,
+	int b,
+	int a,
+	float duration)
+{
+	NDebugOverlay::SweptBox(start, end, mins, maxs, ang, r, g, b, a, duration);
+}
+
 bool VScriptServerInit()
 {
 	VMPROF_START
@@ -2499,6 +2628,117 @@ bool VScriptServerInit()
 				Log_Msg( LOG_VScript, "VSCRIPT: Started VScript virtual machine using script language '%s'\n", g_pScriptVM->GetLanguageName() );
 				g_pScriptVM->SetErrorCallback( &VScriptServerScriptErrorFunc );
 
+				/* TEXT */
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Msg, "Msg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Warning, "Warning", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Log, "Log", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_EngineError, "EngineError", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DMsg, "DMsg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DWarning, "DWarning", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DLog, "DLog", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DevMsg, "DevMsg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DevWarning, "DevWarning", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DevLog, "DevLog", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConMsg, "ConMsg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConWarning, "ConWarning", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConLog, "ConLog", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConColorMsg, "ConColorMsg", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConDMsg, "ConDMsg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConDWarning, "ConDWarning", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConDLog, "ConDLog", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ConDColorMsg, "ConDColorMsg", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_NetMsg, "NetMsg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_NetWarning, "NetWarning", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_NetLog, "NetLog", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Assert, "Assert", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_AssertMsg, "AssertMsg", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_AssertMsgOnce, "AssertMsgOnce", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_AssertFatalMsg, "AssertFatalMsg", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Verify, "Verify", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ErrorIfNot, "ErrorIfNot", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebuggerBreakIfDebugging, "DebuggerBreakIfDebugging", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Con_NPrintf, "Con_NPrintf", "Prints debug text at indexed screen position");
+
+				/* MATHEMATICS */
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FrameTime, "FrameTime", "Returns client frametime");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_MaxClients, "MaxClients", "Returns max clients");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RealTime, "RealTime", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FrameCount, "FrameCount", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_TickCount, "TickCount", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_IntervalPerTick, "IntervalPerTick", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_CurTime, "CurTime", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomFloat, "RandomFloat", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomInt, "RandomInt", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Sin, "Sin", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Cos, "Cos", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Tan, "Tan", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Sqrt, "Sqrt", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Abs, "Abs", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Floor, "Floor", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Ceil, "Ceil", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Min, "Min", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Max, "Max", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Clamp, "Clamp", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Deg2Rad, "Deg2Rad", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Rad2Deg, "Rad2Deg", "");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomInt, "RandomInt", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomFloat, "RandomFloat", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomFloatExp, "RandomFloatExp", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomGaussianFloat, "RandomGaussianFloat", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomSeed, "RandomSeed", "");
+
+				/* FILESYSTEM */
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FS_FindFirst, "FS_FindFirst", "Finds first matching GAME file");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FS_FindNext, "FS_FindNext", "Finds next matching GAME file");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FS_FindClose, "FS_FindClose", "Closes file search");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FS_IsDirectory, "FS_IsDirectory", "Returns true if GAME path is directory");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_FileExists, "FileExists", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ReadTextFile, "ReadTextFile", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_WriteTextFile, "WriteTextFile", "");
+
+				/* CONVARS */
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetConVarString, "GetConVarString", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetConVarFloat, "GetConVarFloat", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetConVarInt, "GetConVarInt", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetConVarBool, "GetConVarBool", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_SetConVarString, "SetConVarString", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_SetConVarFloat, "SetConVarFloat", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_SetConVarInt, "SetConVarInt", "");
+
+				/* POSITION */
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_VectorLength, "VectorLength", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_VectorDistance, "VectorDistance", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DotProduct, "DotProduct3D", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_AngleNormalize, "AngleNormalize", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Approach, "Approach", "");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ApproachAngle, "ApproachAngle", "");
+
+				/* REST OF THE STUFF */
+				ScriptRegisterFunctionNamed(
+					g_pScriptVM,
+					Script_EmitAmbientSound,
+					"EmitAmbientSound",
+					"Play an ambient sound"
+				);
 				ScriptRegisterFunctionNamed( g_pScriptVM, UTIL_ShowMessageAll, "ShowMessage", "Print a hud message on all clients" );
 				ScriptRegisterFunction( g_pScriptVM, SendToConsole, "Send a string to the console as a command" );
 				ScriptRegisterFunction( g_pScriptVM, SendToServerConsole, "Send a string that gets executed on the server as a ServerCommand. Respects sv_allow_point_servercommand." );
@@ -2535,15 +2775,39 @@ bool VScriptServerInit()
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_GetPlayerFromUserID, "GetPlayerFromUserID", "Given a user id, return the entity, or null");
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_IsPlayerABot, "IsPlayerABot", "Is this player/entity a bot");
 
-				ScriptRegisterFunctionNamed( g_pScriptVM, NDebugOverlay::ScreenTextLine, "DebugDrawScreenTextLine", "Draw text with a line offset" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, NDebugOverlay::Text, "DebugDrawText", "Draw text in 3d (origin, text, bViewCheck, duration)" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, NDebugOverlay::Box, "DebugDrawBox", "Draw a debug overlay box" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, NDebugOverlay::Line, "DebugDrawLine", "Draw a debug overlay line" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, Script_OverlayCircle, "DebugDrawCircle", "Draw a debug circle (center, rad, vRgb, a, ztest, duration)" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, Script_OverlayLine_vCol, "DebugDrawLine_vCol", "Draw a debug line using color vec (start, end, vRgb, a, ztest, duration)" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, Script_OverlayBoxDirection, "DebugDrawBoxDirection", "Draw a debug forward box (cent, min, max, forward, vRgb, a, duration)" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, Script_OverlayBoxAngles, "DebugDrawBoxAngles", "Draw a debug oriented box (cent, min, max, angles(p,y,r), vRgb, a, duration)" );
-				ScriptRegisterFunctionNamed( g_pScriptVM, Script_OverlayClear, "DebugDrawClear", "Try to clear all the debug overlay info" );
+				// Direct NDebugOverlay registrations
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::ScreenText, "DebugOverlay_ScreenText", "Draw screen text");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::ScreenTextLine, "DebugOverlay_ScreenTextLine", "Draw screen text with line offset");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::Text, "DebugOverlay_Text", "Draw 3D text");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::Box, "DebugOverlay_Box", "Draw box");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::Line, "DebugOverlay_Line", "Draw line");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::Triangle, "DebugOverlay_Triangle", "Draw triangle");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::Grid, "DebugOverlay_Grid", "Draw grid");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::HorzArrow, "DebugOverlay_HorzArrow", "Draw horizontal arrow");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::VertArrow, "DebugOverlay_VertArrow", "Draw vertical arrow");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::YawArrow, "DebugOverlay_YawArrow", "Draw yaw arrow");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::Axis, "DebugOverlay_Axis", "Draw axis");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::DrawTickMarkedLine, "DebugOverlay_TickMarkedLine", "Draw tick marked line");
+				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::DrawGroundCrossHairOverlay, "DebugOverlay_DrawGroundCrossHairOverlay", "Draw ground crosshair overlay");
+
+				// Existing wrappers you already have
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayCircle, "DebugOverlay_Circle", "Draw circle");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayLine_vCol, "DebugOverlay_Line_vCol", "Draw line using color vector");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayBoxDirection, "DebugOverlay_BoxDirection", "Draw directional box");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayBoxAngles, "DebugOverlay_BoxAngles", "Draw angled box");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayClear, "DebugOverlay_Clear", "Clear debug overlays");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_Cross3D_Size, "DebugOverlay_Cross3D", "Draw 3D cross");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_Cross3D_Bounds, "DebugOverlay_Cross3D_Bounds", "Draw 3D cross using bounds");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_Cross3DOriented, "DebugOverlay_Cross3DOriented", "Draw oriented 3D cross");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_Sphere, "DebugOverlay_Sphere", "Draw sphere");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_SphereAngles, "DebugOverlay_SphereAngles", "Draw angled sphere");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_CircleSimple, "DebugOverlay_CircleSimple", "Draw circle");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_CircleAngles, "DebugOverlay_CircleAngles", "Draw angled circle");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_DebugOverlay_SweptBox, "DebugOverlay_SweptBox", "Draw swept box");
 				
 // Josh: Bring this back if we have response rules and stuff.
 #if 0

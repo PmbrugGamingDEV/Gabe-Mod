@@ -82,3 +82,5 @@
 #include "vgui_controls/RadioButton.h"
 #include "vgui_controls/URLLabel.h"
 #include "vgui_controls/Divider.h"
+
+#include <vgui_controls/HTML.h>
