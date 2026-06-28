@@ -2411,9 +2411,6 @@ static void RegisterClientScriptFunctions()
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_IntervalPerTick, "IntervalPerTick", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_CurTime, "CurTime", "");
 
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomFloat, "RandomFloat", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomInt, "RandomInt", "");
-
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Sin, "Sin", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Cos, "Cos", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Tan, "Tan", "");
@@ -2494,8 +2491,6 @@ static void RegisterClientScriptFunctions()
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetLevelName, "GetLevelName", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetLevelVersion, "GetLevelVersion", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_LevelLeafCount, "LevelLeafCount", "");
-
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_IsConsoleVisible, "IsConsoleVisible", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_IsPaused, "IsPaused", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_IsHLTV, "IsHLTV", "");
 

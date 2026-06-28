@@ -54,6 +54,7 @@ public:
 	DECLARE_ENT_SCRIPTDESC();
 
 	virtual void Precache( void );
+	void GiveJBModItems(void);
 	virtual void Spawn( void );
 	virtual void PostThink( void );
 	virtual void PreThink( void );
@@ -91,7 +92,10 @@ public:
 	void CheatImpulseCommands( int iImpulse );
 	void CreateRagdollEntity( void );
 	void GiveAllItems( void );
+	void GiveHL1Items(void);
 	void GiveDefaultItems( void );
+
+	void GiveNoItems();
 
 	void NoteWeaponFired( void );
 
@@ -143,6 +147,7 @@ public:
 
 	bool IsThreatAimingTowardMe( CBaseEntity* threat, float cosTolerance = 0.8f ) const;
 	bool IsThreatFiringAtMe( CBaseEntity* threat ) const;
+	bool CallScriptOnPlayerSpawn(void);
 private:
 
 	CNetworkQAngle( m_angEyeAngles );

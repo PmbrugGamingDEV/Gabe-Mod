@@ -586,7 +586,7 @@ void CHL1Nihilanth::HuntThink(void)
 		}
 		else
 		{
-			m_flAdj = min(m_flAdj + 10, 1000);
+			m_flAdj = MIN(m_flAdj + 10, 1000);
 		}
 	}
 

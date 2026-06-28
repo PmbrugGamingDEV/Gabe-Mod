@@ -7782,7 +7782,104 @@ BEGIN_ENT_SCRIPTDESC( CBasePlayer, CBaseCombatCharacter, "The player entity." )
 	DEFINE_SCRIPTFUNC( GetForceLocalDraw, "Gets the state of whether the player is being forced by SetForceLocalDraw to be drawn" )
 	DEFINE_SCRIPTFUNC( GetScriptOverlayMaterial, "Gets the current view overlay material" )
 	DEFINE_SCRIPTFUNC( SetScriptOverlayMaterial, "Sets a view overlay material" )
+	DEFINE_SCRIPTFUNC_NAMED(ScriptEquipSuit, "EquipSuit", "Give the player the HEV suit.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGiveItem, "GiveItem", "Give the player a specific item by classname.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGiveAmmo, "GiveAmmo", "Give the player a specific amount of ammo (count, ammoName).")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptSwitchToWeapon, "SwitchToWeapon", "Switch to a weapon the player owns by classname.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetClientConVar, "GetClientConVar", "Read a client ConVar value by name.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptRemoveAllItems, "RemoveAllItems", "Strip all weapons and suit from the player.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetFragCount, "GetFragCount", "Get the player's frag count.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptAddFrags, "AddFrags", "Add to the player's frag count.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptAddTeamScore, "AddTeamScore", "Add to this player's team score.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptSetPlayerModel, "SetPlayerModel", "Set player model.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptCommitSuicide, "CommitSuicide", "Kill the player.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptForceRespawn, "ForceRespawn", "Force the player to respawn immediately.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetPlayerName, "GetPlayerName", "Get the player's name.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptIsAlive, "IsAlive", "Returns true if the player is alive.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetDeathCount, "GetDeathCount", "Get the player's death count.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptAddDeaths, "AddDeaths", "Add to the player's death count.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetArmorValue, "GetArmorValue", "Get the player's armor value.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptSetArmorValue, "SetArmorValue", "Set the player's armor value.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptShowMOTD, "ShowMOTD", "Show the Message of the Day panel to this player.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetDeathTime, "GetDeathTime", "Get the time this player last died.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptSetMaxSpeed, "SetMaxSpeed", "Set the player's maximum movement speed.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptSetMaxHealth, "SetMaxHealth", "Set the player's maximum health.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetButtons, "GetButtons", "Get the player's currently pressed buttons (bitmask).")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptGetEyeForward, "GetEyeForward", "Get the player's eye forward direction vector.")
+	DEFINE_SCRIPTFUNC_NAMED(ScriptShowViewModel, "ShowViewModel", "Show or hide the player's viewmodel.")
 END_SCRIPTDESC();
+
+void CBasePlayer::ScriptShowMOTD(void)
+{
+	const ConVar* hostname = cvar->FindVar("hostname");
+	const char* title = (hostname) ? hostname->GetString() : "MESSAGE OF THE DAY";
+
+	KeyValues* data = new KeyValues("data");
+	data->SetString("title", title);
+	data->SetString("type", "1");
+	data->SetString("msg", "motd");
+	data->SetBool("unload", true);
+
+	ShowViewPortPanel(title, true, data);
+
+	data->deleteThis();
+}
+
+bool CBasePlayer::CallScriptOnPlayerSpawn(void)
+{
+	if (g_pScriptVM == NULL)
+		return false;
+
+	HSCRIPT hFunction = g_pScriptVM->LookupFunction("OnPlayerSpawn");
+	if (hFunction)
+	{
+		g_pScriptVM->Call(hFunction, NULL, true, NULL, GetScriptInstance());
+		g_pScriptVM->ReleaseFunction(hFunction);
+		return true;
+	}
+	return false;
+}
+
+void  CBasePlayer::ScriptSwitchToWeapon(const char* szWeapon)
+{
+	CBaseCombatWeapon* pWeapon = Weapon_OwnsThisType(szWeapon);
+	if (pWeapon)
+	{
+		Weapon_Switch(pWeapon);
+	}
+}
+
+const char* CBasePlayer::ScriptGetClientConVar(const char* szCvar)
+{
+	if (!szCvar || !szCvar[0])
+		return "";
+
+	return engine->GetClientConVarValue(engine->IndexOfEdict(edict()), szCvar);
+}
+
+void  CBasePlayer::ScriptAddTeamScore(int nScore)
+{
+	CTeam* pTeam = GetTeam();
+	if (pTeam)
+	{
+		pTeam->AddScore(nScore);
+	}
+}
+
+void  CBasePlayer::ScriptSetPlayerModel(const char* szModel)
+{
+	if (!szModel || !szModel[0] || !Q_stristr(szModel, ".mdl"))
+		return;
+
+	SetModel(szModel);
+}
+
+const Vector& CBasePlayer::ScriptGetEyeForward(void)
+{
+	static Vector vecForward;
+	AngleVectors(pl.v_angle, &vecForward);
+	return vecForward;
+}
 
 void CStripWeapons::InputStripWeapons(inputdata_t &data)
 {

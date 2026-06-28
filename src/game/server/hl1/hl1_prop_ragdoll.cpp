@@ -9,7 +9,7 @@
 
 #define SF_RAGDOLLPROP_USE_LRU_RETIREMENT	0x1000
 
-extern ConVar hl1_ragdoll_gib;
+ConVar hl1_ragdoll_gib("hl1_ragdoll_gib", "0", FCVAR_REPLICATED, "Allow HL1 ragdolls to gib when they take enough damage");
 
 LINK_ENTITY_TO_CLASS(prop_hl1_ragdoll, CHL1Ragdoll);
 

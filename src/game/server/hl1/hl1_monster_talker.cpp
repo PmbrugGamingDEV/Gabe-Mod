@@ -578,7 +578,7 @@ void CHL1Talker::TraceAttack(const CTakeDamageInfo &info, const Vector &vecDir, 
 		UTIL_BloodImpact(ptr->endpos, vecDir, BloodColor(), 4);
 	}
 
-	BaseClass::TraceAttack(info, vecDir, ptr);
+	BaseClass::TraceAttack(info, vecDir, ptr, NULL);
 }
 
 void CHL1Talker::StartFollowing(CBaseEntity *pLeader)

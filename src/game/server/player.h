@@ -421,6 +421,34 @@ public:
 
 	bool					HasPhysicsFlag( unsigned int flag ) { return (m_afPhysicsFlags & flag) != 0; }
 
+	/* VSCRIPT */
+	void ScriptEquipSuit(void) { EquipSuit(); }
+	HSCRIPT ScriptGiveItem(const char* szItem) { return ToHScript(GiveNamedItem(szItem)); }
+	void ScriptGiveAmmo(int nCount, const char* szAmmoName) { CBasePlayer::GiveAmmo(nCount, szAmmoName); }
+	void ScriptSwitchToWeapon(const char* szWeapon);
+	const char* ScriptGetClientConVar(const char* szCvar);
+	void ScriptRemoveAllItems(void) { RemoveAllItems(true); }
+	int ScriptGetFragCount(void) { return FragCount(); }
+	void ScriptAddFrags(int nCount) { IncrementFragCount(nCount); }
+	void ScriptAddTeamScore(int nScore);
+	void ScriptSetPlayerModel(const char* szModel);
+	void ScriptCommitSuicide(void) { CommitSuicide(); }
+	void ScriptForceRespawn(void) { Spawn(); }
+	const char* ScriptGetPlayerName(void) { return GetPlayerName(); }
+	bool ScriptIsAlive(void) { return IsAlive(); }
+	int ScriptGetDeathCount(void) { return DeathCount(); }
+	void ScriptAddDeaths(int nCount) { IncrementDeathCount(nCount); }
+	int ScriptGetArmorValue(void) { return ArmorValue(); }
+	void ScriptSetArmorValue(int value) { SetArmorValue(value); }
+	void ScriptShowMOTD(void);
+	bool CallScriptOnPlayerSpawn(void);
+	float ScriptGetDeathTime(void) { return GetDeathTime(); }
+	void ScriptSetMaxSpeed(float speed) { SetMaxSpeed(speed); }
+	void ScriptSetMaxHealth(int health) { SetMaxHealth(health); if (m_iHealth > health) m_iHealth = health; }
+	int ScriptGetButtons(void) { return m_nButtons; }
+	const Vector& ScriptGetEyeForward(void);
+	void ScriptShowViewModel(bool bShow) { ShowViewModel(bShow); }
+
 	// Weapon stuff
 	virtual Vector			Weapon_ShootPosition( );
 	virtual bool			Weapon_CanUse( CBaseCombatWeapon *pWeapon );
@@ -856,6 +884,11 @@ public:
 
 	// Used by gamemovement to check if the entity is stuck.
 	int m_StuckLast;
+
+	float					m_flNextAmmoBurn;
+	float					m_flStartCharge;
+	float					m_flAmmoStartCharge;
+	float					m_flPlayAftershock;
 	
 	// FIXME: Make these protected or private!
 

@@ -1611,8 +1611,8 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	Assert(!FStrEq(m_szMapName, ""));
 
-	// Don't work in deathmatch
-	if ( g_pGameRules->IsDeathmatch() )
+	// but allow listen server
+	if (gpGlobals->maxClients > 1)
 		return;
 
 	// Some people are firing these multiple times in a frame, disable

@@ -45,6 +45,7 @@
 
 #ifdef CLIENT_DLL
 #include "glow_overlay.h"
+#include "glow_outline_effect.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -378,6 +379,10 @@ public:
 	DECLARE_NETWORKCLASS();
 	DECLARE_PREDICTABLE();
 
+#ifndef CLIENT_DLL
+	DECLARE_ENT_SCRIPTDESC();
+#endif
+
 	CWeaponGravityGun();
 
 #ifdef CLIENT_DLL
@@ -525,6 +530,48 @@ public:
 
 	CBaseEntity* GetBeamEntity();
 
+#ifndef CLIENT_DLL
+	HSCRIPT GetHeldEntity()
+	{
+		return ToHScript(m_hObject.Get());
+	}
+
+	bool IsHoldingObject()
+	{
+		return m_hObject != NULL;
+	}
+
+	float GetHoldDistance()
+	{
+		return m_distance;
+	}
+
+	bool IsRotatingObject()
+	{
+		return m_bIsCurrentlyRotating;
+	}
+
+	void DropHeldObject()
+	{
+		DetachObject();
+	}
+
+	void ReleaseHeldObject()
+	{
+		DetachObject();
+	}
+
+	int GetFrozenObjectCount()
+	{
+		return m_frozenObjects;
+	}
+
+	void ReleaseFrozenObjects()
+	{
+		Reload();
+	}
+#endif
+
 private:
 	CNetworkVar(int, m_active);
 	bool		m_useDown;
@@ -605,6 +652,25 @@ END_NETWORK_TABLE()
 #ifdef CLIENT_DLL
 BEGIN_PREDICTION_DATA(CWeaponGravityGun)
 END_PREDICTION_DATA()
+#endif
+
+#ifndef CLIENT_DLL
+
+BEGIN_ENT_SCRIPTDESC(CWeaponGravityGun, CBaseCombatWeapon, "Physics Gun")
+
+DEFINE_SCRIPTFUNC(GetHeldEntity, "Returns the currently held entity.")
+DEFINE_SCRIPTFUNC(IsHoldingObject, "Returns true if the physgun is holding something.")
+DEFINE_SCRIPTFUNC(GetHoldDistance, "Returns the current hold distance.")
+DEFINE_SCRIPTFUNC(IsRotatingObject, "Returns true if the player is rotating the held object.")
+
+DEFINE_SCRIPTFUNC(DropHeldObject, "Drops the currently held object.")
+DEFINE_SCRIPTFUNC(ReleaseHeldObject, "Alias for DropHeldObject.")
+
+DEFINE_SCRIPTFUNC(GetFrozenObjectCount, "Returns the number of frozen physics objects.")
+DEFINE_SCRIPTFUNC(ReleaseFrozenObjects, "Releases all frozen objects.")
+
+END_SCRIPTDESC()
+
 #endif
 
 LINK_ENTITY_TO_CLASS(weapon_physgun, CWeaponGravityGun);

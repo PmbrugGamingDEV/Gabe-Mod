@@ -71,7 +71,7 @@ bool CMultiManager::KeyValue(const char *szKeyName, const char *szValue)
 		{
 			char x[128];
 
-			UTIL_StripToken(szKeyName, x);
+			UTIL_StripToken(szKeyName, x, 128);
 			m_iTargetName[m_cTargets] = AllocPooledString(x);
 			m_flTargetDelay[m_cTargets] = atof(szValue);
 			m_cTargets++;

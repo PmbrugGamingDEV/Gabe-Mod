@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "hl1_baseweapon_shared.h"
+#include "basehlcombatweapon_shared.h"
 #include "player.h"
 #include "gamerules.h"
 #include "ammodef.h"
@@ -9,35 +9,48 @@
 #include "decals.h"
 #include "vstdlib/random.h"
 
-extern ConVar sk_plr_dmg_crowbar;
+#include "util.h"              // UTIL_TraceLine / UTIL_TraceHull
+#include "takedamageinfo.h"   // CTakeDamageInfo
+#include "baseentity.h"       // GetAbsOrigin / entindex
+#include "ai_basenpc.h"       // CLASS_MACHINE / CLASS_NONE
+#include "basecombatweapon.h"     // TraceAttackToTriggers
+#include "engine/IEngineSound.h"
 
 //Crowbar Sounds
-extern ConVar hl1_crowbar_sound;
-extern ConVar hl1_crowbar_concrete;
-extern ConVar hl1_crowbar_metal;
-extern ConVar hl1_crowbar_dirt;
-extern ConVar hl1_crowbar_vent;
-extern ConVar hl1_crowbar_grate;
-extern ConVar hl1_crowbar_tile;
-extern ConVar hl1_crowbar_wood;
-extern ConVar hl1_crowbar_glass;
-extern ConVar hl1_crowbar_computer;
+ConVar hl1_crowbar_sound("hl1_crowbar_sound", "1");
 
-extern ConVar hl1_crowbar_concrete_vol;
-extern ConVar hl1_crowbar_metal_vol;
-extern ConVar hl1_crowbar_dirt_vol;
-extern ConVar hl1_crowbar_vent_vol;
-extern ConVar hl1_crowbar_grate_vol;
-extern ConVar hl1_crowbar_tile_vol;
-extern ConVar hl1_crowbar_wood_vol;
-extern ConVar hl1_crowbar_glass_vol;
-extern ConVar hl1_crowbar_computer_vol;
+ConVar hl1_crowbar_concrete("hl1_crowbar_concrete", "1");
+ConVar hl1_crowbar_concrete_vol("hl1_crowbar_concrete_vol", "10");
+
+ConVar hl1_crowbar_metal("hl1_crowbar_metal", "1");
+ConVar hl1_crowbar_metal_vol("hl1_crowbar_metal_vol", "10");
+
+ConVar hl1_crowbar_dirt("hl1_crowbar_dirt", "1");
+ConVar hl1_crowbar_dirt_vol("hl1_crowbar_dirt_vol", "10");
+
+ConVar hl1_crowbar_vent("hl1_crowbar_vent", "1");
+ConVar hl1_crowbar_vent_vol("hl1_crowbar_vent_vol", "10");
+
+ConVar hl1_crowbar_grate("hl1_crowbar_grate", "1");
+ConVar hl1_crowbar_grate_vol("hl1_crowbar_grate_vol", "10");
+
+ConVar hl1_crowbar_tile("hl1_crowbar_tile", "1");
+ConVar hl1_crowbar_tile_vol("hl1_crowbar_tile_vol", "10");
+
+ConVar hl1_crowbar_wood("hl1_crowbar_wood", "1");
+ConVar hl1_crowbar_wood_vol("hl1_crowbar_wood_vol", "10");
+
+ConVar hl1_crowbar_glass("hl1_crowbar_glass", "1");
+ConVar hl1_crowbar_glass_vol("hl1_crowbar_glass_vol", "10");
+
+ConVar hl1_crowbar_computer("hl1_crowbar_computer", "1");
+ConVar hl1_crowbar_computer_vol("hl1_crowbar_computer_vol", "10");
 
 #define	CROWBAR_RANGE		32.0f
 #define	CROWBAR_REFIRE_MISS	0.5f
 #define	CROWBAR_REFIRE_HIT	0.25f
 
-float GetCrowbarVolume(trace_t &ptr)
+float GetCrowbarVolume(trace_t& ptr)
 {
 	if (!hl1_crowbar_sound.GetBool())
 		return 0.0f;
@@ -46,7 +59,7 @@ float GetCrowbarVolume(trace_t &ptr)
 	char mType = TEXTURETYPE_Find(&ptr);
 
 	CBaseEntity* pEntity = ptr.m_pEnt;
-	
+
 	switch (mType)
 	{
 	case CHAR_TEX_CONCRETE:
@@ -97,12 +110,12 @@ float GetCrowbarVolume(trace_t &ptr)
 	return fvol;
 }
 
-class CWeaponCrowbar : public CBaseHL1CombatWeapon
+class CWeaponHL1Crowbar : public CBaseHLCombatWeapon
 {
-	DECLARE_CLASS(CWeaponCrowbar, CBaseHL1CombatWeapon);
+	DECLARE_CLASS(CWeaponHL1Crowbar, CBaseHLCombatWeapon);
 public:
 
-	CWeaponCrowbar();
+	CWeaponHL1Crowbar();
 
 	void			Precache(void);
 	virtual void	ItemPostFrame(void);
@@ -116,33 +129,33 @@ private:
 	virtual void		Swing(void);
 	virtual	void		Hit(void);
 	virtual	void		ImpactEffect(void);
-	virtual	void		ImpactSound(bool isWorld, trace_t &hitTrace);
-	virtual Activity	ChooseIntersectionPointAndActivity(trace_t &hitTrace, const Vector &mins, const Vector &maxs, CBasePlayer *pOwner);
+	virtual	void		ImpactSound(bool isWorld, trace_t& hitTrace);
+	virtual Activity	ChooseIntersectionPointAndActivity(trace_t& hitTrace, const Vector& mins, const Vector& maxs, CBasePlayer* pOwner);
 
 public:
 	DECLARE_SERVERCLASS();
 	DECLARE_DATADESC();
 };
 
-IMPLEMENT_SERVERCLASS_ST(CWeaponCrowbar, DT_WeaponCrowbar)
+IMPLEMENT_SERVERCLASS_ST(CWeaponHL1Crowbar, DT_WeaponHL1Crowbar)
 END_SEND_TABLE()
-PRECACHE_WEAPON_REGISTER(weapon_crowbar);
+PRECACHE_WEAPON_REGISTER(weapon_crowbar_hl1);
 
-LINK_ENTITY_TO_CLASS(weapon_crowbar, CWeaponCrowbar);
+LINK_ENTITY_TO_CLASS(weapon_crowbar_hl1, CWeaponHL1Crowbar);
 
-BEGIN_DATADESC(CWeaponCrowbar)
+BEGIN_DATADESC(CWeaponHL1Crowbar)
 DEFINE_FUNCTION(Hit),
 END_DATADESC()
 
 static const Vector g_bludgeonMins(-16, -16, -16);
 static const Vector g_bludgeonMaxs(16, 16, 16);
 
-CWeaponCrowbar::CWeaponCrowbar()
+CWeaponHL1Crowbar::CWeaponHL1Crowbar()
 {
 	m_bFiresUnderwater = true;
 }
 
-void CWeaponCrowbar::Precache(void)
+void CWeaponHL1Crowbar::Precache(void)
 {
 	PrecacheSound("weapons/cbar_hit1.wav");
 	PrecacheSound("weapons/cbar_hit2.wav");
@@ -150,9 +163,9 @@ void CWeaponCrowbar::Precache(void)
 	BaseClass::Precache();
 }
 
-void CWeaponCrowbar::ItemPostFrame(void)
+void CWeaponHL1Crowbar::ItemPostFrame(void)
 {
-	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+	CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 
 	if (pOwner == NULL)
 		return;
@@ -168,19 +181,19 @@ void CWeaponCrowbar::ItemPostFrame(void)
 	}
 }
 
-void CWeaponCrowbar::PrimaryAttack()
+void CWeaponHL1Crowbar::PrimaryAttack()
 {
 	Swing();
 }
 
-void CWeaponCrowbar::Hit(void)
+void CWeaponHL1Crowbar::Hit(void)
 {
-	CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
 
 	CSoundEnt::InsertSound(SOUND_COMBAT, GetAbsOrigin(), 400, 0.2);
 	CSoundEnt::InsertSound(SOUND_BULLET_IMPACT, m_traceHit.endpos, 400, 0.2f, pPlayer);
 
-	CBaseEntity	*pHitEntity = m_traceHit.m_pEnt;
+	CBaseEntity* pHitEntity = m_traceHit.m_pEnt;
 
 	if (pHitEntity != NULL)
 	{
@@ -189,20 +202,20 @@ void CWeaponCrowbar::Hit(void)
 		VectorNormalize(hitDirection);
 
 		ClearMultiDamage();
-		CTakeDamageInfo info(GetOwner(), GetOwner(), sk_plr_dmg_crowbar.GetFloat(), DMG_CLUB);
+		CTakeDamageInfo info(GetOwner(), GetOwner(), 9.0f, DMG_CLUB);
 		CalculateMeleeDamageForce(&info, hitDirection, m_traceHit.endpos);
 		pHitEntity->DispatchTraceAttack(info, hitDirection, &m_traceHit);
 		ApplyMultiDamage();
- 
-		TraceAttackToTriggers(CTakeDamageInfo(GetOwner(), GetOwner(), sk_plr_dmg_crowbar.GetFloat(), DMG_CLUB), m_traceHit.startpos, m_traceHit.endpos, hitDirection);
 
-		ImpactSound(pHitEntity->Classify() == CLASS_NONE || pHitEntity->Classify() == CLASS_MACHINE, m_traceHit);
+		TraceAttackToTriggers(CTakeDamageInfo(GetOwner(), GetOwner(), 9.0f, DMG_CLUB), m_traceHit.startpos, m_traceHit.endpos, hitDirection);
+
+		ImpactSound(pHitEntity->IsWorld(), m_traceHit);
 	}
 
 	ImpactEffect();
 }
 
-void CWeaponCrowbar::ImpactSound(bool isWorld, trace_t &hitTrace)
+void CWeaponHL1Crowbar::ImpactSound(bool isWorld, trace_t& hitTrace)
 {
 	if (isWorld)
 	{
@@ -223,11 +236,11 @@ void CWeaponCrowbar::ImpactSound(bool isWorld, trace_t &hitTrace)
 	}
 }
 
-Activity CWeaponCrowbar::ChooseIntersectionPointAndActivity(trace_t &hitTrace, const Vector &mins, const Vector &maxs, CBasePlayer *pOwner)
+Activity CWeaponHL1Crowbar::ChooseIntersectionPointAndActivity(trace_t& hitTrace, const Vector& mins, const Vector& maxs, CBasePlayer* pOwner)
 {
 	int			i, j, k;
 	float		distance;
-	const float	*minmaxs[2] = { mins.Base(), maxs.Base() };
+	const float* minmaxs[2] = { mins.Base(), maxs.Base() };
 	trace_t		tmpTrace;
 	Vector		vecHullEnd = hitTrace.endpos;
 	Vector		vecEnd;
@@ -272,14 +285,14 @@ Activity CWeaponCrowbar::ChooseIntersectionPointAndActivity(trace_t &hitTrace, c
 	return ACT_VM_HITCENTER;
 }
 
-void CWeaponCrowbar::ImpactEffect(void)
+void CWeaponHL1Crowbar::ImpactEffect(void)
 {
 	UTIL_ImpactTrace(&m_traceHit, DMG_CLUB);
 }
 
-void CWeaponCrowbar::Swing(void)
+void CWeaponHL1Crowbar::Swing(void)
 {
-	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+	CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 	if (!pOwner)
 		return;
 

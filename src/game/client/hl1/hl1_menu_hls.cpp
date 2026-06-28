@@ -10,7 +10,7 @@ using namespace vgui;
 #include "ienginevgui.h"
 
 
-extern ConVar hl1_mp5_recoil;
+extern ConVar hl1_mp5_recoil/*"hl1_mp5_recoil", "1", FCVAR_CLIENTDLL)*/;
 ConVar hl1_ragdoll_gib("hl1_ragdoll_gib", "1", FCVAR_CLIENTDLL);
 ConVar hl1_bullsquid_spit("hl1_bullsquid_spit", "1", FCVAR_CLIENTDLL);
 ConVar hl1_bigmomma_splash("hl1_bigmomma_splash", "1", FCVAR_CLIENTDLL);

@@ -1,19 +1,19 @@
 #include "cbase.h"
 #include "beam_shared.h"
-#include "hl1_basegrenade.h"
+#include "basegrenade_shared.h"
 
 extern ConVar sk_plr_dmg_tripmine;
 
-class CTripmineGrenade : public CHL1BaseGrenade
+class CMonsterTripmineGrenade : public CBaseGrenade
 {
-	DECLARE_CLASS(CTripmineGrenade, CHL1BaseGrenade);
+	DECLARE_CLASS(CMonsterTripmineGrenade, CBaseGrenade);
 public:
-	CTripmineGrenade();
+	CMonsterTripmineGrenade();
 
 	void Spawn(void);
 	void Precache(void);
 
-	int OnTakeDamage_Alive(const CTakeDamageInfo &inputInfo);
+	int OnTakeDamage_Alive(const CTakeDamageInfo& inputInfo);
 
 	void WarningThink(void);
 	void PowerupThink(void);
@@ -41,9 +41,9 @@ public:
 	DECLARE_DATADESC();
 };
 
-LINK_ENTITY_TO_CLASS(monster_tripmine, CTripmineGrenade);
+LINK_ENTITY_TO_CLASS(monster_tripmine, CMonsterTripmineGrenade);
 
-BEGIN_DATADESC(CTripmineGrenade)
+BEGIN_DATADESC(CMonsterTripmineGrenade)
 DEFINE_FIELD(m_flPowerUp, FIELD_TIME),
 DEFINE_FIELD(m_vecDir, FIELD_VECTOR),
 DEFINE_FIELD(m_vecEnd, FIELD_POSITION_VECTOR),
@@ -58,13 +58,13 @@ DEFINE_THINKFUNC(BeamBreakThink),
 DEFINE_THINKFUNC(DelayDeathThink),
 END_DATADESC()
 
-CTripmineGrenade::CTripmineGrenade()
+CMonsterTripmineGrenade::CMonsterTripmineGrenade()
 {
 	m_vecDir.Init();
 	m_vecEnd.Init();
 }
 
-void CTripmineGrenade::Spawn(void)
+void CMonsterTripmineGrenade::Spawn(void)
 {
 	Precache();
 	SetMoveType(MOVETYPE_FLY);
@@ -93,7 +93,7 @@ void CTripmineGrenade::Spawn(void)
 		m_flPowerUp = gpGlobals->curtime + 2.5;
 	}
 
-	SetThink(&CTripmineGrenade::PowerupThink);
+	SetThink(&CMonsterTripmineGrenade::PowerupThink);
 	SetNextThink(gpGlobals->curtime + 0.2);
 
 	m_takedamage = DAMAGE_YES;
@@ -102,8 +102,8 @@ void CTripmineGrenade::Spawn(void)
 
 	if (GetOwnerEntity() != NULL)
 	{
-		EmitSound("TripmineGrenade.Deploy");
-		EmitSound("TripmineGrenade.Charge");
+		EmitSound("MonsterTripmineGrenade.Deploy");
+		EmitSound("MonsterTripmineGrenade.Charge");
 
 		m_pRealOwner = GetOwnerEntity();
 	}
@@ -111,24 +111,24 @@ void CTripmineGrenade::Spawn(void)
 	m_vecEnd = GetAbsOrigin() + m_vecDir * MAX_TRACE_LENGTH;
 }
 
-void CTripmineGrenade::Precache(void)
+void CMonsterTripmineGrenade::Precache(void)
 {
 	PrecacheModel("models/w_tripmine.mdl");
 	m_iLaserModel = PrecacheModel("sprites/laserbeam.vmt");
 
-	PrecacheScriptSound("TripmineGrenade.Deploy");
-	PrecacheScriptSound("TripmineGrenade.Charge");
-	PrecacheScriptSound("TripmineGrenade.Activate");
+	PrecacheScriptSound("MonsterTripmineGrenade.Deploy");
+	PrecacheScriptSound("MonsterTripmineGrenade.Charge");
+	PrecacheScriptSound("MonsterTripmineGrenade.Activate");
 
 }
 
-void CTripmineGrenade::WarningThink(void)
+void CMonsterTripmineGrenade::WarningThink(void)
 {
-	SetThink(&CTripmineGrenade::PowerupThink);
+	SetThink(&CMonsterTripmineGrenade::PowerupThink);
 	SetNextThink(gpGlobals->curtime + 1.0);
 }
 
-void CTripmineGrenade::PowerupThink(void)
+void CMonsterTripmineGrenade::PowerupThink(void)
 {
 	if (m_hStuckOn == NULL)
 	{
@@ -144,7 +144,7 @@ void CTripmineGrenade::PowerupThink(void)
 			SetNextThink(gpGlobals->curtime + 0.1f);
 			return;
 		}
-	
+
 		SetOwnerEntity(NULL);
 
 		UTIL_TraceLine(GetAbsOrigin() + m_vecDir * 8, GetAbsOrigin() - m_vecDir * 32, MASK_SHOT, pOldOwner, COLLISION_GROUP_NONE, &tr);
@@ -165,8 +165,8 @@ void CTripmineGrenade::PowerupThink(void)
 		}
 		else
 		{
-			StopSound("TripmineGrenade.Deploy");
-			StopSound("TripmineGrenade.Charge");
+			StopSound("MonsterTripmineGrenade.Deploy");
+			StopSound("MonsterTripmineGrenade.Charge");
 			SetThink(&CBaseEntity::SUB_Remove);
 			SetNextThink(gpGlobals->curtime + 0.1f);
 			KillBeam();
@@ -176,8 +176,8 @@ void CTripmineGrenade::PowerupThink(void)
 	else if ((m_posStuckOn != m_hStuckOn->GetAbsOrigin()) || (m_angStuckOn != m_hStuckOn->GetAbsAngles()))
 	{
 
-		StopSound("TripmineGrenade.Deploy");
-		StopSound("TripmineGrenade.Charge");
+		StopSound("MonsterTripmineGrenade.Deploy");
+		StopSound("MonsterTripmineGrenade.Charge");
 		CBaseEntity* pMine = Create("weapon_tripmine", GetAbsOrigin() + m_vecDir * 24, GetAbsAngles());
 		pMine->AddSpawnFlags(SF_NORESPAWN);
 
@@ -194,13 +194,13 @@ void CTripmineGrenade::PowerupThink(void)
 
 		m_bIsLive = true;
 
-		EmitSound("TripmineGrenade.Activate");
+		EmitSound("MonsterTripmineGrenade.Activate");
 	}
 
 	SetNextThink(gpGlobals->curtime + 0.1f);
 }
 
-void CTripmineGrenade::KillBeam(void)
+void CMonsterTripmineGrenade::KillBeam(void)
 {
 	if (m_hBeam)
 	{
@@ -209,7 +209,7 @@ void CTripmineGrenade::KillBeam(void)
 	}
 }
 
-void CTripmineGrenade::MakeBeam(void)
+void CMonsterTripmineGrenade::MakeBeam(void)
 {
 	trace_t tr;
 
@@ -217,7 +217,7 @@ void CTripmineGrenade::MakeBeam(void)
 
 	m_flBeamLength = tr.fraction;
 
-	SetThink(&CTripmineGrenade::BeamBreakThink);
+	SetThink(&CMonsterTripmineGrenade::BeamBreakThink);
 
 	SetNextThink(gpGlobals->curtime + 1.0f);
 
@@ -231,7 +231,7 @@ void CTripmineGrenade::MakeBeam(void)
 	m_hBeam->AddSpawnFlags(SF_BEAM_TEMPORARY);
 }
 
-void CTripmineGrenade::BeamBreakThink(void)
+void CMonsterTripmineGrenade::BeamBreakThink(void)
 {
 	bool bBlowup = false;
 	trace_t tr;
@@ -282,7 +282,7 @@ void CTripmineGrenade::BeamBreakThink(void)
 	SetNextThink(gpGlobals->curtime + 0.1);
 }
 
-int CTripmineGrenade::OnTakeDamage_Alive(const CTakeDamageInfo& info)
+int CMonsterTripmineGrenade::OnTakeDamage_Alive(const CTakeDamageInfo& info)
 {
 	if (gpGlobals->curtime < m_flPowerUp && info.GetDamage() < m_iHealth)
 	{
@@ -291,10 +291,10 @@ int CTripmineGrenade::OnTakeDamage_Alive(const CTakeDamageInfo& info)
 		KillBeam();
 		return 0;
 	}
-	return BaseClass::OnTakeDamage_Alive(info);
+	return OnTakeDamage_Alive(info);
 }
 
-void CTripmineGrenade::Event_Killed(const CTakeDamageInfo& info)
+void CMonsterTripmineGrenade::Event_Killed(const CTakeDamageInfo& info)
 {
 	m_takedamage = DAMAGE_NO;
 
@@ -303,13 +303,13 @@ void CTripmineGrenade::Event_Killed(const CTakeDamageInfo& info)
 		SetOwnerEntity(info.GetAttacker());
 	}
 
-	SetThink(&CTripmineGrenade::DelayDeathThink);
+	SetThink(&CMonsterTripmineGrenade::DelayDeathThink);
 	SetNextThink(gpGlobals->curtime + random->RandomFloat(0.1, 0.3));
 
-	StopSound("TripmineGrenade.Charge");
+	StopSound("MonsterTripmineGrenade.Charge");
 }
 
-void CTripmineGrenade::DelayDeathThink(void)
+void CMonsterTripmineGrenade::DelayDeathThink(void)
 {
 	KillBeam();
 	trace_t tr;

@@ -137,7 +137,7 @@ public:
 	bool SuitPower_RemoveDevice( const CSuitPowerDevice &device );
 	bool SuitPower_ShouldRecharge( void );
 	float SuitPower_GetCurrentPercentage( void ) { return m_HL2Local.m_flSuitPower; }
-	
+
 	void SetFlashlightEnabled( bool bState );
 
 	// Apply a battery
@@ -159,6 +159,9 @@ public:
 	CAI_BaseNPC *GetSquadCommandRepresentative();
 	int GetNumSquadCommandables();
 	int GetNumSquadCommandableMedics();
+
+	/* VSCRIPT */
+	void ScriptTestHL2Player() { Msg("HL2_Player scriptdesc works\n"); }
 
 	// Locator
 	void UpdateLocatorPosition( const Vector &vecPosition );

@@ -75,6 +75,11 @@
 			// Last, mount in shared HL2 loose files
 			game				|appid_243750|hl2_complete
 			game				|appid_243750|hl2
+    				game	"ep2"
+    				game	"episodic"
+    			game      "D:\Steam\steamapps\common\HL1VPK"
+    		game	"D:\Steam\steamapps\common\Half-Life 2\lostcoast\lostcoast"
+    game	"D:\Steam\steamapps\common\cstrike_mount"
 			platform			|appid_243750|platform
 
 			// Random files downloaded from gameservers go into a seperate directory, so

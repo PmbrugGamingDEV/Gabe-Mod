@@ -77,6 +77,7 @@ void ConVar_Register( int nCVarFlag, IConCommandBaseAccessor *pAccessor )
 		pNext = pCur->m_pNext;
 		pCur->AddFlags( s_nCVarFlag );
 		pCur->Init();
+		ConDColorMsg(Color(0, 255, 0, 255), "registered Console Command: %s\n", pCur->GetName());
 		pCur = pNext;
 	}
 

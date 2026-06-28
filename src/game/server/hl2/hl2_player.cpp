@@ -424,7 +424,8 @@ BEGIN_SEND_TABLE_NOBASE( LadderMove_t, DT_LadderMove )
 	SendPropVector( SENDINFO( m_vecStartPosition ) ),
 END_SEND_TABLE()
 
-BEGIN_ENT_SCRIPTDESC( CHL2_Player, CBasePlayer, "Half-Life 2 Player" )
+BEGIN_ENT_SCRIPTDESC(CHL2_Player, CBasePlayer, "Half-Life 2 Player")
+DEFINE_SCRIPTFUNC_NAMED(ScriptTestHL2Player, "TestHL2Player", "Test HL2 player scriptdesc.")
 END_SCRIPTDESC();
 
 void CHL2_Player::Precache( void )

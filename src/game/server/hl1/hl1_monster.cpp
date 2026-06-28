@@ -45,7 +45,7 @@ void CHL1BaseMonster::TraceAttack(const CTakeDamageInfo &info, const Vector &vec
 	{
 		UTIL_BloodSpray(ptr->endpos, vecDir, BloodColor(), 4, FX_BLOODSPRAY_ALL);
 	}
-	BaseClass::TraceAttack(info, vecDir, ptr);
+	BaseClass::TraceAttack(info, vecDir, ptr, NULL);
 }
 
 bool CHL1BaseMonster::BecomeRagdoll(const CTakeDamageInfo& info, const Vector& forceVector)

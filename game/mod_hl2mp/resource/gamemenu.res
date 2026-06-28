@@ -34,7 +34,17 @@
 		"label" "#GameUI_GameMenu_CreateServer"
 		"command" "engine gabe_newgame"
 	}
-
+	"6"
+	{
+		"label" "LOAD GAME"
+		"command" "OpenLoadGameDialog"
+	}
+	"7"
+	{
+		"label" "SAVE GAME"
+		"command" "OpenSaveGameDialog"
+		"OnlyInGame" "1"
+	}
 	"7"
 	{
 		"label"	"FRIENDS"

@@ -1121,6 +1121,12 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	VScriptClientSetFactory(appSystemFactory);
 	VScriptClientInit();
 
+	ConVarRef backdoor("cl_localnetworkbackdoor");
+	if (backdoor.IsValid())
+	{
+		backdoor.SetValue(0);
+	}
+
 	return true;
 }
 

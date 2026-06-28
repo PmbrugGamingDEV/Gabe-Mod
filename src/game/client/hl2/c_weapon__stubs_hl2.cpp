@@ -32,6 +32,20 @@ STUB_WEAPON_CLASS(weapon_multitool, WeaponMultitool, C_BaseHL2MPCombatWeapon);
 STUB_WEAPON_CLASS(weapon_stickylauncher, WeaponStickyLauncher, C_BaseHLCombatWeapon);
 STUB_WEAPON_CLASS(weapon_eattach, WeaponEAttach, C_BaseHLCombatWeapon);
 STUB_WEAPON_CLASS(weapon_lasergun, WeaponLaserGun, C_BaseHLCombatWeapon);
+STUB_WEAPON_CLASS(weapon_smp5, WeaponSMP5, C_BaseHLCombatWeapon);
+
+// Half-Life 1
+
+// Row 0
+STUB_WEAPON_CLASS(weapon_crowbar_hl1, WeaponHL1Crowbar, C_BaseHLCombatWeapon); // Spot 0
+STUB_WEAPON_CLASS(weapon_egon, WeaponEgon, C_BaseHLCombatWeapon); // Spot 1
+
+// Row 1
+STUB_WEAPON_CLASS(weapon_glock, WeaponGlock, C_BaseHLCombatWeapon); // Spot 0
+
+// Row 4
+STUB_WEAPON_CLASS(weapon_tripmine, WeaponTripMine, C_BaseHLCombatWeapon); // Spot 1
+STUB_WEAPON_CLASS(weapon_snark, WeaponSnark, C_BaseHLCombatWeapon); // Spot 3
 
 /* End Gabe Mod */
 #ifndef HL2MP

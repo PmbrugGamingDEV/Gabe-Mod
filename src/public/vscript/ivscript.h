@@ -394,6 +394,11 @@ inline IScriptInstanceHelper *GetScriptInstanceHelper_ScriptNoBase_t()
 #define DEFINE_SCRIPTFUNC_NAMED( func, scriptName, description )							ScriptAddFunctionToClassDescNamed( pDesc, _className, func, scriptName, description );
 #define DEFINE_SCRIPT_CONSTRUCTOR()															ScriptAddConstructorToClassDesc( pDesc, _className );
 #define DEFINE_SCRIPT_INSTANCE_HELPER( className, p )										template <> IScriptInstanceHelper *GetScriptInstanceHelperOverride< className >( IScriptInstanceHelper * ) { return p; }
+
+#define SCRIPTFUNC(function) \
+	DEFINE_SCRIPTFUNC(function, #function)
+#define SCRIPTFUNC_N(function, name) \
+	DEFINE_SCRIPTFUNC(function, name, #function)
 								
 template <typename T> ScriptClassDesc_t *GetScriptDesc(T *);
 

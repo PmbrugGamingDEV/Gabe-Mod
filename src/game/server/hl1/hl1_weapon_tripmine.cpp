@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "npcevent.h"
 #include "soundent.h"
-#include "hl1_baseweapon_shared.h"
+#include "hl1/hl1_baseweapon_shared.h"
 #include "player.h"
 #include "gamerules.h"
 #include "in_buttons.h"

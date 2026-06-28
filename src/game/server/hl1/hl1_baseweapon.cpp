@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "hl1_baseweapon_shared.h"
+#include "hl1/hl1_baseweapon_shared.h"
 #include "effect_dispatch_data.h"
 #include "te_effect_dispatch.h"
 

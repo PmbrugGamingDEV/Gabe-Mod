@@ -399,6 +399,11 @@ public:
 	void					SetFiredWeapon( bool bFlag ) { m_bFiredWeapon = bFlag; }
 
 	virtual bool			CanUseFirstPersonCommand( void ){ return true; }
+
+	float					m_flNextAmmoBurn;
+	float					m_flStartCharge;
+	float					m_flAmmoStartCharge;
+	float					m_flPlayAftershock;
 	
 protected:
 	fogparams_t				m_CurrentFog;

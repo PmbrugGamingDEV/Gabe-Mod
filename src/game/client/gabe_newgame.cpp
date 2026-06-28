@@ -101,7 +101,7 @@ public:
 		// Create image list for thumbnails/icons
 		m_pImageList = new ImageList(false);
 		m_pMapList->SetImageList(m_pImageList, false);
-		
+
 		m_pMapList->AddColumnHeader(0, "icon", "", 256, ListPanel::COLUMN_IMAGE);
 		m_pMapList->AddColumnHeader(1, "map", "Map", 176, 0);
 		m_pMapList->AddColumnHeader(2, "category", "Category", 108, 0);
@@ -509,18 +509,15 @@ public:
 
 		m_pDeathmatchMode = new CheckButton(this, "Deathmatch Mode", "Deathmatch Gamemode (No sandbox, No godmode)");
 		m_pDeathmatchMode->SetSelected(false);
-		m_pDeathmatchMode->SetVisible(false);
-		m_pDeathmatchMode->SetEnabled(false);
 
 		m_pHL1Mode = new CheckButton(this, "Half-Life Mode", "Spawn With Half-Life 1 weapons");
 		m_pHL1Mode->SetSelected(false);
-		m_pHL1Mode->SetVisible(false);
-		m_pHL1Mode->SetEnabled(false);
 
 		m_pSandboxMode = new CheckButton(this, "Sandbox Mode", "Sandbox Gamemode (Default)");
 		m_pSandboxMode->SetSelected(true);
-		m_pSandboxMode->SetVisible(false);
-		m_pSandboxMode->SetEnabled(false);
+
+		m_pJBModMode = new CheckButton(this, "JBMod Mode", "JBMod Gamemode (Like the JBMod on Steam)");
+		m_pJBModMode->SetSelected(false);
 
 		ApplySingleplayerLock();
 
@@ -558,6 +555,7 @@ public:
 		m_pDeathmatchMode->SetPos(pad, y);	  m_pDeathmatchMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 		m_pHL1Mode->SetPos(pad, y);			  m_pHL1Mode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 		m_pSandboxMode->SetPos(pad, y);		  m_pSandboxMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
+		m_pJBModMode->SetPos(pad, y);		  m_pJBModMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 
 		UpdateValueLabels();
 	}
@@ -609,6 +607,7 @@ public:
 	bool GetDeathmatchMode() const { return m_pDeathmatchMode->IsSelected(); }
 	bool GetSandboxMode() const { return m_pSandboxMode->IsSelected(); }
 	bool GetHL1Mode() const { return m_pHL1Mode->IsSelected(); }
+	bool GetJBModMode() const { return m_pJBModMode->IsSelected(); }
 
 private:
 	void ApplySingleplayerLock()
@@ -678,6 +677,7 @@ private:
 	CheckButton* m_pDeathmatchMode;
 	CheckButton* m_pHL1Mode;
 	CheckButton* m_pSandboxMode;
+	CheckButton* m_pJBModMode;
 };
 
 // ------------------------------------------------------------
@@ -836,7 +836,7 @@ public:
 		if (!Q_stricmp(command, "StartServer"))
 		{
 			StartServer();
-			return;																																																
+			return;
 		}
 
 		BaseClass::OnCommand(command);
@@ -926,6 +926,7 @@ private:
 		const bool dmmode = m_pSettingsTab->GetDeathmatchMode();
 		const bool hl1mode = m_pSettingsTab->GetHL1Mode();
 		const bool sandboxmode = m_pSettingsTab->GetSandboxMode();
+		const bool jbmodmode = m_pSettingsTab->GetJBModMode();
 
 		char hostname[128];
 		char password[128];
@@ -972,16 +973,19 @@ private:
 			Q_snprintf(cmd, sizeof(cmd), "sv_cheats %d\n", cheats ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 
-			Q_snprintf(cmd, sizeof(cmd), "gabe_chlogatspawn %d\n", chlogatspawn ? 1 : 0);
+			Q_snprintf(cmd, sizeof(cmd), "gabeplus_chlogatspawn %d\n", chlogatspawn ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 
-			Q_snprintf(cmd, sizeof(cmd), "gabeplus_deathmatch %d\n", dmmode ? 1 : 0);
+			Q_snprintf(cmd, sizeof(cmd), "gabe_deathmatch %d\n", dmmode ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 
-			Q_snprintf(cmd, sizeof(cmd), "gabeplus_hl1 %d\n", hl1mode ? 1 : 0);
+			Q_snprintf(cmd, sizeof(cmd), "gabe_hl1 %d\n", hl1mode ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 
-			Q_snprintf(cmd, sizeof(cmd), "gabeplus_sandbox %d\n", sandboxmode ? 1 : 0);
+			Q_snprintf(cmd, sizeof(cmd), "gabe_sandbox %d\n", sandboxmode ? 1 : 0);
+			engine->ClientCmd_Unrestricted(cmd);
+
+			Q_snprintf(cmd, sizeof(cmd), "gabe_jbmod %d\n", jbmodmode ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 		}
 
@@ -1053,6 +1057,6 @@ void CC_GabeNewGame()
 static ConCommand gabeplus_newgame(
 	"gabe_newgame",
 	CC_GabeNewGame,
-	"Open new game dialog",
+	"Open GabeMod+ new game dialog",
 	FCVAR_CLIENTDLL
 );
