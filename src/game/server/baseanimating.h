@@ -55,6 +55,13 @@ public:
 	virtual int	 Restore( IRestore &restore );
 	virtual void OnRestore();
 
+#ifdef GLOWS_ENABLE
+	void				SetGlowEffectColor(float r, float g, float b);
+	void				AddGlowEffect(void);
+	void				RemoveGlowEffect(void);
+	bool				IsGlowEffectActive(void);
+#endif
+
 	CStudioHdr *GetModelPtr( void );
 	void InvalidateMdlCache();
 
@@ -162,6 +169,15 @@ public:
 	float	SetPoseParameter( CStudioHdr *pStudioHdr, int iParameter, float flValue );
 	inline float SetPoseParameter( int iParameter, float flValue ) { return SetPoseParameter( GetModelPtr(), iParameter, flValue ); }
 	inline float ScriptSetPoseParameter( int iParameter, float flValue ) { return SetPoseParameter( iParameter, flValue ); }
+
+#ifdef GLOWS_ENABLE
+protected:
+	CNetworkVar(bool, m_bGlowEnabled);
+	CNetworkVar(float, m_flGlowR);
+	CNetworkVar(float, m_flGlowG);
+	CNetworkVar(float, m_flGlowB);
+#endif // GLOWS_ENABLE
+public:
 
 	float	GetPoseParameter( const char *szName );
 	float	GetPoseParameter( int iParameter );
@@ -340,6 +356,11 @@ public:
 
 	const float* GetPoseParameterArray() { return m_flPoseParameter.Base(); }
 	const float* GetEncodedControllerArray() { return m_flEncodedController.Base(); }
+	void				UpdateGlowEffect(void);
+	void				DestroyGlowEffect(void);
+
+private:
+public:
 
 	void BuildMatricesWithBoneMerge( const CStudioHdr *pStudioHdr, const QAngle& angles, 
 		const Vector& origin, const Vector pos[MAXSTUDIOBONES],

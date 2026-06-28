@@ -1292,6 +1292,13 @@ void CWeaponGravityGun::DetachObject(void)
 	if (m_hObject)
 	{
 #ifndef CLIENT_DLL
+		CBaseAnimating* pAnim = m_hObject->GetBaseAnimating();
+		if (pAnim)
+		{
+			pAnim->RemoveGlowEffect();
+		}
+#endif
+#ifndef CLIENT_DLL
 		CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 		Pickup_OnPhysGunDrop(m_hObject, pOwner, DROPPED_BY_CANNON);
 #endif
@@ -1483,6 +1490,14 @@ void CWeaponGravityGun::AttachObject(
 
 #ifndef CLIENT_DLL
 		Pickup_OnPhysGunPickup(pObject, pOwner);
+#endif
+
+#ifndef CLIENT_DLL
+		CBaseAnimating* pAnim = pObject->GetBaseAnimating();
+		if (pAnim)
+		{
+			pAnim->AddGlowEffect();
+		}
 #endif
 }
 

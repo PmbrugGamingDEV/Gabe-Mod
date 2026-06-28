@@ -69,8 +69,15 @@ extern ConVar replay_rendersetting_renderglow;
 #include "c_tf_team.h"
 #endif
 
+#include "clienteffectprecachesystem.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+CLIENTEFFECT_REGISTER_BEGIN()
+CLIENTEFFECT_MATERIAL("dev/glow_color")
+CLIENTEFFECT_MATERIAL("dev/halo_add_to_screen")
+CLIENTEFFECT_REGISTER_END_CONDITIONAL(engine->GetDXSupportLevel() >= 90)
 
 #define ACHIEVEMENT_ANNOUNCEMENT_MIN_TIME 10
 
@@ -840,6 +847,9 @@ bool ClientModeShared::DoPostScreenSpaceEffects( const CViewSetup *pSetup )
 			return false;
 	}
 #endif 
+
+	g_GlowObjectManager.RenderGlowEffects(pSetup, 0);
+
 	return true;
 }
 

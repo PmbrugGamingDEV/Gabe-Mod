@@ -233,6 +233,13 @@ IMPLEMENT_SERVERCLASS_ST(CBaseAnimating, DT_BaseAnimating)
 	SendPropInt		( SENDINFO(m_nForceBone), 8, 0 ),
 	SendPropVector	( SENDINFO(m_vecForce), -1, SPROP_NOSCALE ),
 
+#ifdef GLOWS_ENABLE
+	SendPropBool(SENDINFO(m_bGlowEnabled)),
+	SendPropFloat(SENDINFO(m_flGlowR)),
+	SendPropFloat(SENDINFO(m_flGlowG)),
+	SendPropFloat(SENDINFO(m_flGlowB)),
+#endif
+
 	SendPropInt		( SENDINFO(m_nSkin), ANIMATION_SKIN_BITS),
 	SendPropInt		( SENDINFO(m_nBody), ANIMATION_BODY_BITS),
 
@@ -333,6 +340,13 @@ CBaseAnimating::CBaseAnimating()
 	m_fadeMaxDist = 0;
 	m_flFadeScale = 0.0f;
 	m_fBoneCacheFlags = 0;
+
+#ifdef GLOWS_ENABLE
+	m_bGlowEnabled.Set(false);
+	m_flGlowR.Set(0.76f);
+	m_flGlowG.Set(0.76f);
+	m_flGlowB.Set(0.76f);
+#endif // GLOWS_ENABLE
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -341,6 +355,17 @@ CBaseAnimating::~CBaseAnimating()
 	delete m_pIk;
 	UnlockStudioHdr();
 	delete m_pStudioHdr;
+}
+
+// this should be around line 318
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::SetGlowEffectColor(float r, float g, float b)
+{
+	m_flGlowR.Set(r);
+	m_flGlowG.Set(g);
+	m_flGlowB.Set(b);
 }
 
 void CBaseAnimating::Precache()
@@ -3766,3 +3791,30 @@ CStudioHdr *CBaseAnimating::OnNewModel()
 
 	return hdr;
 }
+
+#ifdef GLOWS_ENABLE
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::AddGlowEffect(void)
+{
+	SetTransmitState(FL_EDICT_ALWAYS);
+	m_bGlowEnabled.Set(true);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CBaseAnimating::RemoveGlowEffect(void)
+{
+	m_bGlowEnabled.Set(false);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CBaseAnimating::IsGlowEffectActive(void)
+{
+	return m_bGlowEnabled;
+}
+#endif
