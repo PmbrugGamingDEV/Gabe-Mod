@@ -39,6 +39,82 @@ static int g_physgunBeam;
 #define MAX_PELLETS				512
 #define MAX_FREEZE				2048
 
+enum physgun_constraint_mode
+{
+	CONSTRAINT_WELD = 0,
+	CONSTRAINT_BALLSOCKET,
+	CONSTRAINT_ROPE,
+	CONSTRAINT_COUNT
+};
+
+static int g_iConstraintMode = CONSTRAINT_WELD;
+
+void CC_PhysgunCycleConstraint()
+{
+	g_iConstraintMode++;
+
+	if (g_iConstraintMode >= CONSTRAINT_COUNT)
+		g_iConstraintMode = 0;
+
+	const char* name = "unknown";
+
+	switch (g_iConstraintMode)
+	{
+	case CONSTRAINT_WELD:       name = "Fixed Mode"; break;
+	case CONSTRAINT_BALLSOCKET: name = "Ballsocket Mode"; break;
+	case CONSTRAINT_ROPE:       name = "Rope Mode"; break;
+	}
+
+	CBasePlayer* pPlayer = UTIL_GetLocalPlayer();
+	if (!pPlayer)
+		return;
+
+	hudtextparms_t params;
+
+	params.channel = 3;      // SAME channel = replaces previous message
+	params.x = 0.10f;        // left side like your screenshot
+	params.y = 0.75f;        // above health HUD
+	params.effect = 0;
+
+	params.fadeinTime = 0.0f;   // important
+	params.fadeoutTime = 0.0f;  // important
+	params.holdTime = 1.0f;
+	params.fxTime = 0.0f;
+
+	params.a1 = 255;
+	params.a2 = 255;
+
+	// Mode colors
+	switch (g_iConstraintMode)
+	{
+	case CONSTRAINT_WELD:
+		params.r1 = 255; params.g1 = 80;  params.b1 = 80;
+		break;
+
+	case CONSTRAINT_ROPE:
+		params.r1 = 80;  params.g1 = 200; params.b1 = 255;
+		break;
+
+	case CONSTRAINT_BALLSOCKET:
+		params.r1 = 255; params.g1 = 120; params.b1 = 255;
+		break;
+	}
+
+	params.r2 = params.r1;
+	params.g2 = params.g1;
+	params.b2 = params.b1;
+
+	UTIL_HudMessage(pPlayer, params, name);
+}
+
+static ConCommand physgun_cycleconstraint(
+	"jb_cycleconstraint",
+	CC_PhysgunCycleConstraint,
+	"Cycle physgun constraint type",
+	FCVAR_CHEAT
+);
+
+
 class CJBMWeaponGravityGun;
 
 class CJBMGravityPellet : public CBaseAnimating
@@ -71,32 +147,7 @@ public:
 		return m_isInert;
 	}
 
-	bool MakeConstraint(CBaseEntity* pObject, CJBMGravityPellet* pHeld, CJBMGravityPellet* pBond)
-	{
-		IPhysicsObject* pReference = g_PhysWorldObject;
-		if (GetMoveParent())
-		{
-			pReference = GetMoveParent()->VPhysicsGetObject();
-		}
-		IPhysicsObject* pAttached = pObject->VPhysicsGetObject();
-		if (!pReference || !pAttached)
-		{
-			return false;
-		}
-
-		constraint_fixedparams_t fixed;
-		fixed.Defaults();
-		fixed.InitWithCurrentObjectState(pReference, pAttached);
-
-		m_pConstraint = physenv->CreateFixedConstraint(pReference, pAttached, NULL, fixed);
-		m_pConstraint->SetGameData((void*)this);
-
-		pHeld->m_pPair = pBond;
-		pBond->m_pPair = pHeld;
-
-		MakeInert();
-		return true;
-	}
+	bool MakeConstraint(CBaseEntity* pObject, CJBMGravityPellet* pHeld, CJBMGravityPellet* pBond);
 
 	void MakeActive()
 	{
@@ -1060,19 +1111,22 @@ void CJBMWeaponGravityGun::EffectUpdate(void)
 			float flSensitivity = 0.05f;
 
 			float flYaw = pCmd->mousedx * flSensitivity;
-			float flPitch = pCmd->mousedy * flSensitivity;
+			float flPitch = -pCmd->mousedy * flSensitivity;
 
-			matrix3x4_t curMatrix, yawMatrix, pitchMatrix, tempMatrix, finalMatrix;
+			Vector forward, right, up;
+			pOwner->EyeVectors(&forward, &right, &up);
 
-			AngleMatrix(m_gravCallback.m_targetRotation, curMatrix);
+			VMatrix curMatrix, yawMatrix, pitchMatrix, tempMatrix, finalMatrix;
 
-			AngleMatrix(QAngle(0, flYaw, 0), yawMatrix);
-			AngleMatrix(QAngle(flPitch, 0, 0), pitchMatrix);
+			MatrixFromAngles(m_gravCallback.m_targetRotation, curMatrix);
 
-			ConcatTransforms(yawMatrix, curMatrix, tempMatrix);
-			ConcatTransforms(pitchMatrix, tempMatrix, finalMatrix);
+			MatrixBuildRotationAboutAxis(yawMatrix, up, flYaw);
+			MatrixBuildRotationAboutAxis(pitchMatrix, right, flPitch);
 
-			MatrixAngles(finalMatrix, m_gravCallback.m_targetRotation);
+			MatrixMultiply(yawMatrix, curMatrix, tempMatrix);
+			MatrixMultiply(pitchMatrix, tempMatrix, finalMatrix);
+
+			MatrixToAngles(finalMatrix, m_gravCallback.m_targetRotation);
 			m_gravCallback.SetTargetOrientation(m_gravCallback.m_targetRotation);
 		}
 	}
@@ -1495,6 +1549,11 @@ void CJBMWeaponGravityGun::DetachObject(void)
 
 	if (m_hObject)
 	{
+		CBaseAnimating* pAnimating = m_hObject->GetBaseAnimating();
+		if (pAnimating)
+		{
+			pAnimating->RemoveGlowEffect();
+		}
 		CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 		Pickup_OnPhysGunDrop(m_hObject, pOwner, DROPPED_BY_CANNON);
 
@@ -1555,6 +1614,12 @@ void CJBMWeaponGravityGun::AttachObject(CBaseEntity* pObject, const Vector& star
 		SortPelletsForObject(pObject);
 
 		Pickup_OnPhysGunPickup(pObject, pOwner);
+
+		CBaseAnimating* pAnimating = pObject->GetBaseAnimating();
+		if (pAnimating)
+		{
+			pAnimating->AddGlowEffect();
+		}
 	}
 	else
 	{
@@ -1789,4 +1854,139 @@ bool CJBMWeaponGravityGun::Reload(void)
 	}
 
 	return false;
+}
+
+bool CJBMGravityPellet::MakeConstraint(
+	CBaseEntity* pObject,
+	CJBMGravityPellet* pHeld,
+	CJBMGravityPellet* pBond
+)
+{
+	IPhysicsObject* pReference = g_PhysWorldObject;
+
+	if (GetMoveParent())
+	{
+		pReference = GetMoveParent()->VPhysicsGetObject();
+	}
+
+	IPhysicsObject* pAttached = pObject->VPhysicsGetObject();
+
+	if (!pReference || !pAttached)
+		return false;
+
+	switch (g_iConstraintMode)
+	{
+	case CONSTRAINT_WELD:
+	{
+		constraint_fixedparams_t fixed;
+		fixed.Defaults();
+		fixed.InitWithCurrentObjectState(pReference, pAttached);
+
+		m_pConstraint = physenv->CreateFixedConstraint(
+			pReference,
+			pAttached,
+			NULL,
+			fixed
+		);
+	}
+	break;
+
+	case CONSTRAINT_BALLSOCKET:
+	{
+		Vector posA, posB;
+		pReference->GetPosition(&posA, NULL);
+		pAttached->GetPosition(&posB, NULL);
+
+		Vector midpoint = (posA + posB) * 0.5f;
+
+		constraint_ballsocketparams_t ball;
+		ball.Defaults();
+		ball.InitWithCurrentObjectState(pReference, pAttached, midpoint);
+
+		m_pConstraint = physenv->CreateBallsocketConstraint(
+			pReference,
+			pAttached,
+			NULL,
+			ball
+		);
+	}
+	break;
+
+	case CONSTRAINT_ROPE:
+	{
+		Vector posA, posB;
+		pReference->GetPosition(&posA, NULL);
+		pAttached->GetPosition(&posB, NULL);
+
+		constraint_lengthparams_t length;
+		length.Defaults();
+
+		length.InitWorldspace(
+			pReference,
+			pAttached,
+			posA,
+			posB,
+			false
+		);
+
+		length.totalLength = 256.0f;
+		length.minLength = 0;
+		length.constraint.forceLimit = 0;
+
+		m_pConstraint = physenv->CreateLengthConstraint(
+			pReference,
+			pAttached,
+			NULL,
+			length
+		);
+
+		if (pHeld && pBond)
+		{
+			Vector ropePosA = pHeld->GetAbsOrigin();
+			Vector ropePosB = pBond->GetAbsOrigin();
+
+			char startName[64];
+			char endName[64];
+
+			Q_snprintf(startName, sizeof(startName), "rope_start_%d", gpGlobals->tickcount);
+			Q_snprintf(endName, sizeof(endName), "rope_end_%d", gpGlobals->tickcount);
+
+			CBaseEntity* ropeStart = CreateEntityByName("move_rope");
+			CBaseEntity* ropeEnd = CreateEntityByName("keyframe_rope");
+
+			if (ropeStart && ropeEnd)
+			{
+				ropeStart->SetAbsOrigin(ropePosA);
+				ropeEnd->SetAbsOrigin(ropePosB);
+
+				ropeStart->SetName(MAKE_STRING(startName));
+				ropeEnd->SetName(MAKE_STRING(endName));
+
+				ropeStart->KeyValue("NextKey", endName);
+				ropeStart->KeyValue("Width", "3");
+				ropeStart->KeyValue("Slack", "0");
+				ropeStart->KeyValue("TextureScale", "1");
+				ropeStart->KeyValue("RopeMaterial", "cable/rope");
+
+				DispatchSpawn(ropeStart);
+				DispatchSpawn(ropeEnd);
+
+				ropeStart->SetParent(pHeld);
+				ropeEnd->SetParent(pBond);
+
+				ropeStart->Activate();
+				ropeEnd->Activate();
+			}
+		}
+	}
+	break;
+	}
+
+	if (m_pConstraint)
+	{
+		m_pConstraint->SetGameData(this);
+	}
+
+	MakeInert();
+	return true;
 }

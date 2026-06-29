@@ -16,6 +16,8 @@
 #include "usercmd.h"
 #include "materialsystem/imaterial.h"
 #include "materialsystem/imaterialvar.h"
+#include "glow_overlay.h"
+#include "glow_outline_effect.h"
 
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -185,6 +187,7 @@ public:
 
 		BaseClass::OnDataChanged(updateType);
 		ApplyPhysgunModelColor();
+
 		m_beam.Update(this);
 	}
 

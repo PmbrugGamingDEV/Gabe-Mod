@@ -248,7 +248,7 @@ void CHL2MP_Player::GiveAllItems(void)
 	GiveNamedItem("weapon_shotgun");
 	GiveNamedItem("weapon_frag");
 	GiveNamedItem("weapon_physgun");
-	GiveNamedItem("weapon_jbphysgun");
+	GiveNamedItem("weapon_jbm_physgun");
 	GiveNamedItem("weapon_hax");
 	GiveNamedItem("weapon_camera");
 	GiveNamedItem("weapon_crossbow");

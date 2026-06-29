@@ -784,13 +784,6 @@
         "entries"
         {
             "~Debug Stuff" ""
-
-            "NPC Inspector (SPAWN ONCE)" "env_gabeplus_npcinspect"
-            "Dev Watermelon" "env_devwatermelon"
-            "Debug Party Ball" "env_debugpartyball"
-            "Crystal Meth Melon" "env_debugcrystal"
-            "Holo Kill Box" "gabedebug_holokill"
-            "Chaos (WILL EVENTUALLY CRASH THE GAME)" "gabeplus_chaos"
         }
     }
 
@@ -838,51 +831,6 @@
         }
     }
 
-    "Addons / Cfg Files"
-    {
-        "_type" "command"
-        "entries"
-        {
-            "~Cfg files" ""
-
-            "autoexec.cfg" "exec autoexec"
-
-	    "~Addons" ""
-        }
-    }
-
-    "Utilities"
-    {
-        "_type" "command"
-        "entries"
-        {
-"Godmode Off/On" "god"
-"Noclip(Flymode)" "noclip"
-"Get all weapons" "impulse 101"
-"Give ammo for weapon" "givecurrentammo"
-"Super Gravity Gun" "physcannon_mega_enabled 1"
-"Normal Gravity Gun" "physcannon_mega_enabled 0"
-"Notarget On/Off" "notarget"
-"Restart Map" "restart"
-"Thirdperson" "thirdperson"
-"Firstperson" "firstperson"
-"Suicide" "kill"
-"Hide HUD" "cl_drawhud 0"
-"Show HUD" "cl_drawhud 1"
-"Strip Weapons" "ent_create player_weaponstrip targetname stent;ent_fire stent strip;ent_fire stent kill"
-"Infinite Suit Power" "sv_infinite_aux_power 1"
-"Limited Suit Power" "sv_infinite_aux_power 0"
-"Low Gravity" "sv_gravity 50"
-"Normal Gravity" "sv_gravity 600"
-"High Gravity" "sv_gravity 2000"
-"(Console)Print entity list" "dumpentityfactories"
-"Slowmo" "host_timescale 0.2"
-"Normal time" "host_timescale 1"
-"Fast time" "host_timescale 3"
-"Stop all sounds" "stopsound"
-        }
-    }
-
     "Multitool"
     {
         "_type" "command"
@@ -903,5 +851,59 @@
             "Render Effects" "mtool_mode material"
         }
     }
+
+"Glow"
+{
+    "_type" "command"
+    "entries"
+    {
+        "~Glow Colors" ""
+
+        "White"       "gabe_glow_color 1 1 1"
+        "Black"       "gabe_glow_color 0 0 0"
+        "Gray"        "gabe_glow_color 0.5 0.5 0.5"
+        "Silver"      "gabe_glow_color 0.75 0.75 0.75"
+
+        "Red"         "gabe_glow_color 1 0 0"
+        "Dark Red"    "gabe_glow_color 0.5 0 0"
+        "Pink"        "gabe_glow_color 1 0.4 0.7"
+        "Hot Pink"    "gabe_glow_color 1 0.1 0.5"
+        "Rose"        "gabe_glow_color 1 0.2 0.4"
+
+        "Orange"      "gabe_glow_color 1 0.5 0"
+        "Amber"       "gabe_glow_color 1 0.75 0"
+        "Gold"        "gabe_glow_color 1 0.84 0"
+
+        "Yellow"      "gabe_glow_color 1 1 0"
+        "Lime"        "gabe_glow_color 0.75 1 0"
+
+        "Green"       "gabe_glow_color 0 1 0"
+        "Dark Green"  "gabe_glow_color 0 0.5 0"
+        "Mint"        "gabe_glow_color 0.5 1 0.7"
+        "Olive"       "gabe_glow_color 0.5 0.5 0"
+
+        "Cyan"        "gabe_glow_color 0 1 1"
+        "Turquoise"   "gabe_glow_color 0.25 0.88 0.82"
+        "Teal"        "gabe_glow_color 0 0.5 0.5"
+
+        "Sky Blue"    "gabe_glow_color 0.4 0.7 1"
+        "Blue"        "gabe_glow_color 0 0 1"
+        "Navy"        "gabe_glow_color 0 0 0.5"
+
+        "Purple"      "gabe_glow_color 0.5 0 1"
+        "Violet"      "gabe_glow_color 0.56 0 1"
+        "Magenta"     "gabe_glow_color 1 0 1"
+        "Lavender"    "gabe_glow_color 0.8 0.6 1"
+
+        "Brown"       "gabe_glow_color 0.55 0.27 0.07"
+        "Tan"         "gabe_glow_color 0.82 0.71 0.55"
+        "Chocolate"   "gabe_glow_color 0.82 0.41 0.12"
+
+        "~Functions" ""
+
+        "Add Glow"    "gabe_glowadd"
+        "Remove Glow" "gabe_glowremove"
+    }
+}
 
 }
