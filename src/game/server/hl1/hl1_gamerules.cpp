@@ -20,54 +20,6 @@ REGISTER_GAMERULES_CLASS( CHalfLife1 );
 
 ConVar sv_thirdpersondeath( "sv_thirdpersondeath", "0", FCVAR_REPLICATED | FCVAR_CHEAT);
 
-ConVar sk_plr_dmg_crowbar			( "sk_plr_dmg_crowbar",			"0", FCVAR_REPLICATED );
-
-ConVar sk_npc_dmg_9mm_bullet		( "sk_npc_dmg_9mm_bullet",		"0", FCVAR_REPLICATED );
-ConVar sk_plr_dmg_9mm_bullet		( "sk_plr_dmg_9mm_bullet",		"0", FCVAR_REPLICATED );
-ConVar sk_max_9mm_bullet			( "sk_max_9mm_bullet",			"0", FCVAR_REPLICATED );
-
-ConVar sk_npc_dmg_9mmAR_bullet		( "sk_npc_dmg_9mmAR_bullet",	"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_357_bullet		( "sk_plr_dmg_357_bullet",		"0", FCVAR_REPLICATED );
-ConVar sk_max_357_bullet			( "sk_max_357_bullet",			"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_buckshot			( "sk_plr_dmg_buckshot",		"0", FCVAR_REPLICATED );
-ConVar sk_max_buckshot				( "sk_max_buckshot",			"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_mp5_grenade		( "sk_plr_dmg_mp5_grenade",		"0", FCVAR_REPLICATED );
-ConVar sk_max_mp5_grenade			( "sk_max_mp5_grenade",			"0", FCVAR_REPLICATED );
-ConVar sk_mp5_grenade_radius		( "sk_mp5_grenade_radius",		"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_rpg				( "sk_plr_dmg_rpg",				"0", FCVAR_REPLICATED );
-ConVar sk_max_rpg_rocket			( "sk_max_rpg_rocket",			"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_xbow_bolt_plr		( "sk_plr_dmg_xbow_bolt_plr",	"0", FCVAR_REPLICATED );
-ConVar sk_plr_dmg_xbow_bolt_npc		( "sk_plr_dmg_xbow_bolt_npc",	"0", FCVAR_REPLICATED );
-ConVar sk_max_xbow_bolt				( "sk_max_xbow_bolt",			"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_egon_narrow		( "sk_plr_dmg_egon_narrow",		"0", FCVAR_REPLICATED );
-ConVar sk_plr_dmg_egon_wide			( "sk_plr_dmg_egon_wide",		"0", FCVAR_REPLICATED );
-ConVar sk_max_uranium				( "sk_max_uranium",				"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_gauss				( "sk_plr_dmg_gauss",			"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_grenade			( "sk_plr_dmg_grenade",			"0", FCVAR_REPLICATED );
-ConVar sk_max_grenade				( "sk_max_grenade",				"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_hornet			( "sk_plr_dmg_hornet",			"0", FCVAR_REPLICATED );
-ConVar sk_npc_dmg_hornet			( "sk_npc_dmg_hornet",			"0", FCVAR_REPLICATED );
-ConVar sk_max_hornet				( "sk_max_hornet",				"0", FCVAR_REPLICATED );
-
-ConVar sk_max_snark					( "sk_max_snark",				"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_tripmine			( "sk_plr_dmg_tripmine",		"0", FCVAR_REPLICATED );
-ConVar sk_max_tripmine				( "sk_max_tripmine",			"0", FCVAR_REPLICATED );
-
-ConVar sk_plr_dmg_satchel			( "sk_plr_dmg_satchel",			"0", FCVAR_REPLICATED );
-ConVar sk_max_satchel				( "sk_max_satchel",				"0", FCVAR_REPLICATED );
-
-ConVar sk_npc_dmg_12mm_bullet		( "sk_npc_dmg_12mm_bullet",		"0", FCVAR_REPLICATED );
-
 ConVar sk_mp_dmg_multiplier			( "sk_mp_dmg_multiplier", "2.0" );
 
 

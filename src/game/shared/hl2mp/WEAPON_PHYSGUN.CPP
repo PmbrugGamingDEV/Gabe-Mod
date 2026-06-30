@@ -54,8 +54,8 @@
 static int g_physgunBeam1;
 static int g_physgunBeam;
 static int g_physgunGlow;
-#define PHYSGUN_BEAM_SPRITE1	"sprites/physbeam1.vmt"
-#define PHYSGUN_BEAM_SPRITE		"sprites/physbeam.vmt"
+#define PHYSGUN_BEAM_SPRITE1	"sprites/strider_bluebeam.vmt"
+#define PHYSGUN_BEAM_SPRITE		"sprites/bluebeam.vmt"
 #define PHYSGUN_BEAM_GLOW		"sprites/physglow.vmt"
 
 #define	PHYSGUN_SKIN	1
@@ -65,13 +65,12 @@ class CWeaponGravityGun;
 ConVar phys_guntogglesound("gabe_physgun_togglesound", "0", FCVAR_REPLICATED); // 
 
 #ifdef CLIENT_DLL
-CLIENTEFFECT_REGISTER_BEGIN(PrecacheEffectGravityGun)
-CLIENTEFFECT_MATERIAL("sprites/physbeam")
-CLIENTEFFECT_MATERIAL("sprites/physbeam1")
-CLIENTEFFECT_MATERIAL("sprites/physglow")
-CLIENTEFFECT_MATERIAL("sprites/bluebeam")
-CLIENTEFFECT_REGISTER_END()
 
+CLIENTEFFECT_REGISTER_BEGIN(PrecacheEffectGravityGun)
+CLIENTEFFECT_MATERIAL("sprites/strider_bluebeam")
+CLIENTEFFECT_MATERIAL("sprites/bluebeam")
+CLIENTEFFECT_MATERIAL("sprites/physglow")
+CLIENTEFFECT_REGISTER_END()
 
 #endif
 IPhysicsObject* GetPhysObjFromPhysicsBone(CBaseEntity* pEntity, short physicsbone)
@@ -1649,8 +1648,8 @@ static void VectorToColor32(const Vector& in, color32& out)
 	out.a = 255;
 }
 
-ConVar gabeplus_physgun_beamwidth("gabe_physgun_beamwidth", "1", FCVAR_ARCHIVE);
-ConVar gabeplus_physgun_spritesize("gabe_physgun_spritesize", "1", FCVAR_ARCHIVE);
+ConVar gabeplus_physgun_beamwidth("gabe_physgun_beamwidth", "1.5", FCVAR_ARCHIVE);
+ConVar gabeplus_physgun_spritesize("gabe_physgun_spritesize", "2", FCVAR_ARCHIVE);
 
 //-----------------------------------------------------------------------------
 // Purpose: Third-person function call to render world model
@@ -1712,7 +1711,7 @@ int CWeaponGravityGun::DrawModel(int flags)
 
 		// Beam material
 		IMaterial* pMat = materials->FindMaterial(
-			pObject ? "sprites/physbeam1" : "sprites/physbeam",
+			"sprites/strider_bluebeam",
 			TEXTURE_GROUP_CLIENT_EFFECTS
 		);
 
@@ -1796,7 +1795,7 @@ void CWeaponGravityGun::ViewModelDrawn(C_BaseViewModel* pBaseViewModel)
 	GetPhysgunColorVector(colorVec);
 
 	IMaterial* pMat = materials->FindMaterial(
-		pObject ? "sprites/physbeam1" : "sprites/physbeam",
+		"sprites/strider_bluebeam",
 		TEXTURE_GROUP_CLIENT_EFFECTS
 	);
 

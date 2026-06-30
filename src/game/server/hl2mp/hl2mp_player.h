@@ -92,6 +92,7 @@ public:
 	void CheatImpulseCommands( int iImpulse );
 	void CreateRagdollEntity( void );
 	void GiveAllItems( void );
+	void GiveHL2Items(void);
 	void GiveHL1Items(void);
 	void GiveDefaultItems( void );
 

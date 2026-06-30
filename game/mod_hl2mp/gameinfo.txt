@@ -94,6 +94,20 @@
 			// The map search pack is mounted at the top of the search path list,
 			// but only while you are connected that server and on that map.
 			game+download	mod_hl2mp/download
+
+    game        "|gameinfo_path|."
+    game+mod    "|gameinfo_path|custom/*"
+
+    game        "hl2mp"
+    gamebin     "|gameinfo_path|bin"
+    game        "hl2"
+    game	"D:\Steam\steamapps\common\Half-Life 2\hl2"
+    game	"ep2"
+    game	"episodic"
+    game      "D:\Steam\steamapps\common\HL1VPK"
+    game	"D:\Steam\steamapps\common\Half-Life 2\lostcoast\lostcoast"
+    game	"D:\Steam\steamapps\common\cstrike_mount"
+    game        "platform"
 		}
 	}
 }

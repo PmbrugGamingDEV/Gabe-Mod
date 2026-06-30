@@ -42,6 +42,54 @@ ConVar sv_hl2mp_weapon_respawn_time( "sv_hl2mp_weapon_respawn_time", "20", FCVAR
 ConVar sv_hl2mp_item_respawn_time( "sv_hl2mp_item_respawn_time", "30", FCVAR_GAMEDLL | FCVAR_NOTIFY );
 ConVar sv_report_client_settings("sv_report_client_settings", "0", FCVAR_GAMEDLL | FCVAR_NOTIFY );
 
+ConVar sk_plr_dmg_crowbar("sk_plr_dmg_crowbar", "25", FCVAR_REPLICATED);
+
+ConVar sk_npc_dmg_9mm_bullet("sk_npc_dmg_9mm_bullet", "5", FCVAR_REPLICATED);
+ConVar sk_plr_dmg_9mm_bullet("sk_plr_dmg_9mm_bullet", "8", FCVAR_REPLICATED);
+ConVar sk_max_9mm_bullet("sk_max_9mm_bullet", "250", FCVAR_REPLICATED);
+
+ConVar sk_npc_dmg_9mmAR_bullet("sk_npc_dmg_9mmAR_bullet", "5", FCVAR_REPLICATED);
+
+ConVar sk_plr_dmg_357_bullet("sk_plr_dmg_357_bullet", "40", FCVAR_REPLICATED);
+ConVar sk_max_357_bullet("sk_max_357_bullet", "36", FCVAR_REPLICATED);
+
+extern ConVar sk_plr_dmg_buckshot;
+extern ConVar sk_max_buckshot;
+
+extern ConVar sk_plr_dmg_mp5_grenade;
+extern ConVar sk_max_mp5_grenade;
+extern ConVar sk_mp5_grenade_radius;
+
+extern ConVar sk_plr_dmg_rpg;
+ConVar sk_max_rpg_rocket("sk_max_rpg_rocket", "5", FCVAR_REPLICATED);
+
+extern ConVar sk_plr_dmg_xbow_bolt_plr;
+extern ConVar sk_plr_dmg_xbow_bolt_npc;
+ConVar sk_max_xbow_bolt("sk_max_xbow_bolt", "50", FCVAR_REPLICATED);
+
+ConVar sk_plr_dmg_egon_narrow("sk_plr_dmg_egon_narrow", "14", FCVAR_REPLICATED);
+extern ConVar sk_plr_dmg_egon_wide;
+extern ConVar sk_max_uranium;
+
+extern ConVar sk_plr_dmg_gauss;
+
+extern ConVar sk_plr_dmg_grenade;
+extern ConVar sk_max_grenade;
+
+extern ConVar sk_plr_dmg_hornet;
+extern ConVar sk_npc_dmg_hornet;
+ConVar sk_max_hornet("sk_max_hornet", "8", FCVAR_REPLICATED);
+
+ConVar sk_max_snark("sk_max_snark", "15", FCVAR_REPLICATED);
+
+extern ConVar sk_plr_dmg_tripmine;
+ConVar sk_max_tripmine("sk_max_tripmine", "5", FCVAR_REPLICATED);
+
+extern ConVar sk_plr_dmg_satchel;
+ConVar sk_max_satchel("sk_max_satchel", "5", FCVAR_REPLICATED);
+
+ConVar sk_npc_dmg_12mm_bullet("sk_npc_dmg_12mm_bullet", "8", FCVAR_REPLICATED);
+
 extern ConVar mp_chattime;
 
 extern CBaseEntity	 *g_pLastCombineSpawn;

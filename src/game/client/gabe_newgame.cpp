@@ -18,6 +18,7 @@
 #include "vgui_controls/imagelist.h"
 #include <vgui_controls/Label.h>
 #include <vgui_controls/TextEntry.h>
+#include <vgui_controls/HTML.h>
 #include <time.h>
 
 #include "filesystem.h"
@@ -84,6 +85,41 @@ static const char* GetMapLastPlayed(const char* map)
 	kv->deleteThis();
 	return "Never";
 }
+
+// ------------------------------------------------------------
+// Particle Simulator tab
+// ------------------------------------------------------------
+class CGamepadUIParticleSimTab : public Panel
+{
+	DECLARE_CLASS_SIMPLE(CGamepadUIParticleSimTab, Panel);
+
+public:
+	CGamepadUIParticleSimTab(Panel* parent)
+		: BaseClass(parent, "GamepadUIParticleSimTab")
+	{
+		m_pHTML = new HTML(this, "HTMLParticleSim", true, false);
+
+		m_pHTML->SetVisible(true);
+		m_pHTML->SetContextMenuEnabled(false);
+		m_pHTML->SetScrollbarsEnabled(false);
+
+		// Put the file here:
+		// modfolder/resource/html/particlesim.html
+		m_pHTML->OpenURL("resource/html/particlesim.html", NULL);
+	}
+
+	virtual void PerformLayout()
+	{
+		BaseClass::PerformLayout();
+
+		int w, h;
+		GetSize(w, h);
+		m_pHTML->SetBounds(0, 0, w, h);
+	}
+
+private:
+	HTML* m_pHTML;
+};
 
 // ------------------------------------------------------------
 // Map selection tab
@@ -519,6 +555,9 @@ public:
 		m_pJBModMode = new CheckButton(this, "JBMod Mode", "JBMod Gamemode (Like the JBMod on Steam)");
 		m_pJBModMode->SetSelected(false);
 
+		m_pHL2Mode = new CheckButton(this, "Half-Life 2 Mode", "Spawn With all Half-Life 2 weapons");
+		m_pHL2Mode->SetSelected(false);
+
 		ApplySingleplayerLock();
 
 		m_bLastSingleplayer = true;
@@ -556,6 +595,7 @@ public:
 		m_pHL1Mode->SetPos(pad, y);			  m_pHL1Mode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 		m_pSandboxMode->SetPos(pad, y);		  m_pSandboxMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 		m_pJBModMode->SetPos(pad, y);		  m_pJBModMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
+		m_pHL2Mode->SetPos(pad, y);			  m_pHL2Mode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 
 		UpdateValueLabels();
 	}
@@ -608,6 +648,7 @@ public:
 	bool GetSandboxMode() const { return m_pSandboxMode->IsSelected(); }
 	bool GetHL1Mode() const { return m_pHL1Mode->IsSelected(); }
 	bool GetJBModMode() const { return m_pJBModMode->IsSelected(); }
+	bool GetHL2Mode() const { return m_pHL2Mode->IsSelected(); }
 
 private:
 	void ApplySingleplayerLock()
@@ -678,6 +719,7 @@ private:
 	CheckButton* m_pHL1Mode;
 	CheckButton* m_pSandboxMode;
 	CheckButton* m_pJBModMode;
+	CheckButton* m_pHL2Mode;
 };
 
 // ------------------------------------------------------------
@@ -781,7 +823,9 @@ public:
 		SetParent(parent); // 2007-correct parenting
 
 		SetTitle("NEW GAME", true);
-		SetSizeable(false);
+		SetSize(780, 600);
+		SetMinimumSize(640, 480);
+		SetSizeable(true);
 		SetMoveable(true);
 		SetCloseButtonVisible(true);
 
@@ -798,7 +842,6 @@ public:
 		m_pServerInfoTab = new CGamepadUIServerInfoTab(m_pSheet);
 		m_pSheet->AddPage(m_pServerInfoTab, "Server Info");
 
-		SetSize(780, 600);
 		CenterOnScreen();
 		InvalidateLayout(true, true);
 	}
@@ -927,6 +970,7 @@ private:
 		const bool hl1mode = m_pSettingsTab->GetHL1Mode();
 		const bool sandboxmode = m_pSettingsTab->GetSandboxMode();
 		const bool jbmodmode = m_pSettingsTab->GetJBModMode();
+		const bool hl2mode = m_pSettingsTab->GetHL2Mode();
 
 		char hostname[128];
 		char password[128];
@@ -986,6 +1030,9 @@ private:
 			engine->ClientCmd_Unrestricted(cmd);
 
 			Q_snprintf(cmd, sizeof(cmd), "gabe_jbmod %d\n", jbmodmode ? 1 : 0);
+			engine->ClientCmd_Unrestricted(cmd);
+
+			Q_snprintf(cmd, sizeof(cmd), "gabe_hl2 %d\n", hl2mode ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 		}
 

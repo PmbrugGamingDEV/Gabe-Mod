@@ -234,7 +234,7 @@ void CHL2MP_Player::GiveAllItems(void)
 	CBasePlayer::GiveAmmo(32, "357");
 	CBasePlayer::GiveAmmo(3, "rpg_round");
 
-	CBasePlayer::GiveAmmo(1, "grenade");
+	CBasePlayer::GiveAmmo(5, "grenade");
 	CBasePlayer::GiveAmmo(2, "slam");
 
 	GiveNamedItem("weapon_crowbar");
@@ -265,6 +265,41 @@ void CHL2MP_Player::GiveAllItems(void)
 	GiveNamedItem("weapon_physcannon");
 
 	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
+}
+
+void CHL2MP_Player::GiveHL2Items(void)
+{
+	EquipSuit();
+
+	CBasePlayer::GiveAmmo(999, "Pistol");
+	CBasePlayer::GiveAmmo(999, "AR2");
+	CBasePlayer::GiveAmmo(999, "AR2AltFire");
+	CBasePlayer::GiveAmmo(999, "SMG1");
+	CBasePlayer::GiveAmmo(999, "smg1_grenade");
+	CBasePlayer::GiveAmmo(999, "Buckshot");
+	CBasePlayer::GiveAmmo(999, "357");
+	CBasePlayer::GiveAmmo(999, "rpg_round");
+	CBasePlayer::GiveAmmo(5, "grenade");
+	CBasePlayer::GiveAmmo(999, "slam");
+
+	GiveNamedItem("weapon_crowbar");
+	GiveNamedItem("weapon_stunstick");
+	GiveNamedItem("weapon_pistol");
+	GiveNamedItem("weapon_357");
+	GiveNamedItem("weapon_smg1");
+	GiveNamedItem("weapon_ar2");
+	GiveNamedItem("weapon_shotgun");
+	GiveNamedItem("weapon_frag");
+	GiveNamedItem("weapon_crossbow");
+	GiveNamedItem("weapon_bugbait");
+	GiveNamedItem("weapon_rpg");
+	GiveNamedItem("weapon_slam");
+	GiveNamedItem("weapon_physcannon");
+
+	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
+
+	SuitPower_Charge(100);
+	SetHealth(100);
 }
 
 void CHL2MP_Player::GiveHL1Items(void)
@@ -397,7 +432,7 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 }
 
 ConVar gabeplus_sandbox("gabe_sandbox", "1", FCVAR_ARCHIVE, "If set to 1, players will spawn with all weapons and infinite aux power.");
-
+ConVar gabeplus_hl2("gabe_hl2", "0", FCVAR_ARCHIVE, "If set to 1, players will spawn with all hl2 campaign weapons.");
 ConVar gabeplus_jbmod("gabe_jbmod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a jbmod experience, definetly the best game ever made");
 
 CON_COMMAND(gabe_createfakeclient, "Creates a fake client for testing purposes")
@@ -456,6 +491,10 @@ void CHL2MP_Player::Spawn(void)
 	else if (gabeplus_jbmod.GetBool())
 	{
 		GiveJBModItems();
+	}
+	else if (gabeplus_hl2.GetBool())
+	{
+		GiveHL2Items();
 	}
 	else
 	{
