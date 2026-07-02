@@ -1268,14 +1268,23 @@ void CWeaponGravityGun::UpdateObject(void)
 	Vector end = pObject->GetAbsOrigin();
 	float distance = (start - end).Length();
 
-	// Move NPCs / doors / buttons manually
+	// Move + rotate NPCs / doors / buttons manually
 	if (pObject->IsNPC() ||
 		FClassnameIs(pObject, "func_door") ||
 		FClassnameIs(pObject, "func_button") ||
 		FClassnameIs(pObject, "func_door_rotating"))
 	{
 		Vector newPos = start + forward * m_distance;
+
+		QAngle newAngles =
+			m_gravCallback.TransformAnglesFromPlayerSpace(
+				m_gravCallback.m_targetRotation,
+				pPlayer
+			);
+
 		pObject->SetAbsOrigin(newPos);
+		pObject->SetAbsAngles(newAngles);
+
 		return;
 	}
 

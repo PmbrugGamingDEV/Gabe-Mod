@@ -2251,86 +2251,82 @@ void CGameMovement::FullObserverMove( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CGameMovement::FullNoClipMove( float factor, float maxacceleration )
+void CGameMovement::FullNoClipMove(float factor, float maxacceleration)
 {
+	// -------------------------------
+	// Speed modifiers for noclip
+	// -------------------------------
+	if (mv->m_nButtons & IN_SPEED) // Shift = faster
+	{
+		factor *= 4.0f;   // quadruple speed
+	}
+	if (mv->m_nButtons & IN_DUCK)  // Ctrl = slower
+	{
+		factor *= 0.1f;   // tenth of normal speed
+	}
+
 	Vector wishvel;
 	Vector forward, right, up;
 	Vector wishdir;
 	float wishspeed;
 	float maxspeed = sv_maxspeed.GetFloat() * factor;
 
-	AngleVectors (mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
+	AngleVectors(mv->m_vecViewAngles, &forward, &right, &up);  // Determine movement angles
 
-	if ( mv->m_nButtons & IN_SPEED )
-	{
-		factor /= 2.0f;
-	}
-	
 	// Copy movement amounts
 	float fmove = mv->m_flForwardMove * factor;
 	float smove = mv->m_flSideMove * factor;
-	
-	VectorNormalize (forward);  // Normalize remainder of vectors
-	VectorNormalize (right);    // 
 
-	for (int i=0 ; i<3 ; i++)       // Determine x and y parts of velocity
-		wishvel[i] = forward[i]*fmove + right[i]*smove;
+	VectorNormalize(forward);
+	VectorNormalize(right);
+
+	for (int i = 0; i < 3; i++)
+		wishvel[i] = forward[i] * fmove + right[i] * smove;
 	wishvel[2] += mv->m_flUpMove * factor;
 
-	VectorCopy (wishvel, wishdir);   // Determine maginitude of speed of move
+	VectorCopy(wishvel, wishdir);
 	wishspeed = VectorNormalize(wishdir);
 
-	//
 	// Clamp to server defined max speed
-	//
-	if (wishspeed > maxspeed )
+	if (wishspeed > maxspeed)
 	{
-		VectorScale (wishvel, maxspeed/wishspeed, wishvel);
+		VectorScale(wishvel, maxspeed / wishspeed, wishvel);
 		wishspeed = maxspeed;
 	}
 
-	if ( maxacceleration > 0.0 )
+	if (maxacceleration > 0.0)
 	{
-		// Set pmove velocity
-		Accelerate ( wishdir, wishspeed, maxacceleration );
+		Accelerate(wishdir, wishspeed, maxacceleration);
 
-		float spd = VectorLength( mv->m_vecVelocity );
+		float spd = VectorLength(mv->m_vecVelocity);
 		if (spd < 1.0f)
 		{
 			mv->m_vecVelocity.Init();
 			return;
 		}
-		
-		// Bleed off some speed, but if we have less than the bleed
-		//  threshhold, bleed the theshold amount.
-		float control = (spd < maxspeed/4.0) ? maxspeed/4.0 : spd;
-		
+
+		float control = (spd < maxspeed / 4.0) ? maxspeed / 4.0 : spd;
 		float friction = sv_friction.GetFloat() * player->m_surfaceFriction;
-				
-		// Add the amount to the drop amount.
 		float drop = control * friction * gpGlobals->frametime;
 
-		// scale the velocity
 		float newspeed = spd - drop;
 		if (newspeed < 0)
 			newspeed = 0;
 
-		// Determine proportion of old speed we are using.
 		newspeed /= spd;
-		VectorScale( mv->m_vecVelocity, newspeed, mv->m_vecVelocity );
+		VectorScale(mv->m_vecVelocity, newspeed, mv->m_vecVelocity);
 	}
 	else
 	{
-		VectorCopy( wishvel, mv->m_vecVelocity );
+		VectorCopy(wishvel, mv->m_vecVelocity);
 	}
 
-	// Just move ( don't clip or anything )
+	// Just move (don't clip or anything)
 	Vector out;
-	VectorMA( mv->GetAbsOrigin(), gpGlobals->frametime, mv->m_vecVelocity, out );
-	mv->SetAbsOrigin( out );
+	VectorMA(mv->GetAbsOrigin(), gpGlobals->frametime, mv->m_vecVelocity, out);
+	mv->SetAbsOrigin(out);
 
-	// Zero out velocity if in noaccel mode
-	if ( maxacceleration < 0.0f )
+	if (maxacceleration < 0.0f)
 	{
 		mv->m_vecVelocity.Init();
 	}

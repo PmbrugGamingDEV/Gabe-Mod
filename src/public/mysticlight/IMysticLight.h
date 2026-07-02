@@ -6,12 +6,6 @@
 // Copyright (c) Valve Corporation. All rights reserved
 //======================================================================================
 
-#include "basetypes.h"
-#include "dbgflag.h"
-#include "platform.h"
-#include <math.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <windows.h>
 #include <oleauto.h>
 
@@ -27,6 +21,8 @@ public:
     // Initializes the Mystic Light SDK/runtime.
     // This must be called before any other Mystic Light function.
     virtual int Initialize() = 0;
+
+    virtual int Release() = 0;
 
     // Retrieves information about all compatible Mystic Light device types.
     // pDevType receives an array of device type names (e.g. motherboard, GPU, RAM).

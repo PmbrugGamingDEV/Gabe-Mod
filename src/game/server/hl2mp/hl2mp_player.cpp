@@ -476,29 +476,41 @@ void CHL2MP_Player::Spawn(void)
 		RemoveEffects( EF_NODRAW );
 	}
 
+	edict_t* pEdict = this->edict();
+
 	if (gabeplus_deathmatch.GetBool())
 	{
-		GiveDefaultItems();
+		GiveDefaultItems(); // Deathmatch
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 0");
 	}
 	else if (gabeplus_hl1.GetBool())
 	{
-		GiveHL1Items();
+		GiveHL1Items(); // Sandbox as well but hl1 weapons
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
+		engine->ClientCommand(pEdict, "god");
 	}
 	else if (gabeplus_sandbox.GetBool())
 	{
-		GiveAllItems();
+		GiveAllItems(); // Sandbox
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
+		engine->ClientCommand(pEdict, "god");
 	}
 	else if (gabeplus_jbmod.GetBool())
 	{
-		GiveJBModItems();
+		GiveJBModItems(); GiveHL1Items(); // Sandbox as well but jbmod physgun
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
+		engine->ClientCommand(pEdict, "god");
 	}
 	else if (gabeplus_hl2.GetBool())
 	{
-		GiveHL2Items();
+		GiveHL2Items(); // Sandbox HL2 Campaign
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
+		engine->ClientCommand(pEdict, "god");
 	}
 	else
 	{
-		GiveNoItems();
+		GiveNoItems(); // HL2 Campaign
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 0");
 	}
 
 	SetNumAnimOverlays( 3 );

@@ -68,57 +68,118 @@ Vector CHL2MP_Player::GetAttackSpread( CBaseCombatWeapon *pWeapon, CBaseEntity *
 //			fvol - 
 //			force - force sound to play
 //-----------------------------------------------------------------------------
-void CHL2MP_Player::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force )
+ConVar gabeplus_permaterialfootsteps(
+	"gabe_permaterialfootsteps",
+	"1",
+	FCVAR_REPLICATED | FCVAR_ARCHIVE,
+	"0 = team-based footsteps, 1 = per-material footsteps"
+);
+
+void CHL2MP_Player::PlayStepSound(
+	Vector& vecOrigin,
+	surfacedata_t* psurface,
+	float fvol,
+	bool force)
 {
-	if ( gpGlobals->maxClients > 1 && !sv_footsteps.GetFloat() )
+	if (gpGlobals->maxClients > 1 && !sv_footsteps.GetFloat())
 		return;
 
-#if defined( CLIENT_DLL )
-	// during prediction play footstep sounds only once
-	if ( !prediction->IsFirstTimePredicted() )
+#if defined(CLIENT_DLL)
+	if (!prediction->IsFirstTimePredicted())
 		return;
 #endif
 
-	if ( GetFlags() & FL_DUCKING )
+	if (GetFlags() & FL_DUCKING)
 		return;
 
-	m_Local.m_nStepside = !m_Local.m_nStepside;
-
-	char szStepSound[128];
-
-	if ( m_Local.m_nStepside )
-	{
-		Q_snprintf( szStepSound, sizeof( szStepSound ), "%s.RunFootstepLeft", g_ppszPlayerSoundPrefixNames[m_iPlayerSoundType] );
-	}
-	else
-	{
-		Q_snprintf( szStepSound, sizeof( szStepSound ), "%s.RunFootstepRight", g_ppszPlayerSoundPrefixNames[m_iPlayerSoundType] );
-	}
+	m_Local.m_nStepside = ~m_Local.m_nStepside;
 
 	CSoundParameters params;
-	if ( GetParametersForSound( szStepSound, params, NULL ) == false )
-		return;
+	const char* pFinalSound = NULL;
+
+	// --------------------------------------------------
+	// MODE 1: Surface-based footsteps
+	// --------------------------------------------------
+	if (gabeplus_permaterialfootsteps.GetInt() == 1)
+	{
+		if (!psurface)
+			return;
+
+		int nSide = m_Local.m_nStepside;
+
+		unsigned short stepSoundName =
+			nSide ? psurface->sounds.stepleft
+			: psurface->sounds.stepright;
+
+		if (!stepSoundName)
+			return;
+
+		IPhysicsSurfaceProps* physprops =
+			MoveHelper()->GetSurfaceProps();
+
+		const char* pSoundName =
+			physprops->GetString(stepSoundName);
+
+		if (!pSoundName || !pSoundName[0])
+			return;
+
+		if (!GetParametersForSound(pSoundName, params, NULL))
+			return;
+
+		pFinalSound = params.soundname;
+	}
+	// --------------------------------------------------
+	// MODE 0: Team-based footsteps
+	// --------------------------------------------------
+	else
+	{
+		char szStepSound[128];
+
+		if (m_Local.m_nStepside)
+		{
+			Q_snprintf(
+				szStepSound,
+				sizeof(szStepSound),
+				"%s.RunFootstepLeft",
+				g_ppszPlayerSoundPrefixNames[m_iPlayerSoundType]);
+		}
+		else
+		{
+			Q_snprintf(
+				szStepSound,
+				sizeof(szStepSound),
+				"%s.RunFootstepRight",
+				g_ppszPlayerSoundPrefixNames[m_iPlayerSoundType]);
+		}
+
+		if (!GetParametersForSound(szStepSound, params, NULL))
+			return;
+
+		pFinalSound = params.soundname;
+	}
+
+	// --------------------------------------------------
+	// Emit sound
+	// --------------------------------------------------
 
 	CRecipientFilter filter;
-	filter.AddRecipientsByPAS( vecOrigin );
+	filter.AddRecipientsByPAS(vecOrigin);
 
 #ifndef CLIENT_DLL
-	// im MP, server removed all players in origins PVS, these players 
-	// generate the footsteps clientside
-	if ( gpGlobals->maxClients > 1 )
-		filter.RemoveRecipientsByPVS( vecOrigin );
+	if (gpGlobals->maxClients > 1)
+		filter.RemoveRecipientsByPVS(vecOrigin);
 #endif
 
 	EmitSound_t ep;
 	ep.m_nChannel = CHAN_BODY;
-	ep.m_pSoundName = params.soundname;
+	ep.m_pSoundName = pFinalSound;
 	ep.m_flVolume = fvol;
 	ep.m_SoundLevel = params.soundlevel;
 	ep.m_nFlags = 0;
 	ep.m_nPitch = params.pitch;
 	ep.m_pOrigin = &vecOrigin;
 
-	EmitSound( filter, entindex(), ep );
+	EmitSound(filter, entindex(), ep);
 }
 
 
