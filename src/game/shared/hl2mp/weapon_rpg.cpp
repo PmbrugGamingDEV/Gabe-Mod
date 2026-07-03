@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+﻿//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -15,12 +15,15 @@
 	#include "beamdraw.h"
 	#include "fx_line.h"
 	#include "view.h"
+	#include "input.h"
+	#include "cdll_util.h"
 #else
 	#include "basecombatcharacter.h"
 	#include "movie_explosion.h"
 	#include "soundent.h"
 	#include "player.h"
 	#include "rope.h"
+	#include "fmtstr.h"
 	#include "vstdlib/random.h"
 	#include "engine/IEngineSound.h"
 	#include "explode.h"
@@ -38,8 +41,9 @@
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+ConVar gabeplus_rpg_speed ("gabe+_rpg_speed", "1500", 0);
 
-#define	RPG_SPEED	1500
+#define	RPG_SPEED	gabeplus_rpg_speed.GetInt()
 
 #ifndef CLIENT_DLL
 const char *g_pLaserDotThink = "LaserThinkContext";
@@ -48,6 +52,98 @@ static ConVar sk_apc_missile_damage("sk_apc_missile_damage", "15");
 #define APC_MISSILE_DAMAGE	sk_apc_missile_damage.GetFloat()
 
 #endif
+
+struct RPGLaunchItem
+{
+    const char *pLabel;       // what the player sees
+    const char *pClassname;   // entity to spawn
+    const char *pModel;       // model (NULL for rockets)
+    float       flSpeed;
+    bool        bUseMissile;  // true = CMissile::Create
+};
+
+static RPGLaunchItem g_RPGLaunchItems[] =
+{
+    // === RPG rocket ===
+    { "RPG Rocket", "rpg_missile", NULL, RPG_SPEED, true },
+
+    // === Explosive / heavy ===
+    { "Oil Drum",        "prop_physics", "models/props_c17/oildrum001.mdl",        1200.0f, false },
+    { "Gas Can",         "prop_physics", "models/props_junk/gascan001a.mdl",       1200.0f, false },
+    { "Propane Tank",    "prop_physics", "models/props_junk/propane_tank001a.mdl", 1100.0f, false },
+
+    // === Crates / boxes ===
+    { "Wood Crate",      "prop_physics", "models/props_junk/wood_crate001a.mdl",   1000.0f, false },
+    { "Metal Barrel",    "prop_physics", "models/props_c17/canister01a.mdl",       950.0f,  false },
+    { "Cardboard Box",   "prop_physics", "models/props_junk/cardboard_box001a.mdl",1050.0f, false },
+
+    // === Junk / fun ===
+    { "Watermelon",      "prop_physics", "models/props_junk/watermelon01.mdl",     900.0f,  false },
+    { "Plastic Bottle",  "prop_physics", "models/props_junk/garbage_plasticbottle003a.mdl", 1100.0f, false },
+    { "Paint Can",       "prop_physics", "models/props_junk/metal_paintcan001a.mdl",1000.0f, false },
+    { "Coffee Mug",      "prop_physics", "models/props_junk/garbage_coffeemug001a.mdl", 1200.0f, false },
+    { "Glass Bottle",    "prop_physics", "models/props_junk/glassbottle01a.mdl",   1100.0f, false },
+    { "Cinder Block",    "prop_physics", "models/props_junk/cinderblock01a.mdl",   950.0f,  false },
+    { "Saw Blade",       "prop_physics", "models/props_junk/sawblade001a.mdl",     1300.0f, false },
+
+    // === Furniture ===
+    { "Chair",           "prop_physics", "models/props_c17/chair02a.mdl",          900.0f,  false },
+    { "Office Chair",    "prop_physics", "models/props_c17/chair_office01a.mdl",   850.0f,  false },
+    { "Table",           "prop_physics", "models/props_c17/furnituretable001a.mdl",800.0f,  false },
+    { "Couch",           "prop_physics", "models/props_c17/furniturecouch001a.mdl",700.0f,  false },
+    { "Filing Cabinet",  "prop_physics", "models/props_c17/FurnitureDrawer001a.mdl",850.0f, false },
+
+    // === Tech ===
+    { "Monitor",         "prop_physics", "models/props_lab/monitor01a.mdl",        950.0f,  false },
+    { "Keyboard",        "prop_physics", "models/props_c17/computer01_keyboard.mdl",1100.0f, false },
+    { "Computer Tower",  "prop_physics", "models/props_lab/harddrive02.mdl",       1000.0f, false },
+    { "Radio",           "prop_physics", "models/props_lab/citizenradio.mdl",      1000.0f, false },
+    { "TV",              "prop_physics", "models/props_c17/tv_monitor01.mdl",      850.0f,  false },
+
+    // === Outdoors / city ===
+    { "Traffic Cone",    "prop_physics", "models/props_junk/trafficcone001a.mdl",  1100.0f, false },
+    { "Trash Bin",       "prop_physics", "models/props_junk/trashbin01a.mdl",       850.0f,  false },
+
+    // === Vehicles / big ===
+    { "Car",             "prop_physics", "models/props_vehicles/car001a_physics.mdl",700.0f, false },
+    { "Van",             "prop_physics", "models/props_vehicles/van001a_physics.mdl",650.0f, false },
+    { "APC",             "prop_physics", "models/props_vehicles/apc001.mdl",        600.0f, false },
+    { "Tire",            "prop_physics", "models/props_vehicles/carparts_tire01a.mdl",1000.0f,false },
+
+    // === Goofy / gibs ===
+    { "Skull",           "prop_physics", "models/gibs/hgibs.mdl",                   1000.0f, false },
+    { "Antlion Gib",     "prop_physics", "models/gibs/antlion_gib_small_1.mdl",     1200.0f, false },
+    { "Spine",			 "prop_physics", "models/gibs/hgibs_spine.mdl",              1200.0f, false }
+};
+
+#define RPG_LAUNCH_COUNT ARRAYSIZE( g_RPGLaunchItems )
+
+
+enum RPGSpeedMode
+{
+	RPG_SPEED_SLOW = 0,
+	RPG_SPEED_MED,
+	RPG_SPEED_FAST,
+	RPG_SPEED_FLASH,
+
+	RPG_SPEED_COUNT
+};
+
+static const float g_RPGFireRates[RPG_SPEED_COUNT] =
+{
+	0.5f,   // Slow
+	0.2f,   // Medium
+	0.1f,   // Fast
+	0.02f   // Flash 😈
+};
+
+static const char* g_RPGSpeedNames[RPG_SPEED_COUNT] =
+{
+	"Slow",
+	"Medium",
+	"Fast",
+	"Flash"
+};
 
 #ifdef CLIENT_DLL
 #define CLaserDot C_LaserDot
@@ -470,9 +566,6 @@ void CMissile::IgniteThink( void )
 	if ( m_hOwner && m_hOwner->GetOwner() )
 	{
 		CBasePlayer *pPlayer = ToBasePlayer( m_hOwner->GetOwner() );
-
-		color32 white = { 255,225,205,64 };
-		UTIL_ScreenFade( pPlayer, white, 0.1f, 0.0f, FFADE_IN );
 	}
 
 	CreateSmokeTrail();
@@ -1305,22 +1398,24 @@ END_PREDICTION_DATA()
 
 #endif
 
-#ifndef CLIENT_DLL
 acttable_t	CWeaponRPG::m_acttable[] = 
 {
-	{ ACT_HL2MP_IDLE,					ACT_HL2MP_IDLE_RPG,					false },
-	{ ACT_HL2MP_RUN,					ACT_HL2MP_RUN_RPG,					false },
-	{ ACT_HL2MP_IDLE_CROUCH,			ACT_HL2MP_IDLE_CROUCH_RPG,			false },
-	{ ACT_HL2MP_WALK_CROUCH,			ACT_HL2MP_WALK_CROUCH_RPG,			false },
-	{ ACT_HL2MP_GESTURE_RANGE_ATTACK,	ACT_HL2MP_GESTURE_RANGE_ATTACK_RPG,	false },
-	{ ACT_HL2MP_GESTURE_RELOAD,			ACT_HL2MP_GESTURE_RELOAD_RPG,		false },
-	{ ACT_HL2MP_JUMP,					ACT_HL2MP_JUMP_RPG,					false },
-	{ ACT_RANGE_ATTACK1,				ACT_RANGE_ATTACK_RPG,				false },
+	{ ACT_MP_STAND_IDLE,				ACT_HL2MP_IDLE_RPG,					false },
+	{ ACT_MP_CROUCH_IDLE,				ACT_HL2MP_IDLE_CROUCH_RPG,			false },
+
+	{ ACT_MP_RUN,						ACT_HL2MP_RUN_RPG,					false },
+	{ ACT_MP_CROUCHWALK,				ACT_HL2MP_WALK_CROUCH_RPG,			false },
+
+	{ ACT_MP_ATTACK_STAND_PRIMARYFIRE,	ACT_HL2MP_GESTURE_RANGE_ATTACK_RPG,	false },
+	{ ACT_MP_ATTACK_CROUCH_PRIMARYFIRE,	ACT_HL2MP_GESTURE_RANGE_ATTACK_RPG,	false },
+
+	{ ACT_MP_RELOAD_STAND,				ACT_HL2MP_GESTURE_RELOAD_RPG,		false },
+	{ ACT_MP_RELOAD_CROUCH,				ACT_HL2MP_GESTURE_RELOAD_RPG,		false },
+
+	{ ACT_MP_JUMP,						ACT_HL2MP_JUMP_RPG,					false },
 };
 
 IMPLEMENT_ACTTABLE(CWeaponRPG);
-
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1331,6 +1426,10 @@ CWeaponRPG::CWeaponRPG()
 	m_bInitialStateUpdate= false;
 	m_bHideGuiding = false;
 	m_bGuiding = false;
+	m_iLaunchIndex = 0;
+	m_iLaunchItem = 0;
+	m_iSpeedMode = RPG_SPEED_MED;
+	m_flNextReload = 0.0f;
 
 	m_fMinRange1 = m_fMinRange2 = 40*12;
 	m_fMaxRange1 = m_fMaxRange2 = 500*12;
@@ -1361,6 +1460,7 @@ void CWeaponRPG::Precache( void )
 	PrecacheScriptSound( "Missile.Accelerate" );
 
 	// Laser dot...
+	PrecacheModel( "sprites/redglow1.vmt" );
 	PrecacheModel( RPG_LASER_SPRITE );
 	PrecacheModel( RPG_BEAM_SPRITE );
 	PrecacheModel( RPG_BEAM_SPRITE_NOZ );
@@ -1423,64 +1523,96 @@ bool CWeaponRPG::WeaponShouldBeLowered( void )
 //-----------------------------------------------------------------------------
 void CWeaponRPG::PrimaryAttack( void )
 {
-	// Only the player fires this way so we can cast
-	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+    CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+    if ( !pPlayer )
+        return;
 
-	if (!pPlayer)
-		return;
+	m_flNextPrimaryAttack = gpGlobals->curtime + g_RPGFireRates[m_iSpeedMode];
 
-	// Can't have an active missile out
-	if ( m_hMissile != NULL )
-		return;
+    const RPGLaunchItem &item = g_RPGLaunchItems[m_iLaunchItem];
 
-	// Can't be reloading
-	if ( GetActivity() == ACT_VM_RELOAD )
-		return;
+    Vector vForward, vRight, vUp;
+    pPlayer->EyeVectors( &vForward, &vRight, &vUp );
 
-	Vector vecOrigin;
-	Vector vecForward;
-
-	m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
-
-	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
-	
-	if ( pOwner == NULL )
-		return;
-
-	Vector	vForward, vRight, vUp;
-
-	pOwner->EyeVectors( &vForward, &vRight, &vUp );
-
-	Vector	muzzlePoint = pOwner->Weapon_ShootPosition() + vForward * 12.0f + vRight * 6.0f + vUp * -3.0f;
+    Vector muzzlePoint =
+        pPlayer->Weapon_ShootPosition() +
+        vForward * 12.0f +
+        vRight   * 6.0f +
+        vUp      * -3.0f;
 
 #ifndef CLIENT_DLL
-	QAngle vecAngles;
-	VectorAngles( vForward, vecAngles );
+    if ( item.bUseMissile )
+    {
+        QAngle ang;
+        VectorAngles( vForward, ang );
 
-	CMissile *pMissile = CMissile::Create( muzzlePoint, vecAngles, GetOwner()->edict() );
-	pMissile->m_hOwner = this;
+        CMissile *pMissile =
+            CMissile::Create( muzzlePoint, ang, GetOwner()->edict() );
 
-	// If the shot is clear to the player, give the missile a grace period
-	trace_t	tr;
-	Vector vecEye = pOwner->EyePosition();
-	UTIL_TraceLine( vecEye, vecEye + vForward * 128, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr );
-	if ( tr.fraction == 1.0 )
-	{
-		pMissile->SetGracePeriod( 0.3 );
-	}
+        pMissile->m_hOwner = this;
+        pMissile->SetDamage( GetHL2MPWpnData().m_iPlayerDamage );
+        m_hMissile = pMissile;
 
-	pMissile->SetDamage( GetHL2MPWpnData().m_iPlayerDamage );
+		WeaponSound( SINGLE );
+    }
+    else
+    {
+        CBaseEntity *pEnt =
+            CreateEntityByName( item.pClassname );
 
-	m_hMissile = pMissile;
+        if ( pEnt )
+        {
+			if ( item.pModel )
+			{
+				PrecacheModel( item.pModel );
+				pEnt->SetModel( item.pModel );
+			}
+            pEnt->SetAbsOrigin( muzzlePoint );
+            pEnt->SetAbsAngles( pPlayer->EyeAngles() );
+			pEnt->SetSolid( SOLID_VPHYSICS );
+			pEnt->SetMoveType( MOVETYPE_VPHYSICS );
+			pEnt->SetCollisionGroup( COLLISION_GROUP_NONE );
+
+            DispatchSpawn( pEnt );
+
+            IPhysicsObject *pPhys = pEnt->VPhysicsGetObject();
+            if ( pPhys )
+            {
+                pPhys->Wake();
+                pPhys->SetVelocity( & ( vForward * item.flSpeed ), NULL );
+            }
+        }
+    }
 #endif
 
-	DecrementAmmo( GetOwner() );
-	SendWeaponAnim( ACT_VM_PRIMARYATTACK );
-	WeaponSound( SINGLE );
+    SendWeaponAnim( ACT_VM_PRIMARYATTACK );
+	
 
-	// player "shoot" animation
-	pPlayer->SetAnimation( PLAYER_ATTACK1 );
+    pPlayer->SetAnimation( PLAYER_ATTACK1 );
 }
+
+
+void CWeaponRPG::SecondaryAttack( void )
+{
+    m_iLaunchItem++;
+    if ( m_iLaunchItem >= RPG_LAUNCH_COUNT )
+        m_iLaunchItem = 0;
+
+#ifndef CLIENT_DLL
+CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+if ( pPlayer )
+{
+     ClientPrint(pPlayer,
+        HUD_PRINTTALK,
+        CFmtStr( "\x04RPG PROP:\x01 %s\n",
+                 g_RPGLaunchItems[m_iLaunchItem].pLabel )
+    );
+}
+#endif
+
+    m_flNextSecondaryAttack = gpGlobals->curtime + 0.3f;
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -1562,6 +1694,12 @@ void CWeaponRPG::ItemPostFrame( void )
 	else
 	{
 		SuppressGuiding( false );
+	}
+
+	if ((pPlayer->m_afButtonPressed & IN_RELOAD) && gpGlobals->curtime >= m_flNextReload)
+	{
+		Reload();
+		m_flNextReload = gpGlobals->curtime + 1.0f;
 	}
 
 	//Move the laser
@@ -1814,26 +1952,43 @@ void CWeaponRPG::NotifyRocketDied( void )
 
 	if ( GetActivity() == ACT_VM_RELOAD )
 		return;
-
-	Reload();
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-bool CWeaponRPG::Reload( void )
+
+bool CWeaponRPG::Reload(void)
 {
-	CBaseCombatCharacter *pOwner = GetOwner();
-	
-	if ( pOwner == NULL )
+	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
+	if (!pPlayer)
 		return false;
 
-	if ( pOwner->GetAmmoCount(m_iPrimaryAmmoType) <= 0 )
-		return false;
+	// Cycle mode
+	m_iSpeedMode++;
+	if (m_iSpeedMode >= RPG_SPEED_COUNT)
+		m_iSpeedMode = 0;
 
-	WeaponSound( RELOAD );
-	
-	SendWeaponAnim( ACT_VM_RELOAD );
+#ifndef CLIENT_DLL
+	// Center print (BIG text)
+	ClientPrint(pPlayer, HUD_PRINTCENTER,
+		CFmtStr("RPG Speed: %s", g_RPGSpeedNames[m_iSpeedMode]));
+
+	// Optional: chat print too
+	ClientPrint(pPlayer, HUD_PRINTTALK,
+		CFmtStr("\x04RPG SPEED:\x01 %s\n", g_RPGSpeedNames[m_iSpeedMode]));
+#endif
+
+	// Small delay so you can't spam reload
+	m_flNextPrimaryAttack = gpGlobals->curtime + 0.2f;
+
+	switch (m_iSpeedMode)
+	{
+		case RPG_SPEED_SLOW:  EmitSound("buttons/button1.wav"); break;
+		case RPG_SPEED_MED:   EmitSound("buttons/button3.wav"); break;
+		case RPG_SPEED_FAST:  EmitSound("buttons/button5.wav"); break;
+		case RPG_SPEED_FLASH: EmitSound("buttons/button9.wav"); break;
+	}
 
 	return true;
 }
@@ -1859,7 +2014,8 @@ void CWeaponRPG::GetWeaponAttachment( int attachmentId, Vector &outVector, Vecto
 {
 	QAngle	angles;
 
-	if ( ShouldDrawUsingViewModel() )
+	//Tony; third person attachment
+	if ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson())
 	{
 		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 		
@@ -1879,6 +2035,19 @@ void CWeaponRPG::GetWeaponAttachment( int attachmentId, Vector &outVector, Vecto
 	if ( dir != NULL )
 	{
 		AngleVectors( angles, dir, NULL, NULL );
+	}
+}
+
+//Tony; added so when the rpg switches to third person, the beam etc is re-created.
+void CWeaponRPG::ThirdPersonSwitch( bool bThirdPerson )
+{
+	if ( m_pBeam != NULL )
+	{
+		//Tell it to die right away and let the beam code free it.
+		m_pBeam->brightness = 0.0f;
+		m_pBeam->flags &= ~FBEAM_FOREVER;
+		m_pBeam->die = gpGlobals->curtime - 0.1;
+		m_pBeam = NULL;
 	}
 }
 
@@ -1903,7 +2072,7 @@ void CWeaponRPG::InitBeam( void )
 
 	CBaseEntity *pEntity = NULL;
 
-	if ( ShouldDrawUsingViewModel() )
+	if ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson() )
 	{
 		CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 		
@@ -1922,13 +2091,15 @@ void CWeaponRPG::InitBeam( void )
 	beamInfo.m_nType = TE_BEAMPOINTS;
 	beamInfo.m_vecStart = vec3_origin;
 	beamInfo.m_vecEnd = vec3_origin;
-	
-	beamInfo.m_pszModelName = ( ShouldDrawUsingViewModel() ) ? RPG_BEAM_SPRITE_NOZ : RPG_BEAM_SPRITE;
+
+	//Tony; third person check
+	beamInfo.m_pszModelName = ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson() ) ? RPG_BEAM_SPRITE_NOZ : RPG_BEAM_SPRITE;
+
 	
 	beamInfo.m_flHaloScale = 0.0f;
 	beamInfo.m_flLife = 0.0f;
 	
-	if ( ShouldDrawUsingViewModel() )
+	if ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson() )
 	{
 		beamInfo.m_flWidth = 2.0f;
 		beamInfo.m_flEndWidth = 2.0f;
@@ -1993,7 +2164,8 @@ void CWeaponRPG::DrawEffects( void )
 
 	float scale = 8.0f + random->RandomFloat( -2.0f, 2.0f );
 
-	int	attachmentID = ( ShouldDrawUsingViewModel() ) ? RPG_GUIDE_ATTACHMENT : RPG_GUIDE_ATTACHMENT_3RD;
+	//Tony;a dd third person check.
+	int	attachmentID = ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson() ) ? RPG_GUIDE_ATTACHMENT : RPG_GUIDE_ATTACHMENT_3RD;
 
 	GetWeaponAttachment( attachmentID, vecAttachment, &vecDir );
 
@@ -2229,8 +2401,8 @@ int CLaserDot::DrawModel( int flags )
 
 	if ( pOwner != NULL && pOwner->IsDormant() == false )
 	{
-		// Always draw the dot in front of our faces when in first-person
-		if ( pOwner->IsLocalPlayer() )
+		// Always draw the dot in front of our faces when in first-person -- Tony; added check for third person heres!
+		if ( pOwner->IsLocalPlayer() && !::input->CAM_IsThirdPerson() )
 		{
 			// Take our view position and orientation
 			vecAttachment = CurrentViewOrigin();
@@ -2240,8 +2412,7 @@ int CLaserDot::DrawModel( int flags )
 		{
 			// Take the eye position and direction
 			vecAttachment = pOwner->EyePosition();
-			
-			QAngle angles = pOwner->GetAnimEyeAngles();
+			QAngle angles = pOwner->EyeAngles();
 			AngleVectors( angles, &vecDir );
 		}
 		

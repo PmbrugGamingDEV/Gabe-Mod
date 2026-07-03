@@ -69,6 +69,7 @@
 #include "dt_utlvector_send.h"
 #include "vote_controller.h"
 #include "ai_speech.h"
+#include "weapon_physgun.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -589,6 +590,8 @@ CBasePlayer::CBasePlayer( )
 	m_iHealth = 0;
 	Weapon_SetLast( NULL );
 	m_bitsDamageType = 0;
+
+	m_bIsHoldingPhysGun = false;
 
 	m_bForceOrigin = false;
 	m_hVehicle = NULL;
@@ -4650,6 +4653,17 @@ void CBasePlayer::PostThink()
 	{
 		if ( IsAlive() )
 		{
+			/* Gabe Mod */
+			CBaseCombatWeapon* pWep = this->GetActiveWeapon();
+			if (pWep && (FClassnameIs(pWep, "weapon_physgun")))
+			{
+				m_bIsHoldingPhysGun = true;
+			}
+			else
+			{
+				m_bIsHoldingPhysGun = false;
+			}
+			/* End Gabe Mod*/
 			// set correct collision bounds (may have changed in player movement code)
 			VPROF_SCOPE_BEGIN( "CBasePlayer::PostThink-Bounds" );
 			if ( GetFlags() & FL_DUCKING )
@@ -9785,3 +9799,49 @@ void* SendProxy_SendNonLocalDataTable( const SendProp *pProp, const void *pStruc
 }
 REGISTER_SEND_PROXY_NON_MODIFIED_POINTER( SendProxy_SendNonLocalDataTable );
 
+CBaseCombatWeapon* CBasePlayer::GetPhysGun() const
+{
+	CBaseCombatWeapon* pWep = GetActiveWeapon();
+
+	if (pWep && (FClassnameIs(pWep, "weapon_physgun")))
+	{
+		return pWep;
+	}
+
+	return NULL;
+}
+
+bool CBasePlayer::PhysGun_IsHoldingObject() const
+{
+	return ::PhysGun_IsHoldingObject(GetPhysGun());
+}
+
+float CBasePlayer::PhysGun_GetHoldDistance() const
+{
+	return ::PhysGun_GetHoldDistance(GetPhysGun());
+}
+
+bool CBasePlayer::PhysGun_IsRotatingObject() const
+{
+	return ::PhysGun_IsRotatingObject(GetPhysGun());
+}
+
+void CBasePlayer::PhysGun_DropHeldObject()
+{
+	::PhysGun_DropHeldObject(GetPhysGun());
+}
+
+void CBasePlayer::PhysGun_ReleaseHeldObject()
+{
+	::PhysGun_ReleaseHeldObject(GetPhysGun());
+}
+
+int CBasePlayer::PhysGun_GetFrozenObjectCount() const
+{
+	return ::PhysGun_GetFrozenObjectCount(GetPhysGun());
+}
+
+void CBasePlayer::PhysGun_ReleaseFrozenObjects()
+{
+	::PhysGun_ReleaseFrozenObjects(GetPhysGun());
+}

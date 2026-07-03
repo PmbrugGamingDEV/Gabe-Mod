@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -178,6 +178,7 @@ public:
 	void	Precache( void );
 
 	void	PrimaryAttack( void );
+	void	SecondaryAttack( void );
 	virtual float GetFireRate( void ) { return 1; };
 	void	ItemPostFrame( void );
 
@@ -238,13 +239,14 @@ public:
 	CMaterialReference	m_hBeamMaterial;	// Used for the laser beam
 	Beam_t				*m_pBeam;			// Laser beam temp entity
 
+	//Tony; third person check thing, to destroy/reinitialize the beam ( swapping first -> third or back, etc )
+	virtual void			ThirdPersonSwitch( bool bThirdPerson );
+
 #endif	//CLIENT_DLL
 
 	CBaseEntity *GetMissile( void ) { return m_hMissile; }
 
-#ifndef CLIENT_DLL
 	DECLARE_ACTTABLE();
-#endif
 	
 protected:
 
@@ -259,8 +261,12 @@ protected:
 	CHandle<CLaserDot>	m_hLaserDot;
 #endif
 
+	int					m_iLaunchIndex;
+	int					m_iLaunchItem;
+	int					m_iSpeedMode;
+	float				m_flNextReload;
+
 private:
-	
 	CWeaponRPG( const CWeaponRPG & );
 };
 

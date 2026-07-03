@@ -18,6 +18,7 @@
 #include "hintsystem.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "util_shared.h"
+#include "weapon_physgun.h"
 
 #if defined USES_ECON_ITEMS
 #include "game_item_schema.h"
@@ -361,6 +362,18 @@ public:
 	virtual void			Event_KilledOther( CBaseEntity *pVictim, const CTakeDamageInfo &info );
 
 	virtual void			Event_Dying( const CTakeDamageInfo &info );
+
+	bool					IsHoldingPhysGun(void) const { return m_bIsHoldingPhysGun; } // Gabe Mod
+
+	CBaseCombatWeapon* GetPhysGun() const;
+
+	bool PhysGun_IsHoldingObject() const;
+	float PhysGun_GetHoldDistance() const;
+	bool PhysGun_IsRotatingObject() const;
+	void PhysGun_DropHeldObject();
+	void PhysGun_ReleaseHeldObject();
+	int PhysGun_GetFrozenObjectCount() const;
+	void PhysGun_ReleaseFrozenObjects();
 
 	bool					IsHLTV( void ) const { return pl.hltv; }
 	bool					IsReplay( void ) const { return pl.replay; }
@@ -1172,6 +1185,8 @@ private:
 
 	// Clients try to run on their own realtime clock, this is this client's clock
 	CNetworkVar( int, m_nTickBase );
+
+	bool					m_bIsHoldingPhysGun;
 
 	bool					m_bGamePaused;
 	float					m_fLastPlayerTalkTime;

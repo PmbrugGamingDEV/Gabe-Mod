@@ -21,6 +21,7 @@
 
 #ifndef CLIENT_DLL
 #include "hl2mp_player.h"
+#include "vscript_shared.h"
 #endif
 
 #define VEC_CROUCH_TRACE_MIN	HL2MPRules()->GetHL2MPViewVectors()->m_vCrouchTraceMin
@@ -91,6 +92,7 @@ public:
 #else
 
 	DECLARE_SERVERCLASS_NOBASE(); // This makes datatables able to access our private vars.
+	DECLARE_ENT_SCRIPTDESC();
 #endif
 	
 	CHL2MPRules();

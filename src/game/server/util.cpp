@@ -1251,7 +1251,7 @@ void UTIL_SetModel( CBaseEntity *pEntity, const char *pModelName )
 	int i = modelinfo->GetModelIndex( pModelName );
 	if ( i == -1 )	
 	{
-		Error("%i/%s - %s:  UTIL_SetModel:  not precached: %s\n", pEntity->entindex(),
+		Warning("%i/%s - %s:  UTIL_SetModel:  not precached: %s\n", pEntity->entindex(),
 			STRING( pEntity->GetEntityName() ),
 			pEntity->GetClassname(), pModelName);
 	}

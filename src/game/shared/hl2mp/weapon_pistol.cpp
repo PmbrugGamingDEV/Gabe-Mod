@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -12,9 +12,12 @@
 	#include "c_hl2mp_player.h"
 #else
 	#include "hl2mp_player.h"
+	#include "util.h" // For UTIL_HudHintText
+	#include "GABE.H"
 #endif
 
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
+#include "weapon_hl2mpbase_machinegun.h"
 
 #define	PISTOL_FASTEST_REFIRE_TIME		0.1f
 #define	PISTOL_FASTEST_DRY_REFIRE_TIME	0.2f
@@ -30,10 +33,10 @@
 // CWeaponPistol
 //-----------------------------------------------------------------------------
 
-class CWeaponPistol : public CBaseHL2MPCombatWeapon
+class CWeaponPistol : public CHL2MPMachineGun
 {
 public:
-	DECLARE_CLASS( CWeaponPistol, CBaseHL2MPCombatWeapon );
+	DECLARE_CLASS( CWeaponPistol, CHL2MPMachineGun );
 
 	CWeaponPistol(void);
 
@@ -44,12 +47,16 @@ public:
 	void	ItemPostFrame( void );
 	void	ItemPreFrame( void );
 	void	ItemBusyFrame( void );
+	void	FireSingleBullet( void );
+	bool	Deploy(void);
 	void	PrimaryAttack( void );
+	void	SecondaryAttack(void);
 	void	AddViewKick( void );
 	void	DryFire( void );
 
 	void	UpdatePenaltyTime( void );
 
+	void	Operator_HandleAnimEvent(animevent_t* pEvent, CBaseCombatCharacter* pOperator);
 	Activity	GetPrimaryAttackActivity( void );
 
 	virtual bool Reload( void );
@@ -84,10 +91,7 @@ public:
 	{
 		return 0.5f; 
 	}
-	
-#ifndef CLIENT_DLL
 	DECLARE_ACTTABLE();
-#endif
 
 private:
 	CNetworkVar( float,	m_flSoonestPrimaryAttack );
@@ -97,6 +101,8 @@ private:
 
 private:
 	CWeaponPistol( const CWeaponPistol & );
+	float m_flNextBurstShot;
+	int   m_iBurstRemaining;
 };
 
 IMPLEMENT_NETWORKCLASS_ALIASED( WeaponPistol, DT_WeaponPistol )
@@ -127,23 +133,25 @@ END_PREDICTION_DATA()
 LINK_ENTITY_TO_CLASS( weapon_pistol, CWeaponPistol );
 PRECACHE_WEAPON_REGISTER( weapon_pistol );
 
-#ifndef CLIENT_DLL
-acttable_t CWeaponPistol::m_acttable[] = 
+
+acttable_t	CWeaponPistol::m_acttable[] =
 {
-	{ ACT_HL2MP_IDLE,					ACT_HL2MP_IDLE_PISTOL,					false },
-	{ ACT_HL2MP_RUN,					ACT_HL2MP_RUN_PISTOL,					false },
-	{ ACT_HL2MP_IDLE_CROUCH,			ACT_HL2MP_IDLE_CROUCH_PISTOL,			false },
-	{ ACT_HL2MP_WALK_CROUCH,			ACT_HL2MP_WALK_CROUCH_PISTOL,			false },
-	{ ACT_HL2MP_GESTURE_RANGE_ATTACK,	ACT_HL2MP_GESTURE_RANGE_ATTACK_PISTOL,	false },
-	{ ACT_HL2MP_GESTURE_RELOAD,			ACT_HL2MP_GESTURE_RELOAD_PISTOL,		false },
-	{ ACT_HL2MP_JUMP,					ACT_HL2MP_JUMP_PISTOL,					false },
-	{ ACT_RANGE_ATTACK1,				ACT_RANGE_ATTACK_PISTOL,				false },
+	{ ACT_IDLE,						ACT_IDLE_PISTOL,				true },
+	{ ACT_IDLE_ANGRY,				ACT_IDLE_ANGRY_PISTOL,			true },
+	{ ACT_RANGE_ATTACK1,			ACT_RANGE_ATTACK_PISTOL,		true },
+	{ ACT_RELOAD,					ACT_RELOAD_PISTOL,				true },
+	{ ACT_WALK_AIM,					ACT_WALK_AIM_PISTOL,			true },
+	{ ACT_RUN_AIM,					ACT_RUN_AIM_PISTOL,				true },
+	{ ACT_GESTURE_RANGE_ATTACK1,	ACT_GESTURE_RANGE_ATTACK_PISTOL,true },
+	{ ACT_RELOAD_LOW,				ACT_RELOAD_PISTOL_LOW,			false },
+	{ ACT_RANGE_ATTACK1_LOW,		ACT_RANGE_ATTACK_PISTOL_LOW,	false },
+	{ ACT_COVER_LOW,				ACT_COVER_PISTOL_LOW,			false },
+	{ ACT_RANGE_AIM_LOW,			ACT_RANGE_AIM_PISTOL_LOW,		false },
+	{ ACT_GESTURE_RELOAD,			ACT_GESTURE_RELOAD_PISTOL,		false },
+	{ ACT_WALK,						ACT_WALK_PISTOL,				false },
+	{ ACT_RUN,						ACT_RUN_PISTOL,					false },
 };
-
-
 IMPLEMENT_ACTTABLE( CWeaponPistol );
-
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -157,6 +165,9 @@ CWeaponPistol::CWeaponPistol( void )
 	m_fMaxRange1		= 1500;
 	m_fMinRange2		= 24;
 	m_fMaxRange2		= 200;
+
+	m_iBurstRemaining = 0;
+	m_flNextBurstShot = 0.0f;
 
 	m_bFiresUnderwater	= true;
 }
@@ -216,6 +227,22 @@ void CWeaponPistol::PrimaryAttack( void )
 	m_flAccuracyPenalty += PISTOL_ACCURACY_SHOT_PENALTY_TIME;
 }
 
+void CWeaponPistol::SecondaryAttack(void)
+{
+	if (m_iClip1 <= 0)
+	{
+		DryFire();
+		return;
+	}
+
+	m_iBurstRemaining = MIN(18, m_iClip1);
+	m_flNextBurstShot = gpGlobals->curtime;
+
+	float flBurstDuration = m_iBurstRemaining * 0.1f;
+
+	m_flNextSecondaryAttack = gpGlobals->curtime + flBurstDuration + SequenceDuration(ACT_VM_RELOAD); // Burst duration and reload time
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -234,6 +261,40 @@ void CWeaponPistol::UpdatePenaltyTime( void )
 	}
 }
 
+#ifndef CLIENT_DLL
+//-----------------------------------------------------------------------------
+// Purpose:
+// Input  :
+// Output :
+//-----------------------------------------------------------------------------
+void CWeaponPistol::Operator_HandleAnimEvent(animevent_t* pEvent, CBaseCombatCharacter* pOperator)
+{
+	switch (pEvent->event)
+	{
+	case EVENT_WEAPON_PISTOL_FIRE:
+	{
+		Vector vecShootOrigin, vecShootDir;
+		vecShootOrigin = pOperator->Weapon_ShootPosition();
+
+		CAI_BaseNPC* npc = pOperator->MyNPCPointer();
+		ASSERT(npc != NULL);
+
+		vecShootDir = npc->GetActualShootTrajectory(vecShootOrigin);
+
+		CSoundEnt::InsertSound(SOUND_COMBAT | SOUND_CONTEXT_GUNFIRE, pOperator->GetAbsOrigin(), SOUNDENT_VOLUME_PISTOL, 0.2, pOperator, SOUNDENT_CHANNEL_WEAPON, pOperator->GetEnemy());
+
+		WeaponSound(SINGLE_NPC);
+		pOperator->FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_PRECALCULATED, MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 2);
+		pOperator->DoMuzzleFlash();
+		m_iClip1 = m_iClip1 - 1;
+	}
+	break;
+	default:
+		BaseClass::Operator_HandleAnimEvent(pEvent, pOperator);
+		break;
+	}
+}
+#endif // !CLIENT_DLL
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -252,6 +313,43 @@ void CWeaponPistol::ItemBusyFrame( void )
 	UpdatePenaltyTime();
 
 	BaseClass::ItemBusyFrame();
+}
+
+void CWeaponPistol::FireSingleBullet( void )
+{
+	CBasePlayer* pOwner = ToBasePlayer(GetOwner());
+	if (pOwner == NULL)
+		return;
+
+	FireBulletsInfo_t info;
+	info.m_iShots = 1;
+	info.m_vecSrc = pOwner->Weapon_ShootPosition();
+	info.m_vecDirShooting = pOwner->GetAutoaimVector(0.5f);
+	info.m_vecSpread = VECTOR_CONE_15DEGREES;
+	info.m_flDistance = MAX_TRACE_LENGTH;
+	info.m_iAmmoType = m_iPrimaryAmmoType;
+
+	WeaponSound(SINGLE);
+	SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+
+	Msg("hi\n");
+
+	pOwner->FireBullets(info);
+	pOwner->DoMuzzleFlash();
+	AddViewKick();
+}
+
+bool CWeaponPistol::Deploy(void)
+{
+#ifndef CLIENT_DLL
+	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
+	if (!pPlayer)
+		return false;
+
+	GabeMod::HudText(pPlayer, "TIP: Hold right mouse button to fire a burst of bullets.");
+#endif
+
+	return BaseClass::Deploy();
 }
 
 //-----------------------------------------------------------------------------
@@ -285,13 +383,21 @@ void CWeaponPistol::ItemPostFrame( void )
 	{
 		DryFire();
 	}
+
+	if (m_iBurstRemaining > 0 && gpGlobals->curtime >= m_flNextBurstShot)
+	{
+		FireSingleBullet();
+		m_iBurstRemaining--;
+		m_iClip1--;
+		m_flNextBurstShot = gpGlobals->curtime + 0.1f; // Delay between each burst shot
+	}
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Output : int
 //-----------------------------------------------------------------------------
-Activity CWeaponPistol::GetPrimaryAttackActivity( void )
+Activity CWeaponPistol::GetPrimaryAttackActivity( void ) 
 {
 	if ( m_nNumShotsFired < 1 )
 		return ACT_VM_PRIMARYATTACK;
@@ -321,7 +427,7 @@ bool CWeaponPistol::Reload( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CWeaponPistol::AddViewKick( void )
+void CWeaponPistol::AddViewKick( void ) 
 {
 	CBasePlayer *pPlayer  = ToBasePlayer( GetOwner() );
 	

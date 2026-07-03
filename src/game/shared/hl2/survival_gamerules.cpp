@@ -1,7 +1,7 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 #include "cbase.h"
 
-#ifdef HL2_EPISODIC
+//#ifdef HL2_EPISODIC
 
 #include "hl2_gamerules.h"
 #include "ammodef.h"
@@ -270,4 +270,4 @@ void CHalfLife2Survival::CreateStandardEntities( void )
 
 #endif
 
-#endif
+//#endif

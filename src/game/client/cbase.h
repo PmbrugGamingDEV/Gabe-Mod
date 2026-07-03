@@ -55,4 +55,7 @@ struct studiohdr_t;
 #include "worldsize.h"
 #include "engine/ivmodelinfo.h"
 
+#define MATRIX3X4_STUB matrix3x4_t z; \
+const matrix3x4_t& RenderableToWorldTransform() {return z;}
+
 #endif // CBASE_H

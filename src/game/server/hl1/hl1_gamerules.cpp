@@ -16,7 +16,7 @@
 
 REGISTER_GAMERULES_CLASS( CHalfLife1 );
 
-#if !defined(HL2_DLL)
+#if !defined(CLIENT_DLL) && !defined(HL2_DLL)
 
 ConVar sv_thirdpersondeath( "sv_thirdpersondeath", "0", FCVAR_REPLICATED | FCVAR_CHEAT);
 
@@ -688,17 +688,6 @@ bool CHalfLife1::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 
 #define BULLET_IMPULSE(grains, ftpersec)	((ftpersec)*12*BULLET_MASS_GRAINS_TO_KG(grains)*BULLET_IMPULSE_EXAGGERATION)
 
-CAmmoDef *GetAmmoDef()
-{
-	static CAmmoDef def;
-	static bool bInitted = false;
-
-	if ( !bInitted )
-	{
-		bInitted = true;
-	}
-
-	return &def;
-}
+extern CAmmoDef* GetAmmoDef();
 
 #endif

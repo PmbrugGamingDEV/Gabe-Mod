@@ -10,6 +10,7 @@
 #include "gameeventdefs.h"
 #include <KeyValues.h>
 #include "ammodef.h"
+#include "vscript_shared.h"
 
 #ifdef CLIENT_DLL
 	#include "c_hl2mp_player.h"
@@ -202,6 +203,16 @@ static const char *s_PreserveEnts[] =
 	BEGIN_SEND_TABLE( CHL2MPGameRulesProxy, DT_HL2MPGameRulesProxy )
 		SendPropDataTable( "hl2mp_gamerules_data", 0, &REFERENCE_SEND_TABLE( DT_HL2MPRules ), SendProxy_HL2MPRules )
 	END_SEND_TABLE()
+
+		BEGIN_ENT_SCRIPTDESC_ROOT(CHL2MPRules, "The rules of the game")
+
+		DEFINE_SCRIPTFUNC(IsTeamplay, "Returns true if teamplay is enabled.")
+		DEFINE_SCRIPTFUNC(IsIntermission, "Returns whether the game is in intermission.")
+		DEFINE_SCRIPTFUNC(GetMapRemainingTime, "Returns the remaining map time in seconds.")
+		DEFINE_SCRIPTFUNC(GetGameDescription, "Returns the game description.")
+		DEFINE_SCRIPTFUNC(ShouldCollide, "Checks whether two collision groups should collide.")
+
+		END_SCRIPTDESC()
 #endif
 
 #ifndef CLIENT_DLL
@@ -964,16 +975,16 @@ bool CHL2MPRules::ShouldCollide( int collisionGroup0, int collisionGroup1 )
 
 }
 
-bool CHL2MPRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
+bool CHL2MPRules::ClientCommand(CBaseEntity* pEdict, const CCommand& args)
 {
 #ifndef CLIENT_DLL
-	if( BaseClass::ClientCommand( pEdict, args ) )
+	if (BaseClass::ClientCommand(pEdict, args))
 		return true;
 
 
-	CHL2MP_Player *pPlayer = (CHL2MP_Player *) pEdict;
+	CHL2MP_Player* pPlayer = (CHL2MP_Player*)pEdict;
 
-	if ( pPlayer->ClientCommand( args ) )
+	if (pPlayer->ClientCommand(args))
 		return true;
 #endif
 
@@ -991,12 +1002,12 @@ bool CHL2MPRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
 #define BULLET_IMPULSE(grains, ftpersec)	((ftpersec)*12*BULLET_MASS_GRAINS_TO_KG(grains)*BULLET_IMPULSE_EXAGGERATION)
 
 
-CAmmoDef *GetAmmoDef()
+CAmmoDef* GetAmmoDef()
 {
 	static CAmmoDef def;
 	static bool bInitted = false;
-	
-	if ( !bInitted )
+
+	if (!bInitted)
 	{
 		bInitted = true;
 
@@ -1014,21 +1025,22 @@ CAmmoDef *GetAmmoDef()
 		def.AddAmmoType("Satchel", DMG_BURN | DMG_BLAST, TRACER_NONE, "sk_plr_dmg_satchel", NULL, "sk_max_satchel", 0, 0);
 		def.AddAmmoType("12mmRound", DMG_BULLET | DMG_NEVERGIB, TRACER_LINE, NULL, "sk_npc_dmg_12mm_bullet", NULL, BULLET_IMPULSE(300, 1200), 0);
 		def.AddAmmoType("Gravity", DMG_CLUB, TRACER_NONE, 0, 0, 8, 0, 0);
-		def.AddAmmoType("AR2",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			60,			BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("AR2AltFire",		DMG_DISSOLVE,				TRACER_NONE,			0,			0,			3,			0,							0 );
-		def.AddAmmoType("Pistol",			DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			150,		BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("SMG1",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			225,		BULLET_IMPULSE(200, 1225),	0 );
-		def.AddAmmoType("357",				DMG_BULLET,					TRACER_LINE_AND_WHIZ,	0,			0,			12,			BULLET_IMPULSE(800, 5000),	0 );
-		def.AddAmmoType("XBowBolt",			DMG_BULLET,					TRACER_LINE,			0,			0,			10,			BULLET_IMPULSE(800, 8000),	0 );
-		def.AddAmmoType("Buckshot",			DMG_BULLET | DMG_BUCKSHOT,	TRACER_LINE,			0,			0,			30,			BULLET_IMPULSE(400, 1200),	0 );
-		def.AddAmmoType("RPG_Round",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,							0 );
-		def.AddAmmoType("SMG1_Grenade",		DMG_BURN,					TRACER_NONE,			0,			0,			3,			0,							0 );
-		def.AddAmmoType("Grenade",			DMG_BURN,					TRACER_NONE,			0,			0,			5,			0,							0 );
-		def.AddAmmoType("slam",				DMG_BURN,					TRACER_NONE,			0,			0,			5,			0,							0 );
+		def.AddAmmoType("AR2", DMG_BULLET, TRACER_LINE_AND_WHIZ, 0, 0, 60, BULLET_IMPULSE(200, 1225), 0);
+		def.AddAmmoType("AR2AltFire", DMG_DISSOLVE, TRACER_NONE, 0, 0, 3, 0, 0);
+		def.AddAmmoType("Pistol", DMG_BULLET, TRACER_LINE_AND_WHIZ, 0, 0, 150, BULLET_IMPULSE(200, 1225), 0);
+		def.AddAmmoType("SMG1", DMG_BULLET, TRACER_LINE_AND_WHIZ, 0, 0, 225, BULLET_IMPULSE(200, 1225), 0);
+		def.AddAmmoType("357", DMG_BULLET, TRACER_LINE_AND_WHIZ, 0, 0, 12, BULLET_IMPULSE(800, 5000), 0);
+		def.AddAmmoType("XBowBolt", DMG_BULLET, TRACER_LINE, 0, 0, 10, BULLET_IMPULSE(800, 8000), 0);
+		def.AddAmmoType("Buckshot", DMG_BULLET | DMG_BUCKSHOT, TRACER_LINE, 0, 0, 30, BULLET_IMPULSE(400, 1200), 0);
+		def.AddAmmoType("RPG_Round", DMG_BURN, TRACER_NONE, 0, 0, 3, 0, 0);
+		def.AddAmmoType("SMG1_Grenade", DMG_BURN, TRACER_NONE, 0, 0, 3, 0, 0);
+		def.AddAmmoType("Grenade", DMG_BURN, TRACER_NONE, 0, 0, 5, 0, 0);
+		def.AddAmmoType("slam", DMG_BURN, TRACER_NONE, 0, 0, 5, 0, 0);
 	}
 
 	return &def;
 }
+
 
 #ifdef CLIENT_DLL
 
@@ -1059,69 +1071,69 @@ CAmmoDef *GetAmmoDef()
 
 #ifndef CLIENT_DLL
 
-void CHL2MPRules::RestartGame()
-{
-	// bounds check
-	if ( mp_timelimit.GetInt() < 0 )
+	void CHL2MPRules::RestartGame()
 	{
-		mp_timelimit.SetValue( 0 );
-	}
-	m_flGameStartTime = gpGlobals->curtime;
-	if ( !IsFinite( m_flGameStartTime.Get() ) )
-	{
-		Warning( "Trying to set a NaN game start time\n" );
-		m_flGameStartTime.GetForModify() = 0.0f;
-	}
-
-	CleanUpMap();
-	
-	// now respawn all players
-	for (int i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		CHL2MP_Player *pPlayer = (CHL2MP_Player*) UTIL_PlayerByIndex( i );
-
-		if ( !pPlayer )
-			continue;
-
-		if ( pPlayer->GetActiveWeapon() )
+		// bounds check
+		if (mp_timelimit.GetInt() < 0)
 		{
-			pPlayer->GetActiveWeapon()->Holster();
+			mp_timelimit.SetValue(0);
 		}
-		pPlayer->RemoveAllItems( true );
-		respawn( pPlayer, false );
-		pPlayer->Reset();
+		m_flGameStartTime = gpGlobals->curtime;
+		if (!IsFinite(m_flGameStartTime.Get()))
+		{
+			Warning("Trying to set a NaN game start time\n");
+			m_flGameStartTime.GetForModify() = 0.0f;
+		}
+
+		CleanUpMap();
+
+		// now respawn all players
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CHL2MP_Player* pPlayer = (CHL2MP_Player*)UTIL_PlayerByIndex(i);
+
+			if (!pPlayer)
+				continue;
+
+			if (pPlayer->GetActiveWeapon())
+			{
+				pPlayer->GetActiveWeapon()->Holster();
+			}
+			pPlayer->RemoveAllItems(true);
+			respawn(pPlayer, false);
+			pPlayer->Reset();
+		}
+
+		// Respawn entities (glass, doors, etc..)
+
+		CTeam* pRebels = GetGlobalTeam(TEAM_REBELS);
+		CTeam* pCombine = GetGlobalTeam(TEAM_COMBINE);
+
+		if (pRebels)
+		{
+			pRebels->SetScore(0);
+		}
+
+		if (pCombine)
+		{
+			pCombine->SetScore(0);
+		}
+
+		m_flIntermissionEndTime = 0;
+		m_flRestartGameTime = 0.0;
+		m_bCompleteReset = false;
+
+		IGameEvent* event = gameeventmanager->CreateEvent("round_start");
+		if (event)
+		{
+			event->SetInt("fraglimit", 0);
+			event->SetInt("priority", 6); // HLTV event priority, not transmitted
+
+			event->SetString("objective", "DEATHMATCH");
+
+			gameeventmanager->FireEvent(event);
+		}
 	}
-
-	// Respawn entities (glass, doors, etc..)
-
-	CTeam *pRebels = GetGlobalTeam( TEAM_REBELS );
-	CTeam *pCombine = GetGlobalTeam( TEAM_COMBINE );
-
-	if ( pRebels )
-	{
-		pRebels->SetScore( 0 );
-	}
-
-	if ( pCombine )
-	{
-		pCombine->SetScore( 0 );
-	}
-
-	m_flIntermissionEndTime = 0;
-	m_flRestartGameTime = 0.0;		
-	m_bCompleteReset = false;
-
-	IGameEvent * event = gameeventmanager->CreateEvent( "round_start" );
-	if ( event )
-	{
-		event->SetInt("fraglimit", 0 );
-		event->SetInt( "priority", 6 ); // HLTV event priority, not transmitted
-
-		event->SetString("objective","DEATHMATCH");
-
-		gameeventmanager->FireEvent( event );
-	}
-}
 
 //------------------------------------------------------------------------------
 	// Purpose : Initialize all default class relationships

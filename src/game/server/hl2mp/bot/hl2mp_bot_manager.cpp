@@ -352,6 +352,11 @@ void CHL2MPBotManager::MaintainBotQuota()
 		CTeam *pRebels = GetGlobalTeam( TEAM_REBELS );
 		CTeam *pCombine = GetGlobalTeam( TEAM_COMBINE );
 
+		if (!pRebels || !pCombine)
+		{
+			return;
+		}
+
 		// remove from the team that has more players
 		if ( pCombine->GetNumPlayers() > pRebels->GetNumPlayers() )
 		{

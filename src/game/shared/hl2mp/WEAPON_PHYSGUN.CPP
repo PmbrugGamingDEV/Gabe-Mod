@@ -48,6 +48,10 @@
 #include "glow_outline_effect.h"
 #endif
 
+#ifndef CLIENT_DLL
+#include "weapon_physgun.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -516,6 +520,11 @@ public:
 	void SoundStop(void);
 	void SoundStart(void);
 	void SoundUpdate(void);
+
+	CBaseEntity* GetHeldObject() const
+	{
+		return m_hObject.Get();
+	}
 
 	int ObjectCaps(void)
 	{
@@ -2059,3 +2068,94 @@ bool CWeaponGravityGun::Reload(void)
 
 	return true;
 }
+
+#ifndef CLIENT_DLL
+
+static bool IsAnyPhysGun(CBaseCombatWeapon* pWeapon)
+{
+	return pWeapon && (FClassnameIs(pWeapon, "weapon_physgun"));
+}
+
+CBaseEntity* PhysGun_GetHeldEntity(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return NULL;
+
+	CWeaponGravityGun* pPhysGun = static_cast<CWeaponGravityGun*>(pWeapon);
+	return pPhysGun->GetHeldObject();
+}
+
+bool PhysGun_IsHoldingObject(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return false;
+
+	return static_cast<CWeaponGravityGun*>(pWeapon)->IsHoldingObject();
+}
+
+float PhysGun_GetHoldDistance(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return 0.0f;
+
+	return static_cast<CWeaponGravityGun*>(pWeapon)->GetHoldDistance();
+}
+
+bool PhysGun_IsRotatingObject(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return false;
+
+	return static_cast<CWeaponGravityGun*>(pWeapon)->IsRotatingObject();
+}
+
+void PhysGun_DropHeldObject(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return;
+
+	static_cast<CWeaponGravityGun*>(pWeapon)->DropHeldObject();
+}
+
+void PhysGun_ReleaseHeldObject(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return;
+
+	static_cast<CWeaponGravityGun*>(pWeapon)->ReleaseHeldObject();
+}
+
+int PhysGun_GetFrozenObjectCount(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return 0;
+
+	return static_cast<CWeaponGravityGun*>(pWeapon)->GetFrozenObjectCount();
+}
+
+void PhysGun_ReleaseFrozenObjects(CBaseCombatWeapon* pWeapon)
+{
+	if (!IsAnyPhysGun(pWeapon))
+		return;
+
+	static_cast<CWeaponGravityGun*>(pWeapon)->ReleaseFrozenObjects();
+}
+
+CON_COMMAND(gabe_release, "Release all frozen physgun objects.")
+{
+	CBasePlayer* pPlayer = UTIL_GetCommandClient();
+
+	if (!pPlayer)
+		return;
+
+	if (!pPlayer->IsHoldingPhysGun())
+	{
+		Msg("Not holding a physgun.\n");
+		return;
+	}
+
+	pPlayer->PhysGun_ReleaseFrozenObjects();
+
+	Msg("Released all frozen objects.\n");
+}
+#endif

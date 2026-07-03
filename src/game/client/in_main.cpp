@@ -904,7 +904,7 @@ ScaleMovements
 
 ==============================
 */
-void CInput::ScaleMovements( CUserCmd *cmd )
+void CInput::ScaleMovements(CUserCmd* cmd)
 {
 	// float spd;
 
@@ -924,7 +924,7 @@ void CInput::ScaleMovements( CUserCmd *cmd )
 	{
 		float fratio = spd / fmov;
 
-		if ( !IsNoClipping() ) 
+		if ( !IsNoClipping() )
 		{
 			cmd->forwardmove	*= fratio;
 			cmd->sidemove		*= fratio;

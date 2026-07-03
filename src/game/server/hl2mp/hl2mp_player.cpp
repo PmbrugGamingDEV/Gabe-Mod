@@ -381,6 +381,14 @@ void CHL2MP_Player::GiveNoItems()
 	// nothing else
 }
 
+void CHL2MP_Player::GiveBemodItems()
+{
+	EquipSuit();
+
+	GiveNamedItem("weapon_bemod_physgun");
+
+}
+
 void CHL2MP_Player::PickDefaultSpawnTeam( void )
 {
 	if ( GetTeamNumber() == 0 )
@@ -434,6 +442,7 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 ConVar gabeplus_sandbox("gabe_sandbox", "1", FCVAR_ARCHIVE, "If set to 1, players will spawn with all weapons and infinite aux power.");
 ConVar gabeplus_hl2("gabe_hl2", "0", FCVAR_ARCHIVE, "If set to 1, players will spawn with all hl2 campaign weapons.");
 ConVar gabeplus_jbmod("gabe_jbmod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a jbmod experience, definetly the best game ever made");
+ConVar gabeplus_bemod("gabe_bemod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a buildemod experience");
 
 CON_COMMAND(gabe_createfakeclient, "Creates a fake client for testing purposes")
 {
@@ -504,6 +513,12 @@ void CHL2MP_Player::Spawn(void)
 	else if (gabeplus_hl2.GetBool())
 	{
 		GiveHL2Items(); // Sandbox HL2 Campaign
+		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
+		engine->ClientCommand(pEdict, "god");
+	}
+	else if (gabeplus_bemod.GetBool())
+	{
+		GiveBemodItems(); // Sandbox Buildemod
 		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
 		engine->ClientCommand(pEdict, "god");
 	}
@@ -1495,7 +1510,7 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 			iScoreToAdd = -1;
 		}
 
-		GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
+		//GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
 	}
 
 	FlashlightTurnOff();

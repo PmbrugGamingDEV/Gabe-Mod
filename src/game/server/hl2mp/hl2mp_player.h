@@ -98,6 +98,8 @@ public:
 
 	void GiveNoItems();
 
+	void GiveBemodItems();
+
 	void NoteWeaponFired( void );
 
 	void ResetAnimation( void );

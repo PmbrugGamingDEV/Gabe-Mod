@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose:		Stun Stick- beating stick with a zappy end
 //
@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "npcevent.h"
-#include "weapon_hl2mpbasebasebludgeon.h"
+#include "weapon_hl2mpbasebasebludgeon.h" 
 #include "IEffects.h"
 #include "debugoverlay_shared.h"
 
@@ -20,11 +20,12 @@
 	
 	#include "iviewrender_beams.h"
 	#include "beam_shared.h"
-	#include "materialsystem/imaterial.h"
+	#include "materialsystem/IMaterial.h"
 	#include "model_types.h"
 	#include "c_te_effect_dispatch.h"
 	#include "fx_quad.h"
 	#include "fx.h"
+	#include "input.h"
 
 	extern void DrawHalo( IMaterial* pMaterial, const Vector &source, float scale, float const *color, float flHDRColorScale );
 	extern void FormatViewModelAttachment( Vector &vOrigin, bool bInverse );
@@ -37,7 +38,8 @@
 extern ConVar metropolice_move_and_melee;
 
 #define	STUNSTICK_RANGE				75.0f
-#define	STUNSTICK_REFIRE			0.8f
+ConVar gabeplus_stunstick_refire("gabeplus_stunstick_refire", "0.35", FCVAR_ARCHIVE, "Refire rate for the stunstick");
+#define	STUNSTICK_REFIRE			gabeplus_stunstick_refire.GetFloat()
 #define	STUNSTICK_BEAM_MATERIAL		"sprites/lgtning.vmt"
 #define STUNSTICK_GLOW_MATERIAL		"sprites/light_glow02_add"
 #define STUNSTICK_GLOW_MATERIAL2	"effects/blueflare1"
@@ -57,10 +59,7 @@ public:
 
 	DECLARE_NETWORKCLASS(); 
 	DECLARE_PREDICTABLE();
-
-#ifndef CLIENT_DLL
 	DECLARE_ACTTABLE();
-#endif
 
 #ifdef CLIENT_DLL
 	virtual int				DrawModel( int flags );
@@ -95,8 +94,6 @@ public:
 	
 	float		GetDamageForActivity( Activity hitActivity );
 
-	virtual bool	PlayFleshyHittySoundOnHit() const { return true; }
-
 	CWeaponStunStick( const CWeaponStunStick & );
 
 private:
@@ -125,6 +122,9 @@ private:
 
 	float	m_flFadeTime;
 
+	//Tony; third person check thing, this has to be done for the local player if third person switches, so we can re-calc attachment points.
+	virtual void			ThirdPersonSwitch( bool bThirdPerson );
+
 #endif
 
 	CNetworkVar( bool, m_bActive );
@@ -151,23 +151,13 @@ LINK_ENTITY_TO_CLASS( weapon_stunstick, CWeaponStunStick );
 PRECACHE_WEAPON_REGISTER( weapon_stunstick );
 
 
-#ifndef CLIENT_DLL
-
-acttable_t	CWeaponStunStick::m_acttable[] = 
+acttable_t CWeaponStunStick::m_acttable[] =
 {
-	{ ACT_RANGE_ATTACK1,				ACT_RANGE_ATTACK_SLAM, true },
-	{ ACT_HL2MP_IDLE,					ACT_HL2MP_IDLE_MELEE,					false },
-	{ ACT_HL2MP_RUN,					ACT_HL2MP_RUN_MELEE,					false },
-	{ ACT_HL2MP_IDLE_CROUCH,			ACT_HL2MP_IDLE_CROUCH_MELEE,			false },
-	{ ACT_HL2MP_WALK_CROUCH,			ACT_HL2MP_WALK_CROUCH_MELEE,			false },
-	{ ACT_HL2MP_GESTURE_RANGE_ATTACK,	ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE,	false },
-	{ ACT_HL2MP_GESTURE_RELOAD,			ACT_HL2MP_GESTURE_RELOAD_MELEE,			false },
-	{ ACT_HL2MP_JUMP,					ACT_HL2MP_JUMP_MELEE,					false },
+	{ ACT_MELEE_ATTACK1,	ACT_MELEE_ATTACK_SWING,	true },
+	{ ACT_IDLE_ANGRY,		ACT_IDLE_ANGRY_MELEE,	true },
 };
 
 IMPLEMENT_ACTTABLE(CWeaponStunStick);
-
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -203,9 +193,6 @@ void CWeaponStunStick::Precache()
 	PrecacheScriptSound( "Weapon_StunStick.Deactivate" );
 
 	PrecacheModel( STUNSTICK_BEAM_MATERIAL );
-	PrecacheModel( "sprites/light_glow02_add.vmt" );
-	PrecacheModel( "effects/blueflare1.vmt" );
-	PrecacheModel( "sprites/light_glow02_add_noz.vmt" );
 }
 
 //-----------------------------------------------------------------------------
@@ -246,47 +233,46 @@ void CWeaponStunStick::ImpactEffect( trace_t &traceHit )
 
 #ifndef CLIENT_DLL
 
-
-int CWeaponStunStick::WeaponMeleeAttack1Condition( float flDot, float flDist )
+int CWeaponStunStick::WeaponMeleeAttack1Condition(float flDot, float flDist)
 {
 	// Attempt to lead the target (needed because citizens can't hit manhacks with the crowbar!)
-	CAI_BaseNPC *pNPC	= GetOwner()->MyNPCPointer();
-	CBaseEntity *pEnemy = pNPC->GetEnemy();
+	CAI_BaseNPC* pNPC = GetOwner()->MyNPCPointer();
+	CBaseEntity* pEnemy = pNPC->GetEnemy();
 	if (!pEnemy)
 		return COND_NONE;
 
 	Vector vecVelocity;
 	AngularImpulse angVelocity;
-	pEnemy->GetVelocity( &vecVelocity, &angVelocity );
+	pEnemy->GetVelocity(&vecVelocity, &angVelocity);
 
 	// Project where the enemy will be in a little while, add some randomness so he doesn't always hit
 	float dt = sk_crowbar_lead_time.GetFloat();
-	dt += random->RandomFloat( -0.3f, 0.2f );
-	if ( dt < 0.0f )
+	dt += random->RandomFloat(-0.3f, 0.2f);
+	if (dt < 0.0f)
 		dt = 0.0f;
 
 	Vector vecExtrapolatedPos;
-	VectorMA( pEnemy->WorldSpaceCenter(), dt, vecVelocity, vecExtrapolatedPos );
+	VectorMA(pEnemy->WorldSpaceCenter(), dt, vecVelocity, vecExtrapolatedPos);
 
 	Vector vecDelta;
-	VectorSubtract( vecExtrapolatedPos, pNPC->WorldSpaceCenter(), vecDelta );
+	VectorSubtract(vecExtrapolatedPos, pNPC->WorldSpaceCenter(), vecDelta);
 
-	if ( fabs( vecDelta.z ) > 70 )
+	if (fabs(vecDelta.z) > 70)
 	{
 		return COND_TOO_FAR_TO_ATTACK;
 	}
 
-	Vector vecForward = pNPC->BodyDirection2D( );
+	Vector vecForward = pNPC->BodyDirection2D();
 	vecDelta.z = 0.0f;
-	float flExtrapolatedDot = DotProduct2D( vecDelta.AsVector2D(), vecForward.AsVector2D() );
+	float flExtrapolatedDot = DotProduct2D(vecDelta.AsVector2D(), vecForward.AsVector2D());
 	if ((flDot < 0.7) && (flExtrapolatedDot < 0.7))
 	{
 		return COND_NOT_FACING_ATTACK;
 	}
 
-	float flExtrapolatedDist = Vector2DNormalize( vecDelta.AsVector2D() );
+	float flExtrapolatedDist = Vector2DNormalize(vecDelta.AsVector2D());
 
-	if( pEnemy->IsPlayer() )
+	if (pEnemy->IsPlayer())
 	{
 		//Vector vecDir = pEnemy->GetSmoothedVelocity();
 		//float flSpeed = VectorNormalize( vecDir );
@@ -295,20 +281,20 @@ int CWeaponStunStick::WeaponMeleeAttack1Condition( float flDot, float flDist )
 		Vector vecProjectEnemy = pEnemy->GetAbsOrigin() + (pEnemy->GetAbsVelocity() * 0.35);
 		Vector vecProjectMe = GetAbsOrigin();
 
-		if( (vecProjectMe - vecProjectEnemy).Length2D() <= 48.0f )
+		if ((vecProjectMe - vecProjectEnemy).Length2D() <= 48.0f)
 		{
 			return COND_CAN_MELEE_ATTACK1;
 		}
 	}
-/*
-	if( metropolice_move_and_melee.GetBool() )
-	{
-		if( pNPC->IsMoving() )
+	/*
+		if( metropolice_move_and_melee.GetBool() )
 		{
-			flTargetDist *= 1.5f;
+			if( pNPC->IsMoving() )
+			{
+				flTargetDist *= 1.5f;
+			}
 		}
-	}
-*/
+	*/
 	float flTargetDist = 48.0f;
 	if ((flDist > flTargetDist) && (flExtrapolatedDist > flTargetDist))
 	{
@@ -318,98 +304,123 @@ int CWeaponStunStick::WeaponMeleeAttack1Condition( float flDot, float flDist )
 	return COND_CAN_MELEE_ATTACK1;
 }
 
-
-void CWeaponStunStick::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator )
+void CWeaponStunStick::Operator_HandleAnimEvent(animevent_t* pEvent, CBaseCombatCharacter* pOperator)
 {
-	switch( pEvent->event )
+	switch (pEvent->event)
 	{
-		case EVENT_WEAPON_MELEE_HIT:
+	case EVENT_WEAPON_MELEE_HIT:
+	{
+		// Trace up or down based on where the enemy is...
+		// But only if we're basically facing that direction
+		Vector vecDirection;
+		AngleVectors(GetAbsAngles(), &vecDirection);
+
+		CBaseEntity* pEnemy = pOperator->MyNPCPointer() ? pOperator->MyNPCPointer()->GetEnemy() : NULL;
+		if (pEnemy)
 		{
-			// Trace up or down based on where the enemy is...
-			// But only if we're basically facing that direction
-			Vector vecDirection;
-			AngleVectors( GetAbsAngles(), &vecDirection );
+			Vector vecDelta;
+			VectorSubtract(pEnemy->WorldSpaceCenter(), pOperator->Weapon_ShootPosition(), vecDelta);
+			VectorNormalize(vecDelta);
 
-			CBaseEntity *pEnemy = pOperator->MyNPCPointer() ? pOperator->MyNPCPointer()->GetEnemy() : NULL;
-			if ( pEnemy )
+			Vector2D vecDelta2D = vecDelta.AsVector2D();
+			Vector2DNormalize(vecDelta2D);
+			if (DotProduct2D(vecDelta2D, vecDirection.AsVector2D()) > 0.8f)
 			{
-				Vector vecDelta;
-				VectorSubtract( pEnemy->WorldSpaceCenter(), pOperator->Weapon_ShootPosition(), vecDelta );
-				VectorNormalize( vecDelta );
-				
-				Vector2D vecDelta2D = vecDelta.AsVector2D();
-				Vector2DNormalize( vecDelta2D );
-				if ( DotProduct2D( vecDelta2D, vecDirection.AsVector2D() ) > 0.8f )
-				{
-					vecDirection = vecDelta;
-				}
-			}
-
-			Vector vecEnd;
-			VectorMA( pOperator->Weapon_ShootPosition(), 32, vecDirection, vecEnd );
-			// Stretch the swing box down to catch low level physics objects
-			CBaseEntity *pHurt = pOperator->CheckTraceHullAttack( pOperator->Weapon_ShootPosition(), vecEnd, 
-				Vector(-16,-16,-40), Vector(16,16,16), GetDamageForActivity( GetActivity() ), DMG_CLUB, 0.5f, false );
-			
-			// did I hit someone?
-			if ( pHurt )
-			{
-				// play sound
-				WeaponSound( MELEE_HIT );
-
-				CBasePlayer *pPlayer = ToBasePlayer( pHurt );
-
-				bool bFlashed = false;
-				
-				// Punch angles
-				if ( pPlayer != NULL && !(pPlayer->GetFlags() & FL_GODMODE) )
-				{
-					float yawKick = random->RandomFloat( -48, -24 );
-
-					//Kick the player angles
-					pPlayer->ViewPunch( QAngle( -16, yawKick, 2 ) );
-
-					Vector	dir = pHurt->GetAbsOrigin() - GetAbsOrigin();
-
-					// If the player's on my head, don't knock him up
-					if ( pPlayer->GetGroundEntity() == pOperator )
-					{
-						dir = vecDirection;
-						dir.z = 0;
-					}
-
-					VectorNormalize(dir);
-
-					dir *= 500.0f;
-
-					//If not on ground, then don't make them fly!
-					if ( !(pPlayer->GetFlags() & FL_ONGROUND ) )
-						 dir.z = 0.0f;
-
-					//Push the target back
-					pHurt->ApplyAbsVelocityImpulse( dir );
-
-					if ( !bFlashed )
-					{
-						color32 red = {128,0,0,128};
-						UTIL_ScreenFade( pPlayer, red, 0.5f, 0.1f, FFADE_IN );
-					}
-					
-					// Force the player to drop anyting they were holding
-					pPlayer->ForceDropOfCarriedPhysObjects();
-				}
-				
-				// do effect?
-			}
-			else
-			{
-				WeaponSound( MELEE_MISS );
+				vecDirection = vecDelta;
 			}
 		}
+
+		Vector vecEnd;
+		VectorMA(pOperator->Weapon_ShootPosition(), 32, vecDirection, vecEnd);
+		// Stretch the swing box down to catch low level physics objects
+		CBaseEntity* pHurt = pOperator->CheckTraceHullAttack(pOperator->Weapon_ShootPosition(), vecEnd,
+			Vector(-16, -16, -40), Vector(16, 16, 16), GetDamageForActivity(GetActivity()), DMG_CLUB, 0.5f, false);
+
+		// did I hit someone?
+		if (pHurt)
+		{
+			// play sound
+			WeaponSound(MELEE_HIT);
+
+			CBasePlayer* pPlayer = ToBasePlayer(pHurt);
+
+			CNPC_MetroPolice* pCop = dynamic_cast<CNPC_MetroPolice*>(pOperator);
+			bool bFlashed = false;
+
+			if (pCop != NULL && pPlayer != NULL)
+			{
+				// See if we need to knock out this target
+				if (pCop->ShouldKnockOutTarget(pHurt))
+				{
+					float yawKick = random->RandomFloat(-48, -24);
+
+					//Kick the player angles
+					pPlayer->ViewPunch(QAngle(-16, yawKick, 2));
+
+					color32 white = { 255,255,255,255 };
+					UTIL_ScreenFade(pPlayer, white, 0.2f, 1.0f, FFADE_OUT | FFADE_PURGE | FFADE_STAYOUT);
+					bFlashed = true;
+
+					pCop->KnockOutTarget(pHurt);
+
+					break;
+				}
+				else
+				{
+					// Notify that we've stunned a target
+					pCop->StunnedTarget(pHurt);
+				}
+			}
+
+			// Punch angles
+			if (pPlayer != NULL && !(pPlayer->GetFlags() & FL_GODMODE))
+			{
+				float yawKick = random->RandomFloat(-48, -24);
+
+				//Kick the player angles
+				pPlayer->ViewPunch(QAngle(-16, yawKick, 2));
+
+				Vector	dir = pHurt->GetAbsOrigin() - GetAbsOrigin();
+
+				// If the player's on my head, don't knock him up
+				if (pPlayer->GetGroundEntity() == pOperator)
+				{
+					dir = vecDirection;
+					dir.z = 0;
+				}
+
+				VectorNormalize(dir);
+
+				dir *= 500.0f;
+
+				//If not on ground, then don't make them fly!
+				if (!(pPlayer->GetFlags() & FL_ONGROUND))
+					dir.z = 0.0f;
+
+				//Push the target back
+				pHurt->ApplyAbsVelocityImpulse(dir);
+
+				if (!bFlashed)
+				{
+					color32 red = { 128,0,0,128 };
+					UTIL_ScreenFade(pPlayer, red, 0.5f, 0.1f, FFADE_IN);
+				}
+
+				// Force the player to drop anyting they were holding
+				pPlayer->ForceDropOfCarriedPhysObjects();
+			}
+
+			// do effect?
+		}
+		else
+		{
+			WeaponSound(MELEE_MISS);
+		}
+	}
+	break;
+	default:
+		BaseClass::Operator_HandleAnimEvent(pEvent, pOperator);
 		break;
-		default:
-			BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
-			break;
 	}
 }
 
@@ -449,6 +460,10 @@ void CWeaponStunStick::SetStunState( bool state )
 bool CWeaponStunStick::Deploy( void )
 {
 	SetStunState( true );
+#ifdef CLIENT_DLL
+	//Tony; we need to just do this
+	SetupAttachmentPoints();
+#endif
 
 	return BaseClass::Deploy();
 }
@@ -497,8 +512,8 @@ bool CWeaponStunStick::GetStunState( void )
 //-----------------------------------------------------------------------------
 bool UTIL_GetWeaponAttachment( C_BaseCombatWeapon *pWeapon, int attachmentID, Vector &absOrigin, QAngle &absAngles )
 {
-	// This is already correct in third-person
-	if ( pWeapon && pWeapon->ShouldDrawUsingViewModel() == false )
+	// Other players & third person
+	if ( pWeapon && (!pWeapon->IsCarriedByLocalPlayer() || ::input->CAM_IsThirdPerson()))
 	{
 		return pWeapon->GetAttachment( attachmentID, absOrigin, absAngles );
 	}
@@ -526,7 +541,7 @@ bool UTIL_GetWeaponAttachment( C_BaseCombatWeapon *pWeapon, int attachmentID, Ve
 void C_WeaponStunStick::SetupAttachmentPoints( void )
 {
 	// Setup points for both types of views
-	if ( ShouldDrawUsingViewModel() )
+	if ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson())
 	{
 		const char *szBeamAttachNamesTop[NUM_BEAM_ATTACHMENTS] =
 		{
@@ -600,7 +615,7 @@ void C_WeaponStunStick::ClientThink( void )
 	if ( IsEffectActive( EF_NODRAW ) )
 		return;
 
-	if ( ShouldDrawUsingViewModel() )
+	if ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson())
 	{
 		// Update our effects
 		if ( gpGlobals->frametime != 0.0f && ( random->RandomInt( 0, 3 ) == 0 ) )
@@ -679,7 +694,7 @@ bool C_WeaponStunStick::InSwing( void )
 	int activity = GetActivity();
 
 	// FIXME: This is needed until the actual animation works
-	if ( ShouldDrawUsingViewModel() == false )
+	if ( IsCarriedByLocalPlayer() == false || ::input->CAM_IsThirdPerson())
 		return true;
 
 	// These are the swing activities this weapon can play
@@ -844,12 +859,17 @@ void C_WeaponStunStick::DrawFirstPersonEffects( void )
 	}
 }
 
+void C_WeaponStunStick::ThirdPersonSwitch( bool bThirdPerson )
+{
+	SetupAttachmentPoints();
+}
 //-----------------------------------------------------------------------------
 // Purpose: Draw our special effects
 //-----------------------------------------------------------------------------
 void C_WeaponStunStick::DrawEffects( void )
 {
-	if ( ShouldDrawUsingViewModel() )
+
+	if ( IsCarriedByLocalPlayer() && !::input->CAM_IsThirdPerson() )
 	{
 		DrawFirstPersonEffects();
 	}
