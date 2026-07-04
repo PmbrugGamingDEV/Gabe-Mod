@@ -7,3 +7,12 @@
 
 # Debug symbols
 *.pdb
+.vs/
+*.pdb
+*.obj
+*.idb
+*.ilk
+*.pch
+*.ipch
+*.VC.db
+*.VC.opendb
