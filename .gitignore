@@ -1,0 +1,9 @@
+# Visual Studio intermediate files
+*.obj
+*.idb
+*.ilk
+*.pch
+*.ipch
+
+# Debug symbols
+*.pdb
