@@ -1,0 +1,4 @@
+﻿  raytrace.cpp
+  trace2.cpp
+  trace3.cpp
+  raytrace_win64.vcxproj -> C:\GabeMod\src\lib\public\x64\raytrace.lib

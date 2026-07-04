@@ -1,0 +1,10 @@
+C:\GabeMod\src\utils\common\cmdlib.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\cmdlib.obj
+C:\GabeMod\src\public\filesystem_helpers.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\filesystem_helpers.obj
+C:\GabeMod\src\public\filesystem_init.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\filesystem_init.obj
+C:\GabeMod\src\utils\common\pacifier.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\pacifier.obj
+C:\GabeMod\src\utils\common\scriplib.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\scriplib.obj
+C:\GabeMod\src\public\stringregistry.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\stringregistry.obj
+C:\GabeMod\src\utils\captioncompiler\captioncompiler.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\captioncompiler.obj
+C:\GabeMod\src\common\compiledcaptionswap.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\compiledcaptionswap.obj
+C:\GabeMod\src\utils\common\filesystem_tools.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\filesystem_tools.obj
+C:\GabeMod\src\public\tier0\memoverride.cpp;C:\GabeMod\src\utils\captioncompiler\Release\x64\memoverride.obj

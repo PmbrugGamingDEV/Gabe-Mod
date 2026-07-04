@@ -1,0 +1,74 @@
+﻿  boundbox.cpp
+  brushbsp.cpp
+  CollisionUtils.cpp
+  csg.cpp
+  cubemap.cpp
+  detail.cpp
+  detailObjects.cpp
+  disp_common.cpp
+  disp_ivp.cpp
+  disp_powerinfo.cpp
+  disp_vbsp.cpp
+  faces.cpp
+  glfile.cpp
+  ivp.cpp
+  leakfile.cpp
+  loadcmdline.cpp
+  lumpfiles.cpp
+  manifest.cpp
+  map.cpp
+  materialpatch.cpp
+  materialsub.cpp
+  memoverride.cpp
+  mstristrip.cpp
+  nodraw.cpp
+  normals.cpp
+  overlay.cpp
+  physdll.cpp
+C:\GabeMod\src\utils\vbsp\ivp.cpp(60,10): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vbsp\ivp.cpp(75,23): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vbsp\ivp.cpp(97,23): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vbsp\ivp.cpp(120,23): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vbsp\ivp.cpp(126,27): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  portals.cpp
+C:\GabeMod\src\public\fgdlib\HelperInfo.h(83,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '../../utils/vbsp/map.cpp')
+  
+  prtfile.cpp
+  ScratchPad3D.cpp
+C:\GabeMod\src\utils\vbsp\map.cpp(2498,32): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  scratchpad_helpers.cpp
+C:\GabeMod\src\public\fgdlib\HelperInfo.h(83,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file '../../utils/vbsp/manifest.cpp')
+  
+  StaticProp.cpp
+  textures.cpp
+  tree.cpp
+  utilmatlib.cpp
+  vbsp.cpp
+  worldvertextransitionfixup.cpp
+  writebsp.cpp
+  zip_utils.cpp
+  bsplib.cpp
+  builddisp.cpp
+  ChunkFile.cpp
+  cmdlib.cpp
+  filesystem_helpers.cpp
+C:\GabeMod\src\utils\vbsp\vbsp.cpp(1357,73): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vbsp\vbsp.cpp(1414,74): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  filesystem_init.cpp
+  filesystem_tools.cpp
+  map_shared.cpp
+  pacifier.cpp
+  polylib.cpp
+  scriplib.cpp
+  threads.cpp
+C:\GabeMod\src\public\ChunkFile.cpp(957,17): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\public\ChunkFile.cpp(967,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\public\ChunkFile.cpp(968,16): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  tools_minidump.cpp
+     Creating library .\Release\x64\vbsp.lib and object .\Release\x64\vbsp.exp
+  vbsp_win64.vcxproj -> C:\GabeMod\src\utils\vbsp\Release\x64\vbsp.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

@@ -1,0 +1,6 @@
+﻿  height2normal.cpp
+     Creating library .\Debug\x64\height2normal.lib and object .\Debug\x64\height2normal.exp
+  height2normal_win64.vcxproj -> C:\GabeMod\src\utils\height2normal\Debug\x64\height2normal.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

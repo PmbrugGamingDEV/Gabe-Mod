@@ -1,0 +1,8 @@
+﻿  QCGenerator.cpp
+  baseassetpicker.cpp
+  colorpickerpanel.cpp
+  mdlpicker.cpp
+  mdlsequencepicker.cpp
+  picker.cpp
+  sequencepicker.cpp
+  matsys_controls_win64.vcxproj -> C:\GabeMod\src\lib\public\x64\matsys_controls.lib

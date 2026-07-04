@@ -1,0 +1,12 @@
+﻿  glview.cpp
+  memoverride.cpp
+  cmdlib.cpp
+  filesystem_helpers.cpp
+  filesystem_init.cpp
+  filesystem_tools.cpp
+  physdll.cpp
+     Creating library .\Debug\x64\glview.lib and object .\Debug\x64\glview.exp
+  glview_win64.vcxproj -> C:\GabeMod\src\utils\glview\Debug\x64\glview.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

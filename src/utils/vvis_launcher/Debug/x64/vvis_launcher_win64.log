@@ -1,0 +1,8 @@
+﻿  StdAfx.cpp
+  memoverride.cpp
+  vvis_launcher.cpp
+     Creating library .\Debug\x64\vvis.lib and object .\Debug\x64\vvis.exp
+  vvis_launcher_win64.vcxproj -> C:\GabeMod\src\utils\vvis_launcher\Debug\x64\vvis.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

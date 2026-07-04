@@ -1,0 +1,15 @@
+^C:\GABEMOD\SRC\GAME\SHARED\BASE_GCMESSAGES.PROTO
+if not exist ..\..\game\client\generated_proto_mod_tf mkdir ..\..\game\client\generated_proto_mod_tf
+..\..\thirdparty\protobuf-2.6.1\bin\win64\2015\staticcrt\release\protoc.exe --proto_path=..\..\thirdparty\protobuf-2.6.1\src --proto_path=C:\GabeMod\src\game\shared\ --proto_path=..\..\gcsdk --proto_path=..\..\game\shared  --cpp_out=..\..\game\client\generated_proto_mod_tf C:\GabeMod\src\game\shared\base_gcmessages.proto
+^C:\GABEMOD\SRC\GAME\SHARED\ECON\ECON_GCMESSAGES.PROTO
+if not exist ..\..\game\client\generated_proto_mod_tf mkdir ..\..\game\client\generated_proto_mod_tf
+..\..\thirdparty\protobuf-2.6.1\bin\win64\2015\staticcrt\release\protoc.exe --proto_path=..\..\thirdparty\protobuf-2.6.1\src --proto_path=C:\GabeMod\src\game\shared\econ\ --proto_path=..\..\gcsdk --proto_path=..\..\game\shared  --cpp_out=..\..\game\client\generated_proto_mod_tf C:\GabeMod\src\game\shared\econ\econ_gcmessages.proto
+^C:\GABEMOD\SRC\GCSDK\STEAMMESSAGES.PROTO
+if not exist ..\..\game\client\generated_proto_mod_tf mkdir ..\..\game\client\generated_proto_mod_tf
+..\..\thirdparty\protobuf-2.6.1\bin\win64\2015\staticcrt\release\protoc.exe --proto_path=..\..\thirdparty\protobuf-2.6.1\src --proto_path=C:\GabeMod\src\gcsdk\ --proto_path=..\..\gcsdk --proto_path=..\..\game\shared  --cpp_out=..\..\game\client\generated_proto_mod_tf C:\GabeMod\src\gcsdk\steammessages.proto
+^C:\GABEMOD\SRC\GAME\SHARED\TF\TF_GCMESSAGES.PROTO
+if not exist ..\..\game\client\generated_proto_mod_tf mkdir ..\..\game\client\generated_proto_mod_tf
+..\..\thirdparty\protobuf-2.6.1\bin\win64\2015\staticcrt\release\protoc.exe --proto_path=..\..\thirdparty\protobuf-2.6.1\src --proto_path=C:\GabeMod\src\game\shared\tf\ --proto_path=..\..\gcsdk --proto_path=..\..\game\shared  --cpp_out=..\..\game\client\generated_proto_mod_tf C:\GabeMod\src\game\shared\tf\tf_gcmessages.proto
+^C:\GABEMOD\SRC\GAME\SHARED\TF\TF_PROTO_DEF_MESSAGES.PROTO
+if not exist ..\..\game\client\generated_proto_mod_tf mkdir ..\..\game\client\generated_proto_mod_tf
+..\..\thirdparty\protobuf-2.6.1\bin\win64\2015\staticcrt\release\protoc.exe --proto_path=..\..\thirdparty\protobuf-2.6.1\src --proto_path=C:\GabeMod\src\game\shared\tf\ --proto_path=..\..\gcsdk --proto_path=..\..\game\shared  --cpp_out=..\..\game\client\generated_proto_mod_tf C:\GabeMod\src\game\shared\tf\tf_proto_def_messages.proto

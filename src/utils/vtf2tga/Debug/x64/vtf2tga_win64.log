@@ -1,0 +1,7 @@
+﻿  memoverride.cpp
+  vtf2tga.cpp
+     Creating library .\Debug\x64\vtf2tga.lib and object .\Debug\x64\vtf2tga.exp
+  vtf2tga_win64.vcxproj -> C:\GabeMod\src\utils\vtf2tga\Debug\x64\vtf2tga.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

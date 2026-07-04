@@ -1,0 +1,7 @@
+C:\GabeMod\src\utils\glview\glview.cpp;C:\GabeMod\src\utils\glview\Release\x64\glview.obj
+C:\GabeMod\src\public\tier0\memoverride.cpp;C:\GabeMod\src\utils\glview\Release\x64\memoverride.obj
+C:\GabeMod\src\utils\common\cmdlib.cpp;C:\GabeMod\src\utils\glview\Release\x64\cmdlib.obj
+C:\GabeMod\src\public\filesystem_helpers.cpp;C:\GabeMod\src\utils\glview\Release\x64\filesystem_helpers.obj
+C:\GabeMod\src\public\filesystem_init.cpp;C:\GabeMod\src\utils\glview\Release\x64\filesystem_init.obj
+C:\GabeMod\src\utils\common\filesystem_tools.cpp;C:\GabeMod\src\utils\glview\Release\x64\filesystem_tools.obj
+C:\GabeMod\src\utils\common\physdll.cpp;C:\GabeMod\src\utils\glview\Release\x64\physdll.obj

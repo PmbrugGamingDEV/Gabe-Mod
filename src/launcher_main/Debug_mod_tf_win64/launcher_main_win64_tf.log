@@ -1,0 +1,6 @@
+﻿  main.cpp
+     Creating library .\Debug_mod_tf_win64\mod_tf_win64.lib and object .\Debug_mod_tf_win64\mod_tf_win64.exp
+  launcher_main_win64_tf.vcxproj -> C:\GabeMod\src\launcher_main\Debug_mod_tf_win64\mod_tf_win64.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\game

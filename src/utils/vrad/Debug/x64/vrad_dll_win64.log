@@ -1,0 +1,75 @@
+﻿  BSPTreeData.cpp
+  disp_common.cpp
+  disp_powerinfo.cpp
+  disp_vrad.cpp
+  filesystem_init.cpp
+  filesystem_tools.cpp
+  imagepacker.cpp
+  incremental.cpp
+  leaf_ambient_lighting.cpp
+  lightmap.cpp
+  loadcmdline.cpp
+  lumpfiles.cpp
+  macro_texture.cpp
+  memoverride.cpp
+  MySqlDatabase.cpp
+  pacifier.cpp
+  physdll.cpp
+  radial.cpp
+  SampleHash.cpp
+  trace.cpp
+C:\GabeMod\src\utils\vrad\macro_texture.cpp(156,9): warning C4101: 'vGlobal': unreferenced local variable
+C:\GabeMod\src\utils\vrad\lightmap.cpp(1548,17): warning C4101: 'dest': unreferenced local variable
+C:\GabeMod\src\utils\vrad\lightmap.cpp(2440,9): warning C4101: 'v': unreferenced local variable
+C:\GabeMod\src\utils\vrad\lightmap.cpp(3068,9): warning C4101: 'spot': unreferenced local variable
+  utilmatlib.cpp
+  vismat.cpp
+  vrad.cpp
+  VRAD_DispColl.cpp
+  VradDetailProps.cpp
+  VRadDisps.cpp
+  vraddll.cpp
+  VRadStaticProps.cpp
+  zip_utils.cpp
+C:\GabeMod\src\utils\vrad\trace.cpp(408,29): warning C4101: 'skytrans': unreferenced local variable
+  bsplib.cpp
+  builddisp.cpp
+C:\GabeMod\src\utils\vrad\vrad.cpp(1117,9): warning C4101: 'delta': unreferenced local variable
+  ChunkFile.cpp
+  cmdlib.cpp
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(177,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(178,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(179,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(180,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(185,10): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(186,10): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  DispColl_Common.cpp
+  map_shared.cpp
+  polylib.cpp
+  scriplib.cpp
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2370,24): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2378,32): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2379,26): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2392,20): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2393,20): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2394,20): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2395,20): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\utils\vrad\VRadStaticProps.cpp(2396,20): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  threads.cpp
+C:\GabeMod\src\utils\vrad\vraddll.cpp(180,50): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  tools_minidump.cpp
+  CollisionUtils.cpp
+C:\GabeMod\src\public\ChunkFile.cpp(957,17): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\public\ChunkFile.cpp(967,12): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\GabeMod\src\public\ChunkFile.cpp(968,16): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  filesystem_helpers.cpp
+  ScratchPad3D.cpp
+  ScratchPadUtils.cpp
+C:\GabeMod\src\public\ScratchPadUtils.cpp(224,9): warning C4101: 'topColor': unreferenced local variable
+     Creating library .\Debug\x64\vrad_dll.lib and object .\Debug\x64\vrad_dll.exp
+  vrad_dll_win64.vcxproj -> C:\GabeMod\src\utils\vrad\Debug\x64\vrad_dll.dll
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64
+          1 file(s) copied.
+          1 file(s) copied.

@@ -1,0 +1,7 @@
+﻿  StdAfx.cpp
+  vrad_launcher.cpp
+     Creating library .\Debug\x64\vrad.lib and object .\Debug\x64\vrad.exp
+  vrad_launcher_win64.vcxproj -> C:\GabeMod\src\utils\vrad_launcher\Debug\x64\vrad.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

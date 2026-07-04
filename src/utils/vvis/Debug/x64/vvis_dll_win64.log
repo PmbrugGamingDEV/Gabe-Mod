@@ -1,0 +1,27 @@
+﻿  bsplib.cpp
+  cmdlib.cpp
+  collisionutils.cpp
+  filesystem_helpers.cpp
+  filesystem_init.cpp
+  filesystem_tools.cpp
+  flow.cpp
+  loadcmdline.cpp
+  lumpfiles.cpp
+  MySqlDatabase.cpp
+  pacifier.cpp
+  scratchpad3d.cpp
+  scratchpad_helpers.cpp
+C:\GabeMod\src\utils\vvis\flow.cpp(448,9): warning C4101: 'mid': unreferenced local variable
+  scriplib.cpp
+  threads.cpp
+  tools_minidump.cpp
+  vvis.cpp
+  WaterDist.cpp
+  zip_utils.cpp
+     Creating library .\Debug\x64\vvis_dll.lib and object .\Debug\x64\vvis_dll.exp
+  vvis_dll_win64.vcxproj -> C:\GabeMod\src\utils\vvis\Debug\x64\vvis_dll.dll
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64
+          1 file(s) copied.
+          1 file(s) copied.

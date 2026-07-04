@@ -1,0 +1,7 @@
+﻿  memoverride.cpp
+  tgadiff.cpp
+     Creating library .\Debug\x64\tgadiff.lib and object .\Debug\x64\tgadiff.exp
+  tgadiff_win64.vcxproj -> C:\GabeMod\src\utils\tgadiff\Debug\x64\tgadiff.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

@@ -1,0 +1,16 @@
+﻿  cmdlib.cpp
+  filesystem_helpers.cpp
+  filesystem_init.cpp
+  pacifier.cpp
+  scriplib.cpp
+  stringregistry.cpp
+  captioncompiler.cpp
+  compiledcaptionswap.cpp
+  filesystem_tools.cpp
+  memoverride.cpp
+C:\GabeMod\src\utils\captioncompiler\captioncompiler.cpp(322,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+     Creating library .\Debug\x64\captioncompiler.lib and object .\Debug\x64\captioncompiler.exp
+  captioncompiler_win64.vcxproj -> C:\GabeMod\src\utils\captioncompiler\Debug\x64\captioncompiler.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64

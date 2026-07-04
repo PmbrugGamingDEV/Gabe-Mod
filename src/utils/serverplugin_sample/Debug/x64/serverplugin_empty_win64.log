@@ -1,0 +1,10 @@
+﻿  memoverride.cpp
+  serverplugin_bot.cpp
+  serverplugin_empty.cpp
+     Creating library .\Debug\x64\serverplugin_empty.lib and object .\Debug\x64\serverplugin_empty.exp
+  serverplugin_empty_win64.vcxproj -> C:\GabeMod\src\utils\serverplugin_sample\Debug\x64\serverplugin_empty.dll
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\bin\x64
+          1 file(s) copied.
+          1 file(s) copied.
