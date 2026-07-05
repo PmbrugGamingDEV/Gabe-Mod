@@ -2816,8 +2816,6 @@ bool CBasePlayer::IsUseableEntity( CBaseEntity *pEntity, unsigned int requiredCa
 //-----------------------------------------------------------------------------
 bool CBasePlayer::CanPickupObject( CBaseEntity *pObject, float massLimit, float sizeLimit )
 {
-	// UNDONE: Make this virtual and move to HL2 player
-#ifdef HL2_DLL
 	//Must be valid
 	if ( pObject == NULL )
 		return false;
@@ -2883,9 +2881,6 @@ bool CBasePlayer::CanPickupObject( CBaseEntity *pObject, float massLimit, float 
 	}
 
 	return true;
-#else
-	return false;
-#endif
 }
 
 float CBasePlayer::GetHeldObjectMass( IPhysicsObject *pHeldObject )

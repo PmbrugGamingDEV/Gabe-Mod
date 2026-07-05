@@ -82,6 +82,15 @@
     <Filter Include="Source Files\Gabe Mod Files\NPCS">
       <UniqueIdentifier>{093a94a7-8ff7-4087-8a4e-cd8d4d7e129d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\TF2">
+      <UniqueIdentifier>{0708f1f0-8e92-4188-bbb8-d7045a481c09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Portal">
+      <UniqueIdentifier>{99aaaa08-070d-4881-b796-e4b71548f1c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Prototypes">
+      <UniqueIdentifier>{a62a6d64-01db-401d-90de-66f4c1bc78a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\choreoobjects.lib">
@@ -2128,6 +2137,12 @@
     </ClInclude>
     <ClInclude Include="..\shared\hl2mp\weapon_physgun.h">
       <Filter>Source Files\Gabe Mod Files\Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\tf\tf_weapon_fists.h">
+      <Filter>Source Files\Gabe Mod Files\TF2</Filter>
+    </ClInclude>
+    <ClInclude Include="episodic\grenade_hopwire.h">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4230,6 +4245,39 @@
     </ClCompile>
     <ClCompile Include="hl2mp\hl2mp_client.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp">
+      <Filter>Source Files\Gabe Mod Files\TF2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\hl2\achievements_hl2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fartcmd.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="prop_glados_core.cpp">
+      <Filter>Source Files\Gabe Mod Files\Portal</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\Episode3\npc_combine_armored.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\Episode3\npc_wpnscanner.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\Episode3\weapon_proto1.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\grenade_hopwire.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\weapon_hopwire.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="npc_fastzombie.cpp">
+      <Filter>Source Files\HL2 DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="hl2\weapon_alyxgun.cpp">
+      <Filter>Source Files\HL2 DLL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup />

@@ -21,4 +21,4 @@
   ssenoise.cpp
   vector.cpp
   vmatrix.cpp
-  mathlib_win64.vcxproj -> C:\GabeMod\src\lib\public\x64\mathlib.lib
+C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(1647,5): error MSB6006: "Lib.exe" exited with code -1073741510.

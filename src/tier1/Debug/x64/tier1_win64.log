@@ -46,5 +46,3 @@ C:\GabeMod\src\tier1\utlstring.cpp(98,3): warning C4267:         with
 C:\GabeMod\src\tier1\utlstring.cpp(98,3): warning C4267:         [
 C:\GabeMod\src\tier1\utlstring.cpp(98,3): warning C4267:             T=int
 C:\GabeMod\src\tier1\utlstring.cpp(98,3): warning C4267:         ]
-  processor_detect.cpp
-  tier1_win64.vcxproj -> C:\GabeMod\src\lib\public\x64\tier1.lib

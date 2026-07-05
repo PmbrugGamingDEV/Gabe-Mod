@@ -65,36 +65,26 @@
 	}
 	"10"
 	{
-		"label" "#GameUI_GameMenu_ActivateVR"
-		"command" "engine vr_activate"
-		"InGameOrder" "40"
-		"OnlyWhenVREnabled" "1"
-		"OnlyWhenVRInactive" "1"
+		"label" "#GameUI_GameMenu_Achievements"
+		"command" "OpenAchievementsDialog"
+		"InGameOrder" "10"
 	}
 	"11"
-	{
-		"label" "#GameUI_GameMenu_DeactivateVR"
-		"command" "engine vr_deactivate"
-		"InGameOrder" "40"
-		"OnlyWhenVREnabled" "1"
-		"OnlyWhenVRActive" "1"
-	}
-	"12"
 	{
 		"label" "#GameUI_GameMenu_Options"
 		"command" "OpenOptionsDialog"
 	}
-	"13"
+	"12"
 	{
 		"label" "#GameUI_GameMenu_Quit"
 		"command" "Quit"
 	}
-	"14"
+	"13"
 	{
 		"label" ""
 		"command" ""
 	}
-	"15"
+	"14"
 	{
 		"label" "SCRIPT MENU"
 		"command" "engine gabe_loadscripts"

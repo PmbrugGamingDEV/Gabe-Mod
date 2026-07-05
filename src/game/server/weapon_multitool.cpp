@@ -46,24 +46,26 @@ ConVar mtool_mode(
 	"Multitool mode selector"
 );
 
-const struct ColorPreset {
+struct ColorPreset
+{
 	int r, g, b;
 	const char* name;
-} g_ColorPresets[] = {
-	{255, 0, 0, "Red"},
-	{255, 165, 0, "Orange"},
-	{255, 255, 0, "Yellow"},
-	{0, 255, 0, "Green"},
-	{0, 0, 255, "Blue"},
-	{75, 0, 130, "Indigo"},
-	{128, 0, 128, "Purple"},
-	{238, 130, 238, "Violet"},
-	{255, 192, 203, "Pink"},
-	{0, 0, 0, "Black"},
-	{255, 255, 255, "White"},
-	{0, 0, 0, "Rainbow"}
 };
-const int COLOR_COUNT = sizeof(g_ColorPresets) / sizeof(g_ColorPresets[0]);
+
+BEGIN_STRUCT_LIST(ColorPreset, g_ColorPresets)
+STRUCT_ENTRY(255, 0, 0, "Red")
+STRUCT_ENTRY(255, 165, 0, "Orange")
+STRUCT_ENTRY(255, 255, 0, "Yellow")
+STRUCT_ENTRY(0, 255, 0, "Green")
+STRUCT_ENTRY(0, 0, 255, "Blue")
+STRUCT_ENTRY(75, 0, 130, "Indigo")
+STRUCT_ENTRY(128, 0, 128, "Purple")
+STRUCT_ENTRY(238, 130, 238, "Violet")
+STRUCT_ENTRY(255, 192, 203, "Pink")
+STRUCT_ENTRY(0, 0, 0, "Black")
+STRUCT_ENTRY(255, 255, 255, "White")
+STRUCT_ENTRY(0, 0, 0, "Rainbow")
+END_STRUCT_LIST(g_ColorPresets)
 
 const char* g_DecalNames[] =
 {
@@ -401,28 +403,28 @@ MultitoolMode_t StringToMode(const char* psz)
 	return MODE_REMOVE;
 }
 
-const char* g_szModeNames[] =
-{
-	"Remove",
-	"Distance (Source Engine Units)",
-	"Color",
-	"Constraints",
-	"Ignite",
-	"Duplicate",
-	"Explode",
-	"Point Message",
-	"Light Watermelon",
-	"Decal",
-	"Render FX",
-	"Faceposer (NPCs)",
-};
+BEGIN_LIST(g_szModeNames)
+	LIST_ENTRY(Remove),
+	LIST_ENTRY(Distance),
+	LIST_ENTRY(Color),
+	LIST_ENTRY(Constraints),
+	LIST_ENTRY(Ignite),
+	LIST_ENTRY(Duplicate),
+	LIST_ENTRY(Explode),
+	LIST_ENTRY(Point_Message),
+	LIST_ENTRY(Light_Watermelon),
+	LIST_ENTRY(Decal),
+	LIST_ENTRY(Render_FX),
+	LIST_ENTRY(Faceposer_NPCs)
+END_LIST(g_szModeNames)
 
-const char* g_szConstraintTypes[] = {
-	"BallSocket",
-	"Weld",
-	"Rope"
-};
-const int CONSTRAINT_TYPE_COUNT = sizeof(g_szConstraintTypes) / sizeof(g_szConstraintTypes[0]);
+BEGIN_LIST(g_szConstraintTypes)
+	LIST_ENTRY(BallSocket),
+	LIST_ENTRY(Weld),
+	LIST_ENTRY(Rope),
+	LIST_ENTRY(Slider),
+	LIST_ENTRY(Hinge)
+END_LIST(g_szConstraintTypes)
 
 CBaseEntity* CWeaponMultitool::FindEntityInFront()
 {
@@ -914,7 +916,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 	case MODE_COLOR:
 	{
-		if (m_nColorIndex == COLOR_COUNT - 1) // Rainbow
+		if (m_nColorIndex == g_ColorPresets_COUNT - 1) // Rainbow
 		{
 
 			CBaseEntity* pChild = NULL;
@@ -1565,7 +1567,7 @@ void CWeaponMultitool::ItemPostFrame()
 		{
 			if (m_nMultitoolMode == MODE_COLOR)
 			{
-				m_nColorIndex = (m_nColorIndex + 1) % COLOR_COUNT;
+				m_nColorIndex = (m_nColorIndex + 1) % g_ColorPresets_COUNT;
 				const char* name = g_ColorPresets[m_nColorIndex].name;
 				HudText(pPlayer, UTIL_VarArgs("Color Mode: %s", name), 255, 255, 255);
 				SendHudUpdate();
@@ -1620,7 +1622,7 @@ void CWeaponMultitool::ItemPostFrame()
 	{
 		if ((pPlayer->m_nButtons & IN_RELOAD) && (pPlayer->m_afButtonPressed & IN_RELOAD))
 		{
-			m_nConstraintType = (m_nConstraintType + 1) % CONSTRAINT_TYPE_COUNT;
+			m_nConstraintType = (m_nConstraintType + 1) % g_szConstraintTypes_COUNT;
 			HudText(pPlayer, UTIL_VarArgs("Constraint Type: %s", g_szConstraintTypes[m_nConstraintType]), 255, 255, 255);
 
 			SendHudUpdate();
@@ -1663,7 +1665,7 @@ void CWeaponMultitool::ItemPostFrame()
 		if ((pPlayer->m_afButtonPressed & IN_RELOAD))
 		{
 			m_nLightWatermelonColor =
-				(m_nLightWatermelonColor + 1) % COLOR_COUNT;
+				(m_nLightWatermelonColor + 1) % g_ColorPresets_COUNT;
 
 			HudText(
 				pPlayer,

@@ -46,6 +46,18 @@
 
 #endif
 
+#define BEGIN_LIST(name) const char* name[] = { // Begin a simple string list
+#define LIST_ENTRY(text) #text // Add a text object to the list
+#define END_LIST(name) \
+}; \
+const int name##_COUNT = sizeof(name) / sizeof(name[0]);
+
+#define BEGIN_STRUCT_LIST(type, name) const type name[] = {
+#define STRUCT_ENTRY(...) { __VA_ARGS__ },
+#define END_STRUCT_LIST(name) \
+}; \
+const int name##_COUNT = ARRAYSIZE(name);
+
 namespace GabeMod
 {
 

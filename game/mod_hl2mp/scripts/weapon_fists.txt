@@ -1,0 +1,55 @@
+WeaponData
+{
+	"printname"			"weapon_fists"
+"viewmodel"     "models/weapons/v_crowbar.mdl"
+"playermodel"   "models/weapons/w_crowbar.mdl"
+"anim_prefix"   "crowbar"
+	"playermodel"		""
+	"anim_prefix"		"melee"
+	"bucket"			"5"
+	"bucket_position"	"3"
+
+	"clip_size"			"-1"
+	"clip2_size"		"-1"
+
+	"default_clip"		"-1"
+	"default_clip2"		"-1"
+
+	"primary_ammo"		"None"
+	"secondary_ammo"	"None"
+
+	"weight"			"1"
+	"item_flags"		"0"
+	"damage"			"10"
+
+	SoundData
+	{
+		"empty"			"WeaponFrag.Throw"
+		"single_shot"	"WeaponFrag.Throw"
+		"special1"		"Flesh.ImpactHard"
+	}
+
+	TextureData
+	{
+		"weapon"
+		{
+			"font"		"WeaponIcons"
+			"character"	"c"
+		}
+		"weapon_s"
+		{
+			"font"		"WeaponIconsSelected"
+			"character"	"c"
+		}
+		"weapon_small"
+		{
+			"font"		"WeaponIconsSmall"
+			"character"	"c"
+		}
+		"crosshair"
+		{
+			"font"		"Crosshairs"
+			"character"	"Q"
+		}
+	}
+}

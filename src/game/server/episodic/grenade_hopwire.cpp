@@ -71,6 +71,9 @@ float CGravityVortexController::GetConsumedMass( void ) const
 //-----------------------------------------------------------------------------
 void CGravityVortexController::ConsumeEntity( CBaseEntity *pEnt )
 {
+	if (pEnt->IsPlayer())
+		return;
+
 	// Get our base physics object
 	IPhysicsObject *pPhysObject = pEnt->VPhysicsGetObject();
 	if ( pPhysObject == NULL )
@@ -103,12 +106,15 @@ void CGravityVortexController::ConsumeEntity( CBaseEntity *pEnt )
 void CGravityVortexController::PullPlayersInRange( void )
 {
 	CBasePlayer *pPlayer = UTIL_GetLocalPlayer();
+
+	if (!pPlayer)
+		return;
 	
 	Vector	vecForce = GetAbsOrigin() - pPlayer->WorldSpaceCenter();
 	float	dist = VectorNormalize( vecForce );
 	
 	// FIXME: Need a more deterministic method here
-	if ( dist < 128.0f )
+	if ( dist < 48.0f )
 	{
 		// Kill the player (with falling death sound and effects)
 		CTakeDamageInfo deathInfo( this, this, GetAbsOrigin(), GetAbsOrigin(), 200, DMG_FALL );
@@ -126,7 +132,8 @@ void CGravityVortexController::PullPlayersInRange( void )
 	if ( dist > m_flRadius )
 		return;
 
-	float mass = pPlayer->VPhysicsGetObject()->GetMass();
+	IPhysicsObject* pPhys = pPlayer->VPhysicsGetObject();
+	float mass = pPhys ? pPhys->GetMass() : 85.0f;
 	float playerForce = m_flStrength * 0.05f;
 
 	// Find the pull force

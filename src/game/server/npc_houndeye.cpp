@@ -691,7 +691,7 @@ void CNPC_Houndeye::SonicAttack(void)
 
 	CBaseEntity* pEntity = NULL;
 	// iterate on all entities in the vicinity.
-	for (CEntitySphereQuery sphere(GetAbsOrigin(), HOUNDEYE_MAX_ATTACK_RADIUS); pEntity = sphere.GetCurrentEntity(); sphere.NextEntity())
+	for (CEntitySphereQuery sphere(GetAbsOrigin(), HOUNDEYE_MAX_ATTACK_RADIUS); (pEntity = sphere.GetCurrentEntity()); sphere.NextEntity())
 	{
 		if (pEntity->Classify() == CLASS_ANTLION)
 		{

@@ -1,70 +1,46 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-//=============================================================================
-
-#ifndef TF_WEAPON_FISTS_H
-#define TF_WEAPON_FISTS_H
-#ifdef _WIN32
+#ifndef WEAPON_FISTS_H
+#define WEAPON_FISTS_H
 #pragma once
-#endif
 
-#include "tf_weaponbase_melee.h"
+#include "hl2mp/weapon_hl2mpbasebasebludgeon.h"
 
 #ifdef CLIENT_DLL
-#define CTFFists C_TFFists
+#define CWeaponFists C_WeaponFists
 #endif
 
-enum fisttypes_t
-{
-	FISTTYPE_BASE = 0,
-	FISTTYPE_RADIAL_BUFF,
-	FISTTYPE_GRU,
-};
-
-//=============================================================================
-//
-// Fists weapon class.
-//
-class CTFFists : public CTFWeaponBaseMelee
+class CWeaponFists : public CBaseHL2MPBludgeonWeapon
 {
 public:
-
-	DECLARE_CLASS( CTFFists, CTFWeaponBaseMelee );
-	DECLARE_NETWORKCLASS(); 
+	DECLARE_CLASS(CWeaponFists, CBaseHL2MPBludgeonWeapon);
+	DECLARE_NETWORKCLASS();
 	DECLARE_PREDICTABLE();
 
-	CTFFists() {}
-	virtual int			GetWeaponID( void ) const			{ return TF_WEAPON_FISTS; }
+	CWeaponFists();
 
-	virtual void ItemPreFrame();
-	virtual void PrimaryAttack();
-	virtual void SecondaryAttack();
-	virtual bool Holster( CBaseCombatWeapon *pSwitchingTo );
+	void Spawn() OVERRIDE;
+	void Precache() OVERRIDE;
 
-	virtual void SendPlayerAnimEvent( CTFPlayer *pPlayer );
+	void PrimaryAttack() OVERRIDE;
+	void SecondaryAttack() OVERRIDE;
+	void ItemPostFrame() OVERRIDE;
+	bool Deploy() OVERRIDE;
+	bool Holster(CBaseCombatWeapon* pSwitchingTo) OVERRIDE;
 
-	virtual void DoViewModelAnimation( void );
+	void Punch(bool bRight);
+	void DealDamage();
 
-	virtual bool HideWhileStunned( void ) { return false; }
+	void SendPlayerAnimEvent(CBasePlayer* pPlayer);
+	void DoViewModelAnimation();
 
-	void Punch( void );
-
-#ifdef GAME_DLL
-	virtual void OnEntityHit( CBaseEntity *pEntity, CTakeDamageInfo *info );
-#endif
-
-	virtual bool AllowTaunts( void );
-
-	int			 GetFistType( void ) { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode ); return iMode; };
-
-	virtual void SetWeaponVisible( bool visible ) OVERRIDE;
-	virtual bool Deploy( void );
+	float GetRange() { return 48.0f; }
+	float GetFireRate() { return 0.9f; }
 
 private:
+	CNetworkVar(float, m_flNextMeleeAttack);
+	CNetworkVar(float, m_flNextIdle);
+	CNetworkVar(int, m_iCombo);
 
-	CTFFists( const CTFFists & ) {}
+	bool m_bRightPunch;
 };
 
-#endif // TF_WEAPON_FISTS_H
+#endif

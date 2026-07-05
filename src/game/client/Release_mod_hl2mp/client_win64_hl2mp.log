@@ -1,1 +1,8 @@
-﻿
+﻿  hl2mp_gamerules.cpp
+     Creating library .\Release_mod_hl2mp\\client.lib and object .\Release_mod_hl2mp\\client.exp
+  client_win64_hl2mp.vcxproj -> C:\GabeMod\src\game\client\Release_mod_hl2mp\client.dll
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\..\game\mod_hl2mp\bin\x64
+          1 file(s) copied.
+          1 file(s) copied.

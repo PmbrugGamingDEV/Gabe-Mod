@@ -1,1 +1,6 @@
-﻿
+﻿  main.cpp
+     Creating library .\Release_mod_hl2mp_win64\mod_hl2mp_win64.lib and object .\Release_mod_hl2mp_win64\mod_hl2mp_win64.exp
+  launcher_main_win64_hl2mp.vcxproj -> C:\GabeMod\src\launcher_main\Release_mod_hl2mp_win64\mod_hl2mp_win64.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
+  Publishing to ..\..\game

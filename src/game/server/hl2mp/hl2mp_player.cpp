@@ -233,6 +233,9 @@ void CHL2MP_Player::GiveAllItems(void)
 	CBasePlayer::GiveAmmo(255, "Buckshot");
 	CBasePlayer::GiveAmmo(32, "357");
 	CBasePlayer::GiveAmmo(3, "rpg_round");
+	CBasePlayer::GiveAmmo(255, "ammo_proto1");
+	CBasePlayer::GiveAmmo(999, "hopwire");
+
 
 	CBasePlayer::GiveAmmo(5, "grenade");
 	CBasePlayer::GiveAmmo(2, "slam");
@@ -256,7 +259,8 @@ void CHL2MP_Player::GiveAllItems(void)
 	GiveNamedItem("weapon_annabelle");
 	GiveNamedItem("weapon_flaregun");
 	GiveNamedItem("weapon_multitool");
-	//GiveNamedItem( "weapon_spawnmenu" );
+	GiveNamedItem("weapon_proto1");
+	GiveNamedItem("weapon_hopwire");
 
 	GiveNamedItem("weapon_rpg");
 
@@ -283,7 +287,6 @@ void CHL2MP_Player::GiveHL2Items(void)
 	CBasePlayer::GiveAmmo(999, "slam");
 
 	GiveNamedItem("weapon_crowbar");
-	GiveNamedItem("weapon_stunstick");
 	GiveNamedItem("weapon_pistol");
 	GiveNamedItem("weapon_357");
 	GiveNamedItem("weapon_smg1");
@@ -293,7 +296,6 @@ void CHL2MP_Player::GiveHL2Items(void)
 	GiveNamedItem("weapon_crossbow");
 	GiveNamedItem("weapon_bugbait");
 	GiveNamedItem("weapon_rpg");
-	GiveNamedItem("weapon_slam");
 	GiveNamedItem("weapon_physcannon");
 
 	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
@@ -506,7 +508,7 @@ void CHL2MP_Player::Spawn(void)
 	}
 	else if (gabeplus_jbmod.GetBool())
 	{
-		GiveJBModItems(); GiveHL1Items(); // Sandbox as well but jbmod physgun
+		GiveJBModItems(); // Sandbox as well but jbmod physgun
 		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
 		engine->ClientCommand(pEdict, "god");
 	}
@@ -583,7 +585,7 @@ bool CHL2MP_Player::ValidatePlayerModel( const char *pModel )
 	return false;
 }
 
-ConVar hl2mp_allow_pickup( "hl2mp_allow_pickup", "0", FCVAR_GAMEDLL );
+ConVar hl2mp_allow_pickup( "hl2mp_allow_pickup", "1", FCVAR_GAMEDLL | FCVAR_NOTIFY );
 
 void CHL2MP_Player::PickupObject( CBaseEntity* pObject, bool bLimitMassAndSize )
 {
@@ -806,6 +808,16 @@ void CHL2MP_Player::PostThink( void )
 	QAngle angles = GetLocalAngles();
 	angles[PITCH] = 0;
 	SetLocalAngles( angles );
+
+	Vector headPos = EyePosition();
+	headPos.z += 10.0f;
+
+	NDebugOverlay::Text(
+		headPos,
+		GetPlayerName(),
+		false,          // view check
+		0.0f            // duration
+	);
 }
 
 void CHL2MP_Player::PlayerDeathThink()

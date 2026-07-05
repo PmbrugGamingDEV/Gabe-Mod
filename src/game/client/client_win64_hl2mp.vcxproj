@@ -377,6 +377,7 @@ exit 1
     <ClInclude Include="..\shared\teamplay_gamerules.h" />
     <ClInclude Include="..\shared\teamplayroundbased_gamerules.h" />
     <ClInclude Include="..\shared\tempentity.h" />
+    <ClInclude Include="..\shared\tf\tf_weapon_fists.h" />
     <ClInclude Include="..\shared\touchlink.h" />
     <ClInclude Include="..\shared\usercmd.h" />
     <ClInclude Include="..\shared\usermessages.h" />
@@ -395,6 +396,7 @@ exit 1
     <ClInclude Include="..\shared\weapon_proficiency.h" />
     <ClInclude Include="cl_camerablur.h" />
     <ClInclude Include="c_gabe_vscript.h" />
+    <ClInclude Include="episodic\episodic_screenspaceeffects.h" />
     <ClInclude Include="gabe_client.h" />
     <ClInclude Include="gabe_events.h" />
     <ClInclude Include="game_controls\baseviewport.h" />
@@ -914,11 +916,15 @@ exit 1
     <ClCompile Include="..\shared\GABE.CPP" />
     <ClCompile Include="..\shared\hl1\hl1_baseweapon_shared.cpp" />
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
+    <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
     <ClCompile Include="..\shared\hl2\survival_gamerules.cpp" />
+    <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
     <ClCompile Include="cl_camerablur.cpp" />
     <ClCompile Include="c_bemod_physgun.cpp" />
     <ClCompile Include="c_gabe_vscript.cpp" />
     <ClCompile Include="c_weapon_jb_physgun.cpp" />
+    <ClCompile Include="episodic\c_weapon_hopwire.cpp" />
+    <ClCompile Include="episodic\episodic_screenspaceeffects.cpp" />
     <ClCompile Include="gabe_events.cpp" />
     <ClCompile Include="gabe_friends.cpp" />
     <ClCompile Include="gabe_newgame.cpp" />

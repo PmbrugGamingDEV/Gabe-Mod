@@ -1,0 +1,6 @@
+C:\GabeMod\src\materialsystem\stdshaders\BaseVSShader.cpp;C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\BaseVSShader.obj
+C:\GabeMod\src\materialsystem\stdshaders\example_model_dx9.cpp;C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\example_model_dx9.obj
+C:\GabeMod\src\materialsystem\stdshaders\example_model_dx9_helper.cpp;C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\example_model_dx9_helper.obj
+C:\GabeMod\src\public\tier0\memoverride.cpp;C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\memoverride.obj
+C:\GabeMod\src\materialsystem\stdshaders\sdk_bloom.cpp;C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\sdk_bloom.obj
+C:\GabeMod\src\materialsystem\stdshaders\sdk_screenspace_general.cpp;C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\sdk_screenspace_general.obj

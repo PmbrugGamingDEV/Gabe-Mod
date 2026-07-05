@@ -1036,6 +1036,9 @@ CAmmoDef* GetAmmoDef()
 		def.AddAmmoType("SMG1_Grenade", DMG_BURN, TRACER_NONE, 0, 0, 3, 0, 0);
 		def.AddAmmoType("Grenade", DMG_BURN, TRACER_NONE, 0, 0, 5, 0, 0);
 		def.AddAmmoType("slam", DMG_BURN, TRACER_NONE, 0, 0, 5, 0, 0);
+		def.AddAmmoType("Hopwire", DMG_BLAST, TRACER_NONE, 150, 75, 999, 0, 0);
+		def.AddAmmoType("CombineHeavyCannon", DMG_BULLET, TRACER_LINE, 40, 40, NULL, 10 * 750 * 12, AMMO_FORCE_DROP_IF_CARRIED); // hit like a 10 kg weight at 750 ft/s
+		def.AddAmmoType("ammo_proto1", DMG_BULLET, TRACER_LINE, 0, 0, 999, 0, 0);
 	}
 
 	return &def;

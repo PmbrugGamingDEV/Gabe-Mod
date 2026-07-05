@@ -70,6 +70,12 @@
     <Filter Include="Source Files\Gabe Mod Files\HL1">
       <UniqueIdentifier>{e07dd936-1371-4958-909b-cc6c05a97fba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\TF2">
+      <UniqueIdentifier>{6ee0e781-23ee-4bdb-8ba3-0df2641e22e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Prototypes">
+      <UniqueIdentifier>{1b736d78-e05c-4845-b9c8-21d58bd3c7a6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\bitmap.lib">
@@ -2009,6 +2015,12 @@
     <ClInclude Include="..\server\hl1\hl1_gamerules.h">
       <Filter>Source Files\HL2MP</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\tf\tf_weapon_fists.h">
+      <Filter>Source Files\Gabe Mod Files\TF2</Filter>
+    </ClInclude>
+    <ClInclude Include="episodic\episodic_screenspaceeffects.h">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3684,6 +3696,18 @@
     </ClCompile>
     <ClCompile Include="..\server\hl1\hl1_gamerules.cpp">
       <Filter>Source Files\HL2MP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp">
+      <Filter>Source Files\Gabe Mod Files\TF2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\hl2\achievements_hl2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\episodic_screenspaceeffects.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\c_weapon_hopwire.cpp">
+      <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup />

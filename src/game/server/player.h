@@ -19,6 +19,7 @@
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 #include "util_shared.h"
 #include "weapon_physgun.h"
+#include "player_pickup.h"
 
 #if defined USES_ECON_ITEMS
 #include "game_item_schema.h"
@@ -606,7 +607,13 @@ public:
 	// physics interactions
 	// mass/size limit set to zero for none
 	static bool				CanPickupObject( CBaseEntity *pObject, float massLimit, float sizeLimit );
-	virtual void			PickupObject( CBaseEntity *pObject, bool bLimitMassAndSize = true ) {}
+	virtual void PickupObject(CBaseEntity* pObject, bool bLimitMassAndSize = true)
+	{
+		if (!pObject)
+			return;
+
+		PlayerPickupObject(this, pObject);
+	}
 	virtual void			ForceDropOfCarriedPhysObjects( CBaseEntity *pOnlyIfHoldindThis = NULL ) {}
 	virtual float			GetHeldObjectMass( IPhysicsObject *pHeldObject );
 
