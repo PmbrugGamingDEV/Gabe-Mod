@@ -1,4 +1,8 @@
-﻿  monster_dummy.cpp
+﻿  point_template.cpp
+  vscript_server.cpp
+C:\GabeMod\src\game\shared\gabe_vscript_shared.h(426,2): warning C4002: too many arguments for function-like macro invocation 'AssertMsgOnce'
+  (compiling source file '/vscript_server.cpp')
+  
      Creating library .\Release_mod_hl2mp\server.lib and object .\Release_mod_hl2mp\server.exp
   server_win64_hl2mp.vcxproj -> C:\GabeMod\src\game\server\Release_mod_hl2mp\server.dll
   'pwsh.exe' is not recognized as an internal or external command,

@@ -1,0 +1,79 @@
+﻿  3dnow.cpp
+  almostequal.cpp
+  anorms.cpp
+  bumpvects.cpp
+  color_conversion.cpp
+  halton.cpp
+  IceKey.cpp
+  imagequant.cpp
+  lightdesc.cpp
+  mathlib_base.cpp
+  polyhedron.cpp
+  powsse.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'halton.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file '3dnow.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'almostequal.cpp')
+  
+  quantize.cpp
+  randsse.cpp
+  simdvectormatrix.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'bumpvects.cpp')
+  
+  sparse_convolution_noise.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'mathlib_base.cpp')
+  
+  spherical.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'powsse.cpp')
+  
+  sse.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'color_conversion.cpp')
+  
+  sseconst.cpp
+  ssenoise.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'lightdesc.cpp')
+  
+  vector.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'ssenoise.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'spherical.cpp')
+  
+  vmatrix.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'sparse_convolution_noise.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'simdvectormatrix.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'randsse.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'vector.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'anorms.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'vmatrix.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'sseconst.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'sse.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'polyhedron.cpp')
+  

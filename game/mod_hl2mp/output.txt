@@ -1,0 +1,27 @@
+No SteamApps connection.Loaded 11 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2mp\hl2mp_pak.vpk for pure server operation.
+Loaded 11 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2mp\hl2mp_pak.vpk for pure server operation.
+Loaded 1 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2_complete\hl2_complete_misc.vpk for pure server operation.
+Loaded 1231 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_textures.vpk for pure server operation.
+Loaded 574 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_sound_vo_english.vpk for pure server operation.
+Loaded 383 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_sound_misc.vpk for pure server operation.
+Loaded 462 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_misc.vpk for pure server operation.
+Loaded 5 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\platform\platform_misc.vpk for pure server operation.
+server.dll loaded for "Half-Life 2 Deathmatch"
+Loaded 11 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2mp\hl2mp_pak.vpk for pure server operation.
+Loaded 11 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2mp\hl2mp_pak.vpk for pure server operation.
+Loaded 1 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2_complete\hl2_complete_misc.vpk for pure server operation.
+Loaded 1231 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_textures.vpk for pure server operation.
+Loaded 574 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_sound_vo_english.vpk for pure server operation.
+Loaded 383 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_sound_misc.vpk for pure server operation.
+Loaded 462 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_misc.vpk for pure server operation.
+Loaded 5 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\platform\platform_misc.vpk for pure server operation.
+server.dll loaded for "Half-Life 2 Deathmatch"
+Loaded 11 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2mp\hl2mp_pak.vpk for pure server operation.
+Loaded 11 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2mp\hl2mp_pak.vpk for pure server operation.
+Loaded 1 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2_complete\hl2_complete_misc.vpk for pure server operation.
+Loaded 1231 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_textures.vpk for pure server operation.
+Loaded 574 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_sound_vo_english.vpk for pure server operation.
+Loaded 383 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_sound_misc.vpk for pure server operation.
+Loaded 462 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\hl2\hl2_misc.vpk for pure server operation.
+Loaded 5 VPK file hashes from D:\Steam\steamapps\common\Half-Life 2 Deathmatch\platform\platform_misc.vpk for pure server operation.
+server.dll loaded for "Half-Life 2 Deathmatch"

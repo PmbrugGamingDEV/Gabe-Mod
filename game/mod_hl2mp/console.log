@@ -1,0 +1,2249 @@
+Parent cvar in server.dll not allowed (hl2mp_bot_debug_ammo_scavenging)
+CSoundEmitterSystem:  Registered 5146 sounds
+CResponseSystem:  scripts\talker\response_rules.txt (217 rules, 214 criteria, and 208 responses)
+maxplayers set to 16
+Heap: 512.00 Mb
+12 CPUs (6 physical), Frequency: 4.7 Ghz,  Features: AuthenticAMD SSE SSE2 MMX RDTSC CMOV FCMOV
+execing valve.rc
+execing autoexec.cfg
+Unknown command "gabeplus_thanks"
+maxplayers set to 2
+execing skill
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_scientist_heal"
+Unknown command "sk_headcrab_dmg_bite"
+Unknown command "sk_islave_health"
+Unknown command "sk_islave_dmg_claw"
+Unknown command "sk_islave_dmg_clawrake"
+Unknown command "sk_islave_dmg_zap"
+Unknown command "sk_bullsquid_health"
+Unknown command "sk_bullsquid_dmg_bite"
+Unknown command "sk_bullsquid_dmg_whip"
+Unknown command "sk_bullsquid_dmg_spit"
+Unknown command "sk_hgrunt_health"
+Unknown command "sk_hgrunt_kick"
+Unknown command "sk_hgrunt_pellets"
+Unknown command "sk_hgrunt_gspeed"
+Unknown command "sk_ichthyosaur_shake"
+Unknown command "sk_gargantua_health"
+Unknown command "sk_gargantua_dmg_slash"
+Unknown command "sk_gargantua_dmg_fire"
+Unknown command "sk_gargantua_dmg_stomp"
+Unknown command "sk_snark_health"
+Unknown command "sk_snark_dmg_bite"
+Unknown command "sk_snark_dmg_pop"
+Unknown command "sk_agrunt_health"
+Unknown command "sk_agrunt_dmg_punch"
+Unknown command "sk_controller_health"
+Unknown command "sk_controller_dmgzap"
+Unknown command "sk_controller_speedball"
+Unknown command "sk_controller_dmgball"
+Unknown command "sk_hassassin_health"
+Unknown command "sk_turret_health"
+Unknown command "sk_miniturret_health"
+Unknown command "sk_sentry_health"
+Unknown command "sk_leech_health"
+Unknown command "sk_leech_dmg_bite"
+Unknown command "sk_bigmomma_health_factor"
+Unknown command "sk_bigmomma_dmg_slash"
+Unknown command "sk_bigmomma_dmg_blast"
+Unknown command "sk_bigmomma_radius_blast"
+Unknown command "sk_nihilanth_health"
+Unknown command "sk_nihilanth_zap"
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_plr_dmg_9mm_bullet"
+Unknown command "sk_plr_dmg_357_bullet"
+Unknown command "sk_plr_dmg_mp5_grenade"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_plr_dmg_xbow_bolt_plr"
+Unknown command "sk_plr_dmg_xbow_bolt_npc"
+Unknown command "sk_plr_dmg_egon_narrow"
+Unknown command "sk_plr_dmg_egon_wide"
+Unknown command "sk_plr_dmg_gauss"
+Unknown command "sk_plr_dmg_hornet"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_npc_dmg_hornet"
+Unknown command "sk_npc_dmg_9mm_bullet"
+Unknown command "sk_npc_dmg_9mmAR_bullet"
+Unknown command "sk_npc_dmg_12mm_bullet"
+Unknown command "sk_max_9mm_bullet"
+Unknown command "sk_max_357_bullet"
+Unknown command "sk_max_mp5_grenade"
+Unknown command "sk_mp5_grenade_radius"
+Unknown command "sk_max_rpg_rocket"
+Unknown command "sk_max_xbow_bolt"
+Unknown command "sk_max_uranium"
+Unknown command "sk_max_hornet"
+Unknown command "sk_max_snark"
+Unknown command "sk_max_tripmine"
+Unknown command "sk_max_satchel"
+Network: IP 192.168.5.1, mode MP, dedicated Yes, ports 27015 SV / 27005 CL
+---- Host_NewGame ----
+Spawn Server: dm_lockdown
+TODO: Refusing to discard 0 bytes
+CMaterialSystem::ReloadMaterials bDeviceReady false
+Binding uncached material "engine/preloadtexture", artificially incrementing refcount
+material "ati_2004/detail/detailsprites" not found.
+Missing map material: ATI_2004/DETAIL/DETAILSPRITES
+execing skill_manifest.cfg
+execing skill.cfg
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_scientist_heal"
+Unknown command "sk_headcrab_dmg_bite"
+Unknown command "sk_islave_health"
+Unknown command "sk_islave_dmg_claw"
+Unknown command "sk_islave_dmg_clawrake"
+Unknown command "sk_islave_dmg_zap"
+Unknown command "sk_bullsquid_health"
+Unknown command "sk_bullsquid_dmg_bite"
+Unknown command "sk_bullsquid_dmg_whip"
+Unknown command "sk_bullsquid_dmg_spit"
+Unknown command "sk_hgrunt_health"
+Unknown command "sk_hgrunt_kick"
+Unknown command "sk_hgrunt_pellets"
+Unknown command "sk_hgrunt_gspeed"
+Unknown command "sk_ichthyosaur_shake"
+Unknown command "sk_gargantua_health"
+Unknown command "sk_gargantua_dmg_slash"
+Unknown command "sk_gargantua_dmg_fire"
+Unknown command "sk_gargantua_dmg_stomp"
+Unknown command "sk_snark_health"
+Unknown command "sk_snark_dmg_bite"
+Unknown command "sk_snark_dmg_pop"
+Unknown command "sk_agrunt_health"
+Unknown command "sk_agrunt_dmg_punch"
+Unknown command "sk_controller_health"
+Unknown command "sk_controller_dmgzap"
+Unknown command "sk_controller_speedball"
+Unknown command "sk_controller_dmgball"
+Unknown command "sk_hassassin_health"
+Unknown command "sk_turret_health"
+Unknown command "sk_miniturret_health"
+Unknown command "sk_sentry_health"
+Unknown command "sk_leech_health"
+Unknown command "sk_leech_dmg_bite"
+Unknown command "sk_bigmomma_health_factor"
+Unknown command "sk_bigmomma_dmg_slash"
+Unknown command "sk_bigmomma_dmg_blast"
+Unknown command "sk_bigmomma_radius_blast"
+Unknown command "sk_nihilanth_health"
+Unknown command "sk_nihilanth_zap"
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_plr_dmg_9mm_bullet"
+Unknown command "sk_plr_dmg_357_bullet"
+Unknown command "sk_plr_dmg_mp5_grenade"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_plr_dmg_xbow_bolt_plr"
+Unknown command "sk_plr_dmg_xbow_bolt_npc"
+Unknown command "sk_plr_dmg_egon_narrow"
+Unknown command "sk_plr_dmg_egon_wide"
+Unknown command "sk_plr_dmg_gauss"
+Unknown command "sk_plr_dmg_hornet"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_npc_dmg_hornet"
+Unknown command "sk_npc_dmg_9mm_bullet"
+Unknown command "sk_npc_dmg_9mmAR_bullet"
+Unknown command "sk_npc_dmg_12mm_bullet"
+Unknown command "sk_max_9mm_bullet"
+Unknown command "sk_max_357_bullet"
+Unknown command "sk_max_mp5_grenade"
+Unknown command "sk_mp5_grenade_radius"
+Unknown command "sk_max_rpg_rocket"
+Unknown command "sk_max_xbow_bolt"
+Unknown command "sk_max_uranium"
+Unknown command "sk_max_hornet"
+Unknown command "sk_max_snark"
+Unknown command "sk_max_tripmine"
+Unknown command "sk_max_satchel"
+Map cycle file 'cfg\mapcycle.txt' was not found.
+Set Gravity 600.0 (0.250 tolerance)
+Error loading cfg/vscript_convar_allowlist.txt
+Failed to load models/computergibs.mdl!
+Failed to load models/fleshgibs.mdl!
+Failed to load models/ceilinggibs.mdl!
+Failed to load models/cindergibs.mdl!
+Failed to load models/webgibs.mdl!
+VSCRIPT: Started VScript virtual machine using script language 'Squirrel'
+Script not found (scripts/vscripts/mapspawn.nut) 
+Loading AI graph
+Step 1 loading
+Checking version
+AI node graph maps/graphs/dm_lockdown.ain is out of date
+props_lab/monitor02.mdl : material "models/props_lab/monitor_lost" not found.
+Set motd from file 'cfg/motd_default.txt'.  ('cfg/motd.txt' was not found.)
+Set motd_text from file 'cfg/motd_text_default.txt'.  ('cfg/motd_text.txt' was not found.)
+SV_ActivateServer: setting tickrate to 66.7
+Created class baseline: 28 classes, 7763 bytes.
+2 player server started
+execing server.cfg
+'gabeplus_motd.cfg' not present; not executing.
+Server is hibernating
+Parent cvar in server.dll not allowed (hl2mp_bot_debug_ammo_scavenging)
+CSoundEmitterSystem:  Registered 5146 sounds
+CResponseSystem:  scripts\talker\response_rules.txt (217 rules, 214 criteria, and 208 responses)
+maxplayers set to 16
+Heap: 512.00 Mb
+12 CPUs (6 physical), Frequency: 4.7 Ghz,  Features: AuthenticAMD SSE SSE2 MMX RDTSC CMOV FCMOV
+execing valve.rc
+execing autoexec.cfg
+Unknown command "gabeplus_thanks"
+maxplayers set to 2
+execing skill
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_scientist_heal"
+Unknown command "sk_headcrab_dmg_bite"
+Unknown command "sk_islave_health"
+Unknown command "sk_islave_dmg_claw"
+Unknown command "sk_islave_dmg_clawrake"
+Unknown command "sk_islave_dmg_zap"
+Unknown command "sk_bullsquid_health"
+Unknown command "sk_bullsquid_dmg_bite"
+Unknown command "sk_bullsquid_dmg_whip"
+Unknown command "sk_bullsquid_dmg_spit"
+Unknown command "sk_hgrunt_health"
+Unknown command "sk_hgrunt_kick"
+Unknown command "sk_hgrunt_pellets"
+Unknown command "sk_hgrunt_gspeed"
+Unknown command "sk_ichthyosaur_shake"
+Unknown command "sk_gargantua_health"
+Unknown command "sk_gargantua_dmg_slash"
+Unknown command "sk_gargantua_dmg_fire"
+Unknown command "sk_gargantua_dmg_stomp"
+Unknown command "sk_snark_health"
+Unknown command "sk_snark_dmg_bite"
+Unknown command "sk_snark_dmg_pop"
+Unknown command "sk_agrunt_health"
+Unknown command "sk_agrunt_dmg_punch"
+Unknown command "sk_controller_health"
+Unknown command "sk_controller_dmgzap"
+Unknown command "sk_controller_speedball"
+Unknown command "sk_controller_dmgball"
+Unknown command "sk_hassassin_health"
+Unknown command "sk_turret_health"
+Unknown command "sk_miniturret_health"
+Unknown command "sk_sentry_health"
+Unknown command "sk_leech_health"
+Unknown command "sk_leech_dmg_bite"
+Unknown command "sk_bigmomma_health_factor"
+Unknown command "sk_bigmomma_dmg_slash"
+Unknown command "sk_bigmomma_dmg_blast"
+Unknown command "sk_bigmomma_radius_blast"
+Unknown command "sk_nihilanth_health"
+Unknown command "sk_nihilanth_zap"
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_plr_dmg_9mm_bullet"
+Unknown command "sk_plr_dmg_357_bullet"
+Unknown command "sk_plr_dmg_mp5_grenade"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_plr_dmg_xbow_bolt_plr"
+Unknown command "sk_plr_dmg_xbow_bolt_npc"
+Unknown command "sk_plr_dmg_egon_narrow"
+Unknown command "sk_plr_dmg_egon_wide"
+Unknown command "sk_plr_dmg_gauss"
+Unknown command "sk_plr_dmg_hornet"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_npc_dmg_hornet"
+Unknown command "sk_npc_dmg_9mm_bullet"
+Unknown command "sk_npc_dmg_9mmAR_bullet"
+Unknown command "sk_npc_dmg_12mm_bullet"
+Unknown command "sk_max_9mm_bullet"
+Unknown command "sk_max_357_bullet"
+Unknown command "sk_max_mp5_grenade"
+Unknown command "sk_mp5_grenade_radius"
+Unknown command "sk_max_rpg_rocket"
+Unknown command "sk_max_xbow_bolt"
+Unknown command "sk_max_uranium"
+Unknown command "sk_max_hornet"
+Unknown command "sk_max_snark"
+Unknown command "sk_max_tripmine"
+Unknown command "sk_max_satchel"
+Network: IP 192.168.5.1, mode MP, dedicated Yes, ports 27015 SV / 27005 CL
+---- Host_NewGame ----
+Spawn Server: dm_lockdown
+TODO: Refusing to discard 0 bytes
+CMaterialSystem::ReloadMaterials bDeviceReady false
+Binding uncached material "engine/preloadtexture", artificially incrementing refcount
+material "ati_2004/detail/detailsprites" not found.
+Missing map material: ATI_2004/DETAIL/DETAILSPRITES
+execing skill_manifest.cfg
+execing skill.cfg
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_scientist_heal"
+Unknown command "sk_headcrab_dmg_bite"
+Unknown command "sk_islave_health"
+Unknown command "sk_islave_dmg_claw"
+Unknown command "sk_islave_dmg_clawrake"
+Unknown command "sk_islave_dmg_zap"
+Unknown command "sk_bullsquid_health"
+Unknown command "sk_bullsquid_dmg_bite"
+Unknown command "sk_bullsquid_dmg_whip"
+Unknown command "sk_bullsquid_dmg_spit"
+Unknown command "sk_hgrunt_health"
+Unknown command "sk_hgrunt_kick"
+Unknown command "sk_hgrunt_pellets"
+Unknown command "sk_hgrunt_gspeed"
+Unknown command "sk_ichthyosaur_shake"
+Unknown command "sk_gargantua_health"
+Unknown command "sk_gargantua_dmg_slash"
+Unknown command "sk_gargantua_dmg_fire"
+Unknown command "sk_gargantua_dmg_stomp"
+Unknown command "sk_snark_health"
+Unknown command "sk_snark_dmg_bite"
+Unknown command "sk_snark_dmg_pop"
+Unknown command "sk_agrunt_health"
+Unknown command "sk_agrunt_dmg_punch"
+Unknown command "sk_controller_health"
+Unknown command "sk_controller_dmgzap"
+Unknown command "sk_controller_speedball"
+Unknown command "sk_controller_dmgball"
+Unknown command "sk_hassassin_health"
+Unknown command "sk_turret_health"
+Unknown command "sk_miniturret_health"
+Unknown command "sk_sentry_health"
+Unknown command "sk_leech_health"
+Unknown command "sk_leech_dmg_bite"
+Unknown command "sk_bigmomma_health_factor"
+Unknown command "sk_bigmomma_dmg_slash"
+Unknown command "sk_bigmomma_dmg_blast"
+Unknown command "sk_bigmomma_radius_blast"
+Unknown command "sk_nihilanth_health"
+Unknown command "sk_nihilanth_zap"
+Unknown command "sk_plr_dmg_crowbar"
+Unknown command "sk_plr_dmg_9mm_bullet"
+Unknown command "sk_plr_dmg_357_bullet"
+Unknown command "sk_plr_dmg_mp5_grenade"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_plr_dmg_xbow_bolt_plr"
+Unknown command "sk_plr_dmg_xbow_bolt_npc"
+Unknown command "sk_plr_dmg_egon_narrow"
+Unknown command "sk_plr_dmg_egon_wide"
+Unknown command "sk_plr_dmg_gauss"
+Unknown command "sk_plr_dmg_hornet"
+Unknown command "sk_plr_dmg_rpg"
+Unknown command "sk_npc_dmg_hornet"
+Unknown command "sk_npc_dmg_9mm_bullet"
+Unknown command "sk_npc_dmg_9mmAR_bullet"
+Unknown command "sk_npc_dmg_12mm_bullet"
+Unknown command "sk_max_9mm_bullet"
+Unknown command "sk_max_357_bullet"
+Unknown command "sk_max_mp5_grenade"
+Unknown command "sk_mp5_grenade_radius"
+Unknown command "sk_max_rpg_rocket"
+Unknown command "sk_max_xbow_bolt"
+Unknown command "sk_max_uranium"
+Unknown command "sk_max_hornet"
+Unknown command "sk_max_snark"
+Unknown command "sk_max_tripmine"
+Unknown command "sk_max_satchel"
+Map cycle file 'cfg\mapcycle.txt' was not found.
+Set Gravity 600.0 (0.250 tolerance)
+Error loading cfg/vscript_convar_allowlist.txt
+Failed to load models/computergibs.mdl!
+Failed to load models/fleshgibs.mdl!
+Failed to load models/ceilinggibs.mdl!
+Failed to load models/cindergibs.mdl!
+Failed to load models/webgibs.mdl!
+VSCRIPT: Started VScript virtual machine using script language 'Squirrel'
+Script not found (scripts/vscripts/mapspawn.nut) 
+Loading AI graph
+Step 1 loading
+Checking version
+AI node graph maps/graphs/dm_lockdown.ain is out of date
+props_lab/monitor02.mdl : material "models/props_lab/monitor_lost" not found.
+Set motd from file 'cfg/motd_default.txt'.  ('cfg/motd.txt' was not found.)
+Set motd_text from file 'cfg/motd_text_default.txt'.  ('cfg/motd_text.txt' was not found.)
+SV_ActivateServer: setting tickrate to 66.7
+Created class baseline: 28 classes, 7763 bytes.
+2 player server started
+execing server.cfg
+'gabeplus_motd.cfg' not present; not executing.
+Server is hibernating
+registered Console Command: 
+registered Console Command: ent_keyvalue
+registered Console Command: nb_player_move_direct
+registered Console Command: bot_mimic
+registered Console Command: nb_head_aim_resettle_time
+registered Console Command: nb_head_aim_resettle_angle
+registered Console Command: nb_head_aim_settle_duration
+registered Console Command: nb_head_aim_steady_max_rate
+registered Console Command: nb_saccade_speed
+registered Console Command: nb_saccade_time
+registered Console Command: nb_player_move
+registered Console Command: nb_player_crouch
+registered Console Command: nb_player_walk
+registered Console Command: nb_player_stop
+registered Console Command: nb_debug_climbing
+registered Console Command: nb_allow_gap_jumping
+registered Console Command: nb_allow_climbing
+registered Console Command: nb_allow_avoiding
+registered Console Command: nb_ladder_align_range
+registered Console Command: nb_goal_look_ahead_range
+registered Console Command: nb_speed_look_ahead_range
+registered Console Command: nb_path_segment_influence_radius
+registered Console Command: nb_path_draw_segment_count
+registered Console Command: nb_path_draw_inc
+registered Console Command: nb_debug_known_entities
+registered Console Command: nb_blind
+registered Console Command: nb_debug_history
+registered Console Command: simple_bot_add
+registered Console Command: nb_warp_selected_here
+registered Console Command: nb_force_look_at
+registered Console Command: nb_select
+registered Console Command: nb_debug_filter
+registered Console Command: nb_debug
+registered Console Command: nb_update_debug
+registered Console Command: nb_update_maxslide
+registered Console Command: nb_update_framelimit
+registered Console Command: nb_update_frequency
+registered Console Command: nb_move_to_cursor
+registered Console Command: nb_delete_all
+registered Console Command: nb_command
+registered Console Command: nb_stop
+registered Console Command: nav_simplify_selected
+registered Console Command: nav_chop_selected
+registered Console Command: nav_show_node_grid
+registered Console Command: nav_test_node_crouch_dir
+registered Console Command: nav_test_node_crouch
+registered Console Command: nav_test_node
+registered Console Command: nav_show_node_id
+registered Console Command: nav_show_nodes
+registered Console Command: nav_mark_attribute
+registered Console Command: nav_clear_attribute
+registered Console Command: wipe_nav_attributes
+registered Console Command: nav_build_ladder
+registered Console Command: nav_compress_id
+registered Console Command: nav_clear_walkable_marks
+registered Console Command: nav_mark_walkable
+registered Console Command: nav_analyze_scripted
+registered Console Command: nav_analyze
+registered Console Command: nav_generate_incremental
+registered Console Command: nav_generate
+registered Console Command: nav_ladder_flip
+registered Console Command: nav_warp_to_mark
+registered Console Command: nav_corner_place_on_ground
+registered Console Command: nav_corner_lower
+registered Console Command: nav_corner_raise
+registered Console Command: nav_corner_select
+registered Console Command: nav_mark_unnamed
+registered Console Command: nav_toggle_place_painting
+registered Console Command: nav_place_pick
+registered Console Command: nav_place_set
+registered Console Command: nav_place_floodfill
+registered Console Command: nav_set_place_mode
+registered Console Command: nav_toggle_place_mode
+registered Console Command: nav_place_list
+registered Console Command: nav_place_replace
+registered Console Command: nav_use_place
+registered Console Command: nav_load
+registered Console Command: nav_save
+registered Console Command: nav_strip
+registered Console Command: nav_no_hostages
+registered Console Command: nav_stand
+registered Console Command: nav_dont_hide
+registered Console Command: nav_transient
+registered Console Command: nav_avoid
+registered Console Command: nav_run
+registered Console Command: nav_walk
+registered Console Command: nav_stop
+registered Console Command: nav_no_jump
+registered Console Command: nav_jump
+registered Console Command: nav_precise
+registered Console Command: nav_crouch
+registered Console Command: nav_splice
+registered Console Command: nav_disconnect_outgoing_oneways
+registered Console Command: nav_disconnect
+registered Console Command: nav_connect
+registered Console Command: nav_end_area
+registered Console Command: nav_begin_area
+registered Console Command: nav_unmark
+registered Console Command: nav_mark
+registered Console Command: nav_merge
+registered Console Command: nav_make_sniper_spots
+registered Console Command: nav_split
+registered Console Command: nav_select_orphans
+registered Console Command: nav_select_stairs
+registered Console Command: nav_select_damaging_areas
+registered Console Command: nav_select_obstructed_areas
+registered Console Command: nav_select_blocked_areas
+registered Console Command: nav_select_invalid_areas
+registered Console Command: nav_end_shift_xy
+registered Console Command: nav_begin_shift_xy
+registered Console Command: nav_select_half_space
+registered Console Command: nav_toggle_deselecting
+registered Console Command: nav_end_deselecting
+registered Console Command: nav_begin_deselecting
+registered Console Command: nav_toggle_selecting
+registered Console Command: nav_lower_drag_volume_min
+registered Console Command: nav_raise_drag_volume_min
+registered Console Command: nav_lower_drag_volume_max
+registered Console Command: nav_raise_drag_volume_max
+registered Console Command: nav_end_drag_deselecting
+registered Console Command: nav_begin_drag_deselecting
+registered Console Command: nav_end_drag_selecting
+registered Console Command: nav_begin_drag_selecting
+registered Console Command: nav_end_selecting
+registered Console Command: nav_begin_selecting
+registered Console Command: nav_select_larger_than
+registered Console Command: nav_show_dumped_positions
+registered Console Command: nav_dump_selected_set_positions
+registered Console Command: nav_clear_selected_set
+registered Console Command: nav_toggle_in_selected_set
+registered Console Command: nav_remove_from_selected_set
+registered Console Command: nav_add_to_selected_set_by_id
+registered Console Command: nav_add_to_selected_set
+registered Console Command: nav_recall_selected_set
+registered Console Command: nav_store_selected_set
+registered Console Command: nav_toggle_selected_set
+registered Console Command: nav_flood_select
+registered Console Command: nav_delete_marked
+registered Console Command: nav_delete
+registered Console Command: nav_remove_jump_areas
+registered Console Command: nav_max_vis_delta_list_length
+registered Console Command: nav_show_func_nav_prerequisite
+registered Console Command: nav_show_func_nav_prefer
+registered Console Command: nav_show_func_nav_avoid
+registered Console Command: nav_show_player_counts
+registered Console Command: nav_show_danger
+registered Console Command: nav_show_approach_points
+registered Console Command: nav_quicksave
+registered Console Command: nav_edit
+registered Console Command: nav_merge_mesh
+registered Console Command: nav_save_selected
+registered Console Command: nav_gen_cliffs_approx
+registered Console Command: nav_subdivide
+registered Console Command: nav_test_stairs
+registered Console Command: nav_check_stairs
+registered Console Command: nav_area_max_size
+registered Console Command: nav_generate_incremental_tolerance
+registered Console Command: nav_generate_incremental_range
+registered Console Command: nav_generate_jump_connections
+registered Console Command: nav_generate_fixup_jump_areas
+registered Console Command: nav_generate_fencetops
+registered Console Command: nav_displacement_test
+registered Console Command: nav_slope_tolerance
+registered Console Command: nav_slope_limit
+registered Console Command: nav_check_file_consistency
+registered Console Command: nav_select_radius
+registered Console Command: nav_world_center
+registered Console Command: nav_shift
+registered Console Command: nav_show_compass
+registered Console Command: nav_drag_selection_volume_zmin_offset
+registered Console Command: nav_drag_selection_volume_zmax_offset
+registered Console Command: nav_create_area_at_feet
+registered Console Command: nav_solid_props
+registered Console Command: nav_draw_limit
+registered Console Command: nav_create_place_on_ground
+registered Console Command: nav_snap_to_grid
+registered Console Command: nav_show_area_info
+registered Console Command: nav_select_overlapping
+registered Console Command: nav_check_floor
+registered Console Command: nav_update_blocked
+registered Console Command: nav_update_lighting
+registered Console Command: nav_selected_set_border_color
+registered Console Command: nav_selected_set_color
+registered Console Command: nav_show_potentially_visible
+registered Console Command: nav_potentially_visible_dot_tolerance
+registered Console Command: nav_update_visibility_on_edit
+registered Console Command: nav_max_view_distance
+registered Console Command: nav_show_continguous
+registered Console Command: nav_debug_blocked
+registered Console Command: nav_show_light_intensity
+registered Console Command: nav_corner_adjust_adjacent
+registered Console Command: nav_area_bgcolor
+registered Console Command: nav_split_place_on_ground
+registered Console Command: nav_coplanar_slope_limit_displacement
+registered Console Command: nav_coplanar_slope_limit
+registered Console Command: gabeplus_stunstick_refire
+registered Console Command: gabe+_smg1_grenade_delay
+registered Console Command: gabe+_smg1_frag_timer
+registered Console Command: gabe+_smg1_frag_radius
+registered Console Command: gabe+_smg1_frag_damage
+registered Console Command: gabe+_smg1_ball_duration
+registered Console Command: gabe+_smg1_ball_mass
+registered Console Command: gabe+_smg1_ball_radius
+registered Console Command: sk_apc_missile_damage
+registered Console Command: gabe+_rpg_speed
+registered Console Command: player_throwforce
+registered Console Command: physcannon_ball_cone
+registered Console Command: physcannon_cone
+registered Console Command: physcannon_pullforce
+registered Console Command: physcannon_chargetime
+registered Console Command: physcannon_tracelength
+registered Console Command: physcannon_maxmass
+registered Console Command: physcannon_maxforce
+registered Console Command: physcannon_minforce
+registered Console Command: g_debug_physcannon
+registered Console Command: sk_crowbar_lead_time
+registered Console Command: gabe+_crowbar_swingrate
+registered Console Command: gabe+_crowbar_range
+registered Console Command: sk_weapon_ar2_alt_fire_mass
+registered Console Command: sk_weapon_ar2_alt_fire_duration
+registered Console Command: sk_weapon_ar2_alt_fire_radius
+registered Console Command: sk_tripmine_radius
+registered Console Command: sk_npc_dmg_tripmine
+registered Console Command: sk_plr_dmg_tripmine
+registered Console Command: sk_satchel_radius
+registered Console Command: sk_npc_dmg_satchel
+registered Console Command: sk_plr_dmg_satchel
+registered Console Command: hl2mp_bot_force_jump
+registered Console Command: hl2mp_bot_disable_seek_and_destroy
+registered Console Command: hl2mp_bot_debug_seek_and_destroy
+registered Console Command: hl2mp_bot_flag_kill_on_touch
+registered Console Command: hl2mp_bot_fetch_lost_flag_time
+registered Console Command: hl2mp_bot_wait_in_cover_max_time
+registered Console Command: hl2mp_bot_wait_in_cover_min_time
+registered Console Command: hl2mp_bot_debug_retreat_to_cover
+registered Console Command: hl2mp_bot_retreat_to_cover_range
+registered Console Command: hl2mp_bot_melee_attack_abandon_range
+registered Console Command: hl2mp_bot_disable_get_prop
+registered Console Command: hl2mp_bot_debug_prop_scavenging
+registered Console Command: hl2mp_bot_prop_search_only_important
+registered Console Command: hl2mp_bot_prop_search_min_mass
+registered Console Command: hl2mp_bot_prop_search_important_range
+registered Console Command: hl2mp_bot_prop_search_range
+registered Console Command: hl2mp_bot_debug_ammo_scavenging
+registered Console Command: hl2mp_bot_health_search_far_range
+registered Console Command: hl2mp_bot_health_search_near_range
+registered Console Command: hl2mp_bot_health_ok_ratio
+registered Console Command: hl2mp_bot_health_critical_ratio
+Parent cvar in server.dll not allowed (hl2mp_bot_debug_ammo_scavenging)
+registered Console Command: hl2mp_bot_debug_ammo_scavenging
+registered Console Command: hl2mp_bot_ammo_search_range
+registered Console Command: hl2mp_bot_physcannon_wait_fire_time
+registered Console Command: hl2mp_bot_allow_retreat
+registered Console Command: hl2mp_bot_fire_weapon_allowed
+registered Console Command: hl2mp_bot_always_full_reload
+registered Console Command: hl2mp_bot_hitscan_range_limit
+registered Console Command: hl2mp_bot_ballistic_elevation_rate
+registered Console Command: hl2mp_bot_notice_backstab_max_range
+registered Console Command: hl2mp_bot_notice_backstab_min_range
+registered Console Command: hl2mp_bot_notice_backstab_chance
+registered Console Command: hl2mp_bot_taunt_victim_chance
+registered Console Command: hl2mp_bot_fire_weapon_min_time
+registered Console Command: hl2mp_bot_debug_sniper
+registered Console Command: hl2mp_bot_sniper_aim_steady_rate
+registered Console Command: hl2mp_bot_sniper_aim_error
+registered Console Command: hl2mp_bot_path_lookahead_range
+registered Console Command: hl2mp_bot_aggressive
+registered Console Command: hl2mp_bot_sniper_choose_target_interval
+registered Console Command: hl2mp_bot_choose_target_interval
+registered Console Command: hl2mp_bot_debug_stuck_log_clear
+registered Console Command: hl2mp_bot_debug_stuck_log
+registered Console Command: hl2mp_bot_gravgun_only
+registered Console Command: hl2mp_bot_melee_only
+registered Console Command: hl2mp_bot_offline_practice
+registered Console Command: hl2mp_bot_auto_vacate
+registered Console Command: hl2mp_bot_join_after_player
+registered Console Command: hl2mp_bot_quota_mode
+registered Console Command: hl2mp_bot_quota
+registered Console Command: hl2mp_bot_difficulty
+registered Console Command: hl2mp_bot_warp_team_to_me
+registered Console Command: hl2mp_bot_kill
+registered Console Command: hl2mp_bot_kick
+registered Console Command: hl2mp_bot_add
+registered Console Command: hl2mp_bot_prop_hater_ratio
+registered Console Command: hl2mp_bot_prop_freak_ratio
+registered Console Command: hl2mp_bot_shotgunner_range
+registered Console Command: hl2mp_bot_ignore_real_players
+registered Console Command: hl2mp_bot_debug_tags
+registered Console Command: hl2mp_bot_near_point_travel_distance
+registered Console Command: hl2mp_bot_prefix_name_with_difficulty
+registered Console Command: hl2mp_bot_notice_quiet_gunfire_range
+registered Console Command: hl2mp_bot_notice_gunfire_range
+registered Console Command: tf2_feetyawrunscale
+registered Console Command: gabe_permaterialfootsteps
+registered Console Command: timeleft
+registered Console Command: hl2mp_allow_pickup
+registered Console Command: gabe_createfakeclient
+registered Console Command: gabe_bemod
+registered Console Command: gabe_jbmod
+registered Console Command: gabe_hl2
+registered Console Command: gabe_sandbox
+registered Console Command: gabe_hl1
+registered Console Command: gabe_deathmatch
+registered Console Command: hl2mp_spawn_frag_fallback_radius
+registered Console Command: sk_npc_dmg_12mm_bullet
+registered Console Command: sk_max_satchel
+registered Console Command: sk_max_tripmine
+registered Console Command: sk_max_snark
+registered Console Command: sk_max_hornet
+registered Console Command: sk_plr_dmg_egon_narrow
+registered Console Command: sk_max_xbow_bolt
+registered Console Command: sk_max_rpg_rocket
+registered Console Command: sk_max_357_bullet
+registered Console Command: sk_plr_dmg_357_bullet
+registered Console Command: sk_npc_dmg_9mmAR_bullet
+registered Console Command: sk_max_9mm_bullet
+registered Console Command: sk_plr_dmg_9mm_bullet
+registered Console Command: sk_npc_dmg_9mm_bullet
+registered Console Command: sk_plr_dmg_crowbar
+registered Console Command: sv_report_client_settings
+registered Console Command: sv_hl2mp_item_respawn_time
+registered Console Command: sv_hl2mp_weapon_respawn_time
+registered Console Command: mp_ready_signal
+registered Console Command: mp_readyrestart
+registered Console Command: sk_apc_health
+registered Console Command: sk_pathfollower_grenade_radius
+registered Console Command: sk_dmg_pathfollower_grenade
+registered Console Command: sk_homer_grenade_radius
+registered Console Command: sk_dmg_homer_grenade
+registered Console Command: hap_airboat_gun_mag
+registered Console Command: airboat_fatal_stress
+registered Console Command: hud_airboathint_numentries
+registered Console Command: sk_airboat_drain_rate
+registered Console Command: sk_airboat_recharge_rate
+registered Console Command: sk_airboat_max_ammo
+registered Console Command: cl_spewscriptintro
+registered Console Command: sniper_xbox_delay
+registered Console Command: sniperspeak
+registered Console Command: showsniperdist
+registered Console Command: sniperviewdist
+registered Console Command: showsniperlines
+registered Console Command: bulletspeed
+registered Console Command: thumper_show_radius
+registered Console Command: sk_combineball_seek_kill
+registered Console Command: sk_combineball_seek_angle
+registered Console Command: sk_combine_ball_search_radius
+registered Console Command: sk_combineball_guidefactor
+registered Console Command: sk_npc_dmg_combineball
+registered Console Command: sk_zombie_health
+registered Console Command: g_debug_vortigaunt_aim
+registered Console Command: sk_vortigaunt_vital_antlion_worker_dmg
+registered Console Command: sk_vortigaunt_zap_range
+registered Console Command: sk_vortigaunt_dmg_zap
+registered Console Command: sk_vortigaunt_dmg_rake
+registered Console Command: sk_vortigaunt_dmg_claw
+registered Console Command: sk_vortigaunt_health
+registered Console Command: sk_vortigaunt_armor_charge_per_token
+registered Console Command: sk_vortigaunt_armor_charge
+registered Console Command: ai_newgroundturret
+registered Console Command: g_debug_turret
+registered Console Command: g_debug_turret_ceiling
+registered Console Command: strider_missile_suppress_time
+registered Console Command: strider_missile_suppress_dist
+registered Console Command: sk_strider_num_missiles3
+registered Console Command: sk_strider_num_missiles2
+registered Console Command: sk_strider_num_missiles1
+registered Console Command: strider_ar2_altfire_dmg
+registered Console Command: npc_strider_shake_ropes_magnitude
+registered Console Command: npc_strider_shake_ropes_radius
+registered Console Command: strider_free_pass_tolerance_after_escorts_dead
+registered Console Command: strider_free_pass_after_escorts_dead
+registered Console Command: strider_free_knowledge
+registered Console Command: strider_free_pass_move_tolerance
+registered Console Command: strider_free_pass_refill_rate
+registered Console Command: strider_free_pass_duration
+registered Console Command: strider_free_pass_cover_dist
+registered Console Command: strider_free_pass_start_time
+registered Console Command: strider_peek_eye_dist_z
+registered Console Command: strider_peek_eye_dist
+registered Console Command: strider_peek_time_after_damage
+registered Console Command: strider_peek_time
+registered Console Command: strider_pct_height_no_crouch_move
+registered Console Command: strider_test_height
+registered Console Command: strider_always_use_procedural_height
+registered Console Command: strider_idle_test
+registered Console Command: strider_show_weapon_los_condition
+registered Console Command: strider_show_weapon_los_z
+registered Console Command: strider_show_cannonlos
+registered Console Command: strider_distributed_fire
+registered Console Command: strider_show_focus
+registered Console Command: strider_eyepositions
+registered Console Command: npc_strider_height_adj
+registered Console Command: sk_strider_health
+registered Console Command: strider_immolate
+registered Console Command: sk_stalker_melee_dmg
+registered Console Command: sk_stalker_health
+registered Console Command: g_debug_cscanner
+registered Console Command: sk_scanner_health
+registered Console Command: sk_rollermine_vehicle_intercept
+registered Console Command: sk_rollermine_stun_delay
+registered Console Command: sk_rollermine_shock
+registered Console Command: sk_zombie_poison_dmg_spit
+registered Console Command: sk_zombie_poison_health
+registered Console Command: ai_new_aiming
+registered Console Command: ai_readiness_decay
+registered Console Command: ai_use_readiness
+registered Console Command: ai_debug_readiness
+registered Console Command: monk_headshot_freq
+registered Console Command: metropolice_charge
+registered Console Command: metropolice_move_and_melee
+registered Console Command: metropolice_chase_use_follow
+registered Console Command: sk_metropolice_stitch_distance
+registered Console Command: sk_metropolice_simple_health
+registered Console Command: sk_metropolice_health
+registered Console Command: sk_metropolice_stitch_along_hitcount
+registered Console Command: sk_metropolice_stitch_behind_hitcount
+registered Console Command: sk_metropolice_stitch_at_hitcount
+registered Console Command: sk_metropolice_stitch_tight_hitcount
+registered Console Command: sk_metropolice_stitch_reaction
+registered Console Command: sk_manhack_v2
+registered Console Command: sk_manhack_melee_dmg
+registered Console Command: sk_manhack_health
+registered Console Command: sk_ichthyosaur_melee_dmg
+registered Console Command: sk_ichthyosaur_health
+registered Console Command: sk_headcrab_poison_npc_damage
+registered Console Command: sk_headcrab_melee_dmg
+registered Console Command: sk_headcrab_poison_health
+registered Console Command: sk_headcrab_fast_health
+registered Console Command: sk_headcrab_health
+registered Console Command: g_debug_headcrab
+registered Console Command: ai_ef_hate_npc_duration
+registered Console Command: ai_ef_hate_npc_frequency
+registered Console Command: ai_debug_enemyfinders
+registered Console Command: dog_debug
+registered Console Command: dog_max_wait_time
+registered Console Command: birds_debug
+registered Console Command: sk_crow_melee_dmg
+registered Console Command: sk_crow_health
+registered Console Command: combine_spawn_health
+registered Console Command: combine_guard_spawn_health
+registered Console Command: sk_combine_guard_kick
+registered Console Command: sk_combine_guard_health
+registered Console Command: sk_combine_s_kick
+registered Console Command: sk_combine_s_health
+registered Console Command: g_debug_gunship
+registered Console Command: sk_gunship_health_increments
+registered Console Command: sk_gunship_burst_dist
+registered Console Command: sk_gunship_burst_min
+registered Console Command: sk_gunship_burst_size
+registered Console Command: sk_npc_dmg_dropship
+registered Console Command: sk_dropship_container_health
+registered Console Command: g_debug_dropship
+registered Console Command: g_debug_combine_camera
+registered Console Command: ai_citizen_debug_commander
+registered Console Command: ai_follow_move_commands
+registered Console Command: player_squad_autosummon_debug
+registered Console Command: player_squad_autosummon_time_after_combat
+registered Console Command: player_squad_autosummon_player_tolerance
+registered Console Command: player_squad_autosummon_move_tolerance
+registered Console Command: player_squad_autosummon_time
+registered Console Command: npc_citizen_medic_emit_sound
+registered Console Command: npc_citizen_dont_precache_all
+registered Console Command: npc_citizen_auto_player_squad_allow_use
+registered Console Command: npc_citizen_auto_player_squad
+registered Console Command: npc_citizen_explosive_resist
+registered Console Command: npc_citizen_squad_marker
+registered Console Command: npc_citizen_insignia
+registered Console Command: g_ai_citizen_show_enemy
+registered Console Command: sk_citizen_stare_heal_time
+registered Console Command: sk_citizen_player_stare_dist
+registered Console Command: sk_citizen_player_stare_time
+registered Console Command: sk_citizen_heal_ally_min_pct
+registered Console Command: sk_citizen_heal_ally_delay
+registered Console Command: sk_citizen_heal_ally
+registered Console Command: sk_citizen_heal_player_min_forced
+registered Console Command: sk_citizen_heal_player_min_pct
+registered Console Command: sk_citizen_giveammo_player_delay
+registered Console Command: sk_citizen_heal_player_delay
+registered Console Command: sk_citizen_heal_player
+registered Console Command: sk_citizen_health
+registered Console Command: sk_bullseye_health
+registered Console Command: zombie_ambushdist
+registered Console Command: zombie_decaymax
+registered Console Command: zombie_decaymin
+registered Console Command: zombie_moanfreq
+registered Console Command: zombie_stepfreq
+registered Console Command: zombie_changemax
+registered Console Command: zombie_changemin
+registered Console Command: zombie_basemax
+registered Console Command: zombie_basemin
+registered Console Command: sk_zombie_dmg_both_slash
+registered Console Command: sk_zombie_dmg_one_slash
+registered Console Command: sk_scanner_dmg_dive
+registered Console Command: g_debug_basescanner
+registered Console Command: sk_barney_health
+registered Console Command: npc_barnacle_swallow
+registered Console Command: sk_barnacle_health
+registered Console Command: g_helicopter_bomb_danger_radius
+registered Console Command: g_helicopter_bullrush_mega_bomb_health
+registered Console Command: g_helicopter_bullrush_shoot_height
+registered Console Command: g_helicopter_bullrush_bomb_speed
+registered Console Command: g_helicopter_maxfiringdist
+registered Console Command: g_helicopter_idletime
+registered Console Command: g_helicopter_bullrush_bomb_time
+registered Console Command: g_helicopter_bullrush_bomb_enemy_distance
+registered Console Command: g_helicopter_bullrush_distance
+registered Console Command: g_helicopter_chargetime
+registered Console Command: sk_helicopter_drone_speed
+registered Console Command: sk_npc_dmg_helicopter
+registered Console Command: sk_npc_dmg_helicopter_to_plr
+registered Console Command: sk_helicopter_num_bombs3
+registered Console Command: sk_helicopter_num_bombs2
+registered Console Command: sk_helicopter_num_bombs1
+registered Console Command: sk_helicopter_grenade_puntscale
+registered Console Command: sk_helicopter_grenadeforce
+registered Console Command: sk_helicopter_grenaderadius
+registered Console Command: sk_helicopter_grenadedamage
+registered Console Command: sk_helicopter_roundsperburst
+registered Console Command: sk_helicopter_burstcount
+registered Console Command: sk_helicopter_firingcone
+registered Console Command: sk_helicopter_health
+registered Console Command: sk_antlionguard_health
+registered Console Command: sk_antlionguard_dmg_shove
+registered Console Command: sk_antlionguard_dmg_charge
+registered Console Command: g_debug_antlionguard
+registered Console Command: g_debug_antlion_worker
+registered Console Command: g_antlion_cascade_push
+registered Console Command: antlion_easycrush
+registered Console Command: g_test_new_antlion_jump
+registered Console Command: sk_antlion_air_attack_dmg
+registered Console Command: sk_antlion_jump_damage
+registered Console Command: sk_antlion_swipe_damage
+registered Console Command: sk_antlion_health
+registered Console Command: g_debug_antlion
+registered Console Command: sk_healthcharger
+registered Console Command: sk_healthvial
+registered Console Command: sk_healthkit
+registered Console Command: g_debug_dynamicresupplies
+registered Console Command: sk_dynamic_resupply_modifier
+registered Console Command: sv_ladder_useonly
+registered Console Command: sv_ladderautomountdot
+registered Console Command: sv_autoladderdismount
+registered Console Command: sv_show_crosshair_target
+registered Console Command: test_massive_dmg_clip
+registered Console Command: test_massive_dmg
+registered Console Command: sk_battery
+registered Console Command: toggle_duck
+registered Console Command: xc_use_crouch_limiter
+registered Console Command: xc_crouch_range
+registered Console Command: toggle_zoom
+registered Console Command: sv_stickysprint
+registered Console Command: autoaim_unlock_target
+registered Console Command: sv_infinite_aux_power
+registered Console Command: player_squad_double_tap_time
+registered Console Command: player_squad_transient_commands
+registered Console Command: player_showpredictedposition_timestep
+registered Console Command: player_showpredictedposition
+registered Console Command: hl2_darkness_flashlight_factor
+registered Console Command: hl2_sprintspeed
+registered Console Command: hl2_normspeed
+registered Console Command: hl2_walkspeed
+registered Console Command: sv_autojump
+registered Console Command: sk_npc_dmg_gunship_to_plr
+registered Console Command: sk_npc_dmg_gunship
+registered Console Command: sk_max_gauss_round
+registered Console Command: sk_npc_dmg_airboat
+registered Console Command: sk_plr_dmg_airboat
+registered Console Command: sk_dmg_sniper_penetrate_npc
+registered Console Command: sk_dmg_sniper_penetrate_plr
+registered Console Command: sk_max_crossbow
+registered Console Command: sk_npc_dmg_crossbow
+registered Console Command: sk_plr_dmg_crossbow
+registered Console Command: sk_max_357
+registered Console Command: sk_npc_dmg_357
+registered Console Command: sk_plr_dmg_357
+registered Console Command: sk_max_smg1_grenade
+registered Console Command: sk_npc_dmg_smg1_grenade
+registered Console Command: sk_plr_dmg_smg1_grenade
+registered Console Command: sk_max_grenade
+registered Console Command: sk_npc_dmg_grenade
+registered Console Command: sk_plr_dmg_grenade
+registered Console Command: sk_max_sniper_round
+registered Console Command: sk_npc_dmg_sniper_round
+registered Console Command: sk_plr_dmg_sniper_round
+registered Console Command: sk_max_rpg_round
+registered Console Command: sk_npc_dmg_rpg_round
+registered Console Command: sk_plr_dmg_rpg_round
+registered Console Command: sk_plr_num_shotgun_pellets
+registered Console Command: sk_max_buckshot
+registered Console Command: sk_npc_dmg_buckshot
+registered Console Command: sk_plr_dmg_buckshot
+registered Console Command: sk_max_smg1
+registered Console Command: sk_npc_dmg_smg1
+registered Console Command: sk_plr_dmg_smg1
+registered Console Command: sk_max_pistol
+registered Console Command: sk_npc_dmg_pistol
+registered Console Command: sk_plr_dmg_pistol
+registered Console Command: sk_max_alyxgun
+registered Console Command: sk_npc_dmg_alyxgun
+registered Console Command: sk_plr_dmg_alyxgun
+registered Console Command: sk_max_ar2_altfire
+registered Console Command: sk_max_ar2
+registered Console Command: sk_npc_dmg_ar2
+registered Console Command: sk_plr_dmg_ar2
+registered Console Command: sk_plr_grenade_drop_time
+registered Console Command: sk_plr_health_drop_time
+registered Console Command: sk_ammo_qty_scale3
+registered Console Command: sk_ammo_qty_scale2
+registered Console Command: sk_ammo_qty_scale1
+registered Console Command: sk_autoaim_scale2
+registered Console Command: sk_autoaim_scale1
+registered Console Command: sk_allow_autoaim
+registered Console Command: sk_dmg_take_scale3
+registered Console Command: sk_dmg_take_scale2
+registered Console Command: sk_dmg_take_scale1
+registered Console Command: sk_dmg_inflict_scale3
+registered Console Command: sk_dmg_inflict_scale2
+registered Console Command: sk_dmg_inflict_scale1
+registered Console Command: sv_robust_explosions
+registered Console Command: physcannon_mega_enabled
+registered Console Command: sk_fraggrenade_radius
+registered Console Command: sk_npc_dmg_fraggrenade
+registered Console Command: sk_plr_dmg_fraggrenade
+registered Console Command: bugbait_grenade_radius
+registered Console Command: bugbait_distract_time
+registered Console Command: bugbait_hear_radius
+registered Console Command: bugbait_radius
+registered Console Command: smoke_trail
+registered Console Command: sk_smg1_grenade_radius
+registered Console Command: curve_bias
+registered Console Command: hap_turret_mag
+registered Console Command: mortar_visualize
+registered Console Command: sk_suitcharger_citadel_maxarmor
+registered Console Command: sk_suitcharger_citadel
+registered Console Command: sk_suitcharger
+registered Console Command: sk_env_headcrabcanister_shake_radius_vehicle
+registered Console Command: sk_env_headcrabcanister_shake_radius
+registered Console Command: sk_env_headcrabcanister_shake_amplitude
+registered Console Command: g_debug_basehelicopter
+registered Console Command: sk_auto_reload_time
+registered Console Command: g_debug_antlionmaker
+registered Console Command: ai_debug_actbusy
+registered Console Command: ai_actbusy_search_time
+registered Console Command: ai_ally_manager_debug
+registered Console Command: gabe_multitool_pmessagetext
+registered Console Command: mtool_mode
+registered Console Command: hammer_update_safe_entities
+registered Console Command: hammer_update_entity
+registered Console Command: wc_link_edit
+registered Console Command: wc_air_edit_nearer
+registered Console Command: wc_air_edit_further
+registered Console Command: wc_air_node_edit
+registered Console Command: wc_destroy_undo
+registered Console Command: wc_destroy
+registered Console Command: wc_create
+registered Console Command: script_dump_all
+registered Console Command: script_help
+registered Console Command: script_debug
+registered Console Command: script_execute
+registered Console Command: script
+registered Console Command: script_reload_think
+registered Console Command: script_reload_entity_code
+registered Console Command: script_reload_code
+registered Console Command: script_find
+registered Console Command: script_clear_watches
+registered Console Command: script_trace_disable_all
+registered Console Command: script_trace_enable_all
+registered Console Command: script_trace_disable_key
+registered Console Command: script_trace_enable_key
+registered Console Command: script_trace_disable
+registered Console Command: script_trace_enable
+registered Console Command: script_remove_debug_filter
+registered Console Command: script_add_debug_filter
+registered Console Command: script_remove_watch_pattern
+registered Console Command: script_add_watch_pattern
+registered Console Command: script_remove_watch
+registered Console Command: script_add_watch
+registered Console Command: script_debug
+registered Console Command: script_attach_debugger
+registered Console Command: vscript_script_hooks
+registered Console Command: script_break_in_native_debugger_on_error
+registered Console Command: script_attach_debugger_at_startup
+registered Console Command: script_connect_debugger_on_mapspawn
+registered Console Command: callvote
+registered Console Command: listissues
+registered Console Command: sv_vote_bots_allowed
+registered Console Command: sv_vote_holder_may_vote_no
+registered Console Command: sv_vote_ui_hide_disabled_issues
+registered Console Command: sv_vote_allow_spectators
+registered Console Command: sv_vote_quorum_ratio
+registered Console Command: sv_vote_creation_timer
+registered Console Command: sv_vote_failure_timer
+registered Console Command: sv_allow_votes
+registered Console Command: sv_vote_command_delay
+registered Console Command: sv_vote_timer_allow_early_finish
+registered Console Command: sv_vote_timer_duration
+registered Console Command: sv_alltalk
+registered Console Command: voice_serverdebug
+registered Console Command: g_debug_npc_vehicle_roles
+registered Console Command: sv_vehicle_autoaim_scale
+registered Console Command: g_debug_vehicleexit
+registered Console Command: g_debug_vehiclesound
+registered Console Command: r_JeepFOV
+registered Console Command: vehicle_flushscript
+registered Console Command: g_debug_vehiclebase
+registered Console Command: violence_agibs
+registered Console Command: violence_ablood
+registered Console Command: violence_hgibs
+registered Console Command: violence_hblood
+registered Console Command: developer
+registered Console Command: r_visualizetraces
+registered Console Command: collision_test
+registered Console Command: voxeltree_sphere
+registered Console Command: voxeltree_box
+registered Console Command: voxeltree_playerview
+registered Console Command: voxeltree_view
+registered Console Command: kdtree_test
+registered Console Command: sv_strict_notarget
+registered Console Command: dump_entity_sizes
+registered Console Command: dumpentityfactories
+registered Console Command: showtriggers_toggle
+registered Console Command: showtriggers
+registered Console Command: g_debug_transitions
+registered Console Command: mp_simulatemultiplecappers
+registered Console Command: Test_RandomPlayerPosition
+registered Console Command: Test_CreateEntity
+registered Console Command: Test_RemoveAllRandomEntities
+registered Console Command: Test_RandomizeInPVS
+registered Console Command: Test_SpawnRandomEntities
+registered Console Command: Test_InitRandomEntitySpawner
+registered Console Command: Test_ProxyToggle_SetValue
+registered Console Command: Test_ProxyToggle_EnableProxy
+registered Console Command: Test_EHandle
+registered Console Command: template_debug
+registered Console Command: mp_tournament_restart
+registered Console Command: mp_tournament_allow_non_admin_restart
+registered Console Command: mp_forcerespawnplayers
+registered Console Command: mp_forcewin
+registered Console Command: mp_scrambleteams_auto_windifference
+registered Console Command: mp_scrambleteams_auto
+registered Console Command: mp_scrambleteams
+registered Console Command: mp_switchteams
+registered Console Command: mp_holiday_nogifts
+registered Console Command: mp_match_end_at_timelimit
+registered Console Command: mp_stalemate_enable
+registered Console Command: mp_autoteambalance
+registered Console Command: mp_stalemate_timelimit
+registered Console Command: mp_restartround
+registered Console Command: mp_showcleanedupents
+registered Console Command: mp_enableroundwaittime
+registered Console Command: mp_showroundtransitions
+registered Console Command: mp_forceautoteam
+registered Console Command: mp_stalemate_meleeonly
+registered Console Command: mp_bonusroundtime
+registered Console Command: mp_disable_respawn_times
+registered Console Command: mp_winlimit
+registered Console Command: mp_maxrounds
+registered Console Command: mp_teams_unbalance_limit
+registered Console Command: tf_arena_use_queue
+registered Console Command: tf_arena_max_streak
+registered Console Command: tf_arena_round_time
+registered Console Command: tf_arena_preround_time
+registered Console Command: mp_tournament_post_match_period
+registered Console Command: mp_tournament
+registered Console Command: mp_capdeteriorate_time
+registered Console Command: mp_respawnwavetime
+registered Console Command: mp_blockstyle
+registered Console Command: mp_capstyle
+registered Console Command: tf_show_train_path
+registered Console Command: tf_escort_recede_time_overtime
+registered Console Command: tf_escort_recede_time
+registered Console Command: tf_playround
+registered Console Command: tf_listrounds
+registered Console Command: mp_time_between_capscoring
+registered Console Command: phys_pushscale
+registered Console Command: mission_show
+registered Console Command: mission_list
+registered Console Command: gamerules_survival
+registered Console Command: mod_load_showstall
+registered Console Command: sv_soundscape_printdebuginfo
+registered Console Command: soundscape_flush
+registered Console Command: soundscape_debug
+registered Console Command: report_soundpatch
+registered Console Command: soundpatch_captionlength
+registered Console Command: sv_findsoundname
+registered Console Command: sv_soundemitter_filecheck
+registered Console Command: sv_soundemitter_flush
+registered Console Command: sv_soundemitter_trace
+registered Console Command: sv_benchmark_force_start
+registered Console Command: sv_benchmark_autovprofrecord
+registered Console Command: sv_benchmark_numticks
+registered Console Command: ai_task_pre_script
+registered Console Command: scene_clientflex
+registered Console Command: scene_print
+registered Console Command: scene_flush
+registered Console Command: listRecentNPCSpeech
+registered Console Command: scene_async_prefetch_spew
+registered Console Command: scene_maxcaptionradius
+registered Console Command: scene_forcecombined
+registered Console Command: g_ragdoll_important_maxcount
+registered Console Command: g_debug_ragdoll_removal
+registered Console Command: g_ragdoll_maxcount
+registered Console Command: sv_querycache_stats
+registered Console Command: sv_disable_querycache
+registered Console Command: props_break_max_pieces_perframe
+registered Console Command: props_break_max_pieces
+registered Console Command: sv_pushaway_clientside_size
+registered Console Command: ent_rotate
+registered Console Command: prop_physics_create
+registered Console Command: prop_dynamic_create
+registered Console Command: prop_debug
+registered Console Command: sv_turbophysics
+registered Console Command: func_breakdmg_explosive
+registered Console Command: func_breakdmg_club
+registered Console Command: func_breakdmg_bullet
+registered Console Command: prop_active_gib_max_fade_time
+registered Console Command: prop_active_gib_limit
+registered Console Command: breakable_multiplayer
+registered Console Command: breakable_disable_gib_limit
+registered Console Command: g_debug_doors
+registered Console Command: sv_wpn_sway_pred_legacy
+registered Console Command: g_debug_angularsensor
+registered Console Command: voice_player_speaking_delay_threshold
+registered Console Command: sv_unlag_debug
+registered Console Command: sv_unlag_fixstuck
+registered Console Command: sv_showlagcompensation
+registered Console Command: sv_lagflushbonecache
+registered Console Command: sv_maxunlag
+registered Console Command: sv_unlag
+registered Console Command: sv_lagcompensation_teleport_dist
+registered Console Command: sv_maxusrcmdprocessticks_holdaim
+registered Console Command: sv_maxusrcmdprocessticks_warning
+registered Console Command: mp_disable_autokick
+registered Console Command: ch_createairboat
+registered Console Command: ch_createjeep
+registered Console Command: xc_crouch_debounce
+registered Console Command: sv_usercmd_custom_random_seed
+registered Console Command: sv_playerperfhistorycount
+registered Console Command: sv_clockcorrection_msecs
+registered Console Command: givecurrentammo
+registered Console Command: player_debug_print_damage
+registered Console Command: sv_player_display_usercommand_errors
+registered Console Command: sv_player_usercommand_timeout
+registered Console Command: sk_player_leg
+registered Console Command: sk_player_arm
+registered Console Command: sk_player_stomach
+registered Console Command: sk_player_chest
+registered Console Command: sk_player_head
+registered Console Command: sv_noclipduringpause
+registered Console Command: cl_backspeed
+registered Console Command: cl_forwardspeed
+registered Console Command: cl_upspeed
+registered Console Command: cl_sidespeed
+registered Console Command: physicsshadowupdate_render
+registered Console Command: player_old_armor
+registered Console Command: sv_maxusrcmdprocessticks
+registered Console Command: sv_chat_seconds_per_msg_tier2
+registered Console Command: sv_chat_bucket_size_tier2
+registered Console Command: sv_chat_seconds_per_msg_tier1
+registered Console Command: sv_chat_bucket_size_tier1
+registered Console Command: sv_bonus_challenge
+registered Console Command: spec_freeze_traveltime
+registered Console Command: spec_freeze_time
+registered Console Command: autoaim_max_deflect
+registered Console Command: autoaim_max_dist
+registered Console Command: debug_physimpact
+registered Console Command: sv_thinktimecheck
+registered Console Command: debug_touchlinks
+registered Console Command: think_limit
+registered Console Command: sv_teststepsimulation
+registered Console Command: npc_vphysics
+registered Console Command: vprof_scope_entity_gamephys
+registered Console Command: vprof_scope_entity_thinks
+registered Console Command: air_density
+registered Console Command: collision_shake_time
+registered Console Command: collision_shake_freq
+registered Console Command: collision_shake_amp
+registered Console Command: physics_budget
+registered Console Command: physics_select
+registered Console Command: physics_debug_entity
+registered Console Command: physics_constraints
+registered Console Command: surfaceprop
+registered Console Command: physics_report_active
+registered Console Command: physics_highlight_active
+registered Console Command: phys_penetration_error_time
+registered Console Command: phys_timescale
+registered Console Command: phys_speeds
+registered Console Command: g_debug_constraint_sounds
+registered Console Command: particle_test_stop
+registered Console Command: particle_test_start
+registered Console Command: particle_test_attach_attachment
+registered Console Command: particle_test_attach_mode
+registered Console Command: particle_test_file
+registered Console Command: sv_pushaway_max_player_force
+registered Console Command: sv_pushaway_player_force
+registered Console Command: sv_pushaway_clientside
+registered Console Command: sv_pushaway_max_force
+registered Console Command: sv_pushaway_min_player_speed
+registered Console Command: sv_pushaway_force
+registered Console Command: g_debug_vehicledriver
+registered Console Command: sk_Houndeye_dmg_blast
+registered Console Command: sk_Houndeye_health
+registered Console Command: sk_bullsquid_dmg_whip
+registered Console Command: sk_bullsquid_dmg_bite
+registered Console Command: sk_bullsquid_health
+registered Console Command: clear_debug_overlays
+registered Console Command: nextlevel
+registered Console Command: mp_clan_ready_signal
+registered Console Command: mp_clan_readyrestart
+registered Console Command: mp_waitingforplayers_cancel
+registered Console Command: mp_waitingforplayers_restart
+registered Console Command: mp_waitingforplayers_time
+registered Console Command: changelevel_next
+registered Console Command: skip_next_map
+registered Console Command: mp_mapcycle_empty_timeout_seconds
+registered Console Command: mp_restartgame_immediate
+registered Console Command: mp_restartgame
+registered Console Command: tv_delaymapchange_protect
+registered Console Command: tv_delaymapchange
+registered Console Command: mp_show_voice_icons
+registered Console Command: mp_fraglimit
+registered Console Command: mp_timelimit
+registered Console Command: mp_chattime
+registered Console Command: r_AirboatViewZHeight
+registered Console Command: r_AirboatViewDampenDamp
+registered Console Command: r_AirboatViewDampenFreq
+registered Console Command: r_JeepViewZHeight
+registered Console Command: r_JeepViewDampenDamp
+registered Console Command: r_JeepViewDampenFreq
+registered Console Command: r_VehicleViewDampen
+registered Console Command: sv_skyname
+registered Console Command: sv_waterdist
+registered Console Command: sv_backspeed
+registered Console Command: sv_stepsize
+registered Console Command: sv_maxvelocity
+registered Console Command: sv_bounce
+registered Console Command: sv_friction
+registered Console Command: sv_rollangle
+registered Console Command: sv_rollspeed
+registered Console Command: sv_footsteps
+registered Console Command: sv_waterfriction
+registered Console Command: sv_wateraccelerate
+registered Console Command: sv_airaccelerate
+registered Console Command: sv_accelerate
+registered Console Command: sv_maxspeed
+registered Console Command: sv_specnoclip
+registered Console Command: sv_specspeed
+registered Console Command: sv_specaccelerate
+registered Console Command: sv_noclipspeed
+registered Console Command: sv_noclipaccelerate
+registered Console Command: sv_stopspeed
+registered Console Command: sv_gravity
+registered Console Command: ai_inhibit_spawners
+registered Console Command: debug_materialmodifycontrol
+registered Console Command: global_set
+registered Console Command: jb_cycleconstraint
+registered Console Command: jb_phys_gunjank
+registered Console Command: jb_phys_gunglueradius
+registered Console Command: jb_phys_guntorque
+registered Console Command: jb_phys_gunforce
+registered Console Command: jb_phys_gunvel
+registered Console Command: jb_phys_gunmass
+registered Console Command: tv_allow_camera_man
+registered Console Command: tv_allow_static_shots
+registered Console Command: tv_delay
+registered Console Command: sv_clearhinthistory
+registered Console Command: hap_jeep_cannon_mag
+registered Console Command: g_jeepexitspeed
+registered Console Command: hud_jeephint_numentries
+registered Console Command: sk_jeep_gauss_damage
+registered Console Command: server_game_time
+registered Console Command: dump_globals
+registered Console Command: flex_looktime
+registered Console Command: sv_hudhint_sound
+registered Console Command: mp_fadetoblack
+registered Console Command: mp_friendlyfire
+registered Console Command: mp_allowspectators
+registered Console Command: mp_forcecamera
+registered Console Command: dumpgamestringtable
+registered Console Command: _resetgamestats
+registered Console Command: skill
+registered Console Command: old_radiusdamage
+registered Console Command: log_verbose_interval
+registered Console Command: log_verbose_enable
+registered Console Command: sk_autoaim_mode
+registered Console Command: g_Language
+registered Console Command: sv_optimizedmovement
+registered Console Command: option_duck_method
+registered Console Command: player_limit_jump_speed
+registered Console Command: xc_uncrouch_on_jump
+registered Console Command: dispcoll_drawplane
+registered Console Command: sv_max_usercmd_move_magnitude
+registered Console Command: sv_unlockedchapters
+registered Console Command: motdfile_text
+registered Console Command: motdfile
+registered Console Command: trace_report
+registered Console Command: ai_post_frame_navigation
+registered Console Command: sv_autosave
+registered Console Command: sv_force_transmit_ents
+registered Console Command: sv_massreport
+registered Console Command: suitvolume
+registered Console Command: mp_allowNPCs
+registered Console Command: mp_defaultteam
+registered Console Command: mp_teamoverride
+registered Console Command: mp_teamlist
+registered Console Command: decalfrequency
+registered Console Command: mp_autocrosshair
+registered Console Command: mp_flashlight
+registered Console Command: mp_footsteps
+registered Console Command: mp_forcerespawn
+registered Console Command: mp_weaponstay
+registered Console Command: mp_falldamage
+registered Console Command: mp_teamplay
+registered Console Command: lservercfgfile
+registered Console Command: servercfgfile
+registered Console Command: mapcyclefile
+registered Console Command: displaysoundlist
+registered Console Command: sv_motd_unload_on_dismissal
+registered Console Command: sk_plr_dmg_rpg
+registered Console Command: hl1_mp5_recoil
+registered Console Command: sk_mp5_grenade_radius
+registered Console Command: sk_max_mp5_grenade
+registered Console Command: sk_plr_dmg_mp5_grenade
+registered Console Command: sk_plr_dmg_gauss
+registered Console Command: sk_plr_dmg_egon_wide
+registered Console Command: sk_max_uranium
+registered Console Command: hl1_crowbar_computer_vol
+registered Console Command: hl1_crowbar_computer
+registered Console Command: hl1_crowbar_glass_vol
+registered Console Command: hl1_crowbar_glass
+registered Console Command: hl1_crowbar_wood_vol
+registered Console Command: hl1_crowbar_wood
+registered Console Command: hl1_crowbar_tile_vol
+registered Console Command: hl1_crowbar_tile
+registered Console Command: hl1_crowbar_grate_vol
+registered Console Command: hl1_crowbar_grate
+registered Console Command: hl1_crowbar_vent_vol
+registered Console Command: hl1_crowbar_vent
+registered Console Command: hl1_crowbar_dirt_vol
+registered Console Command: hl1_crowbar_dirt
+registered Console Command: hl1_crowbar_metal_vol
+registered Console Command: hl1_crowbar_metal
+registered Console Command: hl1_crowbar_concrete_vol
+registered Console Command: hl1_crowbar_concrete
+registered Console Command: hl1_crowbar_sound
+registered Console Command: sk_plr_dmg_xbow_bolt_npc
+registered Console Command: sk_plr_dmg_xbow_bolt_plr
+registered Console Command: hl1_ragdoll_gib
+registered Console Command: sk_sentry_health
+registered Console Command: sk_miniturret_health
+registered Console Command: sk_turret_health
+registered Console Command: hl1_fixup_sentence_sndlevel
+registered Console Command: sk_snark_dmg_pop
+registered Console Command: sk_snark_dmg_bite
+registered Console Command: sk_snark_health
+registered Console Command: sk_scientist_heal
+registered Console Command: sk_scientist_health
+registered Console Command: sk_nihilanth_zap
+registered Console Command: sk_nihilanth_health
+registered Console Command: sk_leech_dmg_bite
+registered Console Command: sk_leech_health
+registered Console Command: sk_ichthyosaur_shake
+Parent cvar in server.dll not allowed (sk_houndeye_dmg_blast)
+registered Console Command: sk_houndeye_dmg_blast
+Parent cvar in server.dll not allowed (sk_houndeye_health)
+registered Console Command: sk_houndeye_health
+registered Console Command: sk_plr_dmg_hornet
+registered Console Command: sk_npc_dmg_hornet
+registered Console Command: sk_hgrunt_gspeed
+registered Console Command: sk_hgrunt_pellets
+registered Console Command: sk_hgrunt_kick
+registered Console Command: sk_hgrunt_health
+registered Console Command: sk_headcrab_dmg_bite
+Parent cvar in server.dll not allowed (sk_headcrab_health)
+registered Console Command: sk_headcrab_health
+registered Console Command: sk_gargantua_dmg_stomp
+registered Console Command: sk_gargantua_dmg_fire
+registered Console Command: sk_gargantua_dmg_slash
+registered Console Command: sk_gargantua_health
+registered Console Command: sk_controller_dmgball
+registered Console Command: sk_controller_speedball
+registered Console Command: sk_controller_dmgzap
+registered Console Command: sk_controller_health
+registered Console Command: hl1_bigmomma_splash
+registered Console Command: sk_bigmomma_radius_blast
+registered Console Command: sk_bigmomma_dmg_blast
+registered Console Command: sk_bigmomma_dmg_slash
+registered Console Command: sk_bigmomma_health_factor
+registered Console Command: sk_hassassin_health
+registered Console Command: sk_islave_dmg_zap
+registered Console Command: sk_islave_dmg_clawrake
+registered Console Command: sk_islave_dmg_claw
+registered Console Command: sk_islave_health
+registered Console Command: sk_agrunt_dmg_punch
+registered Console Command: sk_agrunt_health
+registered Console Command: sk_antlion_worker_spit_grenade_poison_ratio
+registered Console Command: sk_antlion_worker_spit_grenade_radius
+registered Console Command: sk_antlion_worker_spit_grenade_dmg
+registered Console Command: sv_showladders
+registered Console Command: func_break_reduction_factor
+registered Console Command: func_break_max_pieces
+registered Console Command: xbox_steering_deadzone
+registered Console Command: xbox_autothrottle
+registered Console Command: xbox_throttlespoof
+registered Console Command: xbox_throttlebias
+registered Console Command: r_vehicleBrakeRate
+registered Console Command: fish_dormant
+registered Console Command: fire_dmginterval
+registered Console Command: fire_growthrate
+registered Console Command: fire_dmgbase
+registered Console Command: fire_dmgscale
+registered Console Command: fire_incomingheatscale
+registered Console Command: fire_heatscale
+registered Console Command: fire_extabsorb
+registered Console Command: fire_extscale
+registered Console Command: fire_absorbrate
+registered Console Command: fire_maxabsorb
+registered Console Command: shake
+registered Console Command: creditsdone
+registered Console Command: fadein
+registered Console Command: fadeout
+registered Console Command: mat_hdr_tonemapscale
+registered Console Command: create_flashlight
+registered Console Command: dbghist_dump
+registered Console Command: dbghist_addline
+registered Console Command: report_simthinklist
+registered Console Command: report_touchlinks
+registered Console Command: report_entities
+registered Console Command: respawn_entities
+registered Console Command: test_entity_blocker
+registered Console Command: bloodspray
+registered Console Command: ai_debug_ragdoll_magnets
+registered Console Command: commentary_finishnode
+registered Console Command: commentary_cvarsnotchanging
+registered Console Command: commentary
+registered Console Command: commentary_available
+registered Console Command: groundlist
+registered Console Command: hurtme
+registered Console Command: notarget
+registered Console Command: setang_exact
+registered Console Command: setpos_exact
+registered Console Command: setang
+registered Console Command: setpos
+registered Console Command: god
+registered Console Command: noclip
+registered Console Command: use
+registered Console Command: bug_swap
+registered Console Command: phys_swap
+registered Console Command: test_dispatcheffect
+registered Console Command: setmodel
+registered Console Command: fov
+registered Console Command: give
+registered Console Command: say_team
+registered Console Command: say
+registered Console Command: buddha
+registered Console Command: explodevector
+registered Console Command: killvector
+registered Console Command: explode
+registered Console Command: kill
+registered Console Command: drawcross
+registered Console Command: drawline
+registered Console Command: cast_hull
+registered Console Command: cast_ray
+registered Console Command: sv_allow_point_servercommand
+registered Console Command: dumpeventqueue
+registered Console Command: anim_3wayblend
+registered Console Command: sv_viewmodel_lag_do_angles
+registered Console Command: smoothstairs
+registered Console Command: sv_suppress_viewpunch
+registered Console Command: sv_debug_player_use
+registered Console Command: tf_escort_score_rate
+registered Console Command: flex_talk
+registered Console Command: flex_expression
+registered Console Command: ai_expression_frametime
+registered Console Command: ai_expression_optimization
+registered Console Command: scene_showunlock
+registered Console Command: scene_showmoveto
+registered Console Command: scene_showlook
+registered Console Command: sv_alternateticks
+registered Console Command: ai_debug_shoot_positions
+registered Console Command: ai_shot_bias_max
+registered Console Command: ai_shot_bias_min
+registered Console Command: ent_debugkeys
+registered Console Command: hl2_episodic
+registered Console Command: ent_orient
+registered Console Command: ent_teleport
+registered Console Command: ent_create
+registered Console Command: step_spline
+registered Console Command: ent_autoaim
+registered Console Command: ent_show_response_criteria
+registered Console Command: ent_step
+registered Console Command: ent_pivot
+registered Console Command: picker
+registered Console Command: ent_pause
+registered Console Command: ent_messages
+registered Console Command: ent_info
+registered Console Command: ent_cancelpendingentfires
+registered Console Command: ent_fire
+registered Console Command: firetarget
+registered Console Command: ent_dump
+registered Console Command: find_ent_index
+registered Console Command: find_ent
+registered Console Command: ent_setname
+registered Console Command: ent_remove_all
+registered Console Command: ent_remove
+registered Console Command: ent_viewoffset
+registered Console Command: ent_attachments
+registered Console Command: ent_rbox
+registered Console Command: ent_absbox
+registered Console Command: ent_bbox
+registered Console Command: ent_script_dump
+registered Console Command: ent_text
+registered Console Command: ent_name
+registered Console Command: ent_call
+registered Console Command: ent_messages_draw
+registered Console Command: ai_debug_los
+registered Console Command: sv_script_think_interval
+registered Console Command: sv_netvisdist
+registered Console Command: weapon_showproficiency
+registered Console Command: phys_upimpactforcescale
+registered Console Command: phys_impactforcescale
+registered Console Command: phys_stressbodyweights
+registered Console Command: ai_use_visibility_cache
+registered Console Command: nb_last_area_update_tolerance
+registered Console Command: ai_force_serverside_ragdoll
+registered Console Command: ai_show_hull_attacks
+registered Console Command: ai_setupbones_debug
+registered Console Command: sv_pvsskipanimation
+registered Console Command: npc_height_adjust
+registered Console Command: ai_sequence_debug
+registered Console Command: mp_ik
+registered Console Command: mp_facefronttime
+registered Console Command: mp_feetyawrate
+registered Console Command: sv_showanimstate_log
+registered Console Command: sv_showanimstate
+registered Console Command: free_pass_peek_debug
+registered Console Command: g_debug_trackpather
+registered Console Command: ai_find_lateral_los
+registered Console Command: ai_find_lateral_cover
+registered Console Command: npc_speakall
+registered Console Command: ai_debug_speech
+registered Console Command: npc_sentences
+registered Console Command: ai_debugscriptconditions
+registered Console Command: rr_reloadresponsesystems
+registered Console Command: rr_dumpresponses
+registered Console Command: rr_debugrule
+registered Console Command: rr_debugresponses
+registered Console Command: npc_ally_deathmessage
+registered Console Command: rr_debug_qa
+registered Console Command: ai_no_talk_delay
+registered Console Command: sv_npc_talker_maxdist
+registered Console Command: sk_ally_regen_time
+registered Console Command: ai_no_local_paths
+registered Console Command: ai_norebuildgraph
+registered Console Command: ai_debug_node_connect
+registered Console Command: ai_no_node_cache
+registered Console Command: ai_use_clipped_paths
+registered Console Command: ai_navigator_generate_spikes_strength
+registered Console Command: ai_navigator_generate_spikes
+registered Console Command: ai_debug_nav
+registered Console Command: ai_vehicle_avoidance
+registered Console Command: ai_set_move_height_epsilon
+registered Console Command: ai_strong_optimizations_no_checkstand
+registered Console Command: ai_moveprobe_usetracelist
+registered Console Command: ai_moveprobe_jump_debug
+registered Console Command: ai_moveprobe_debug
+registered Console Command: ai_no_steer
+registered Console Command: ai_debug_directnavprobe
+registered Console Command: ai_drop_hint
+registered Console Command: ai_dump_hints
+registered Console Command: ai_radial_max_link_dist
+registered Console Command: ainet_generate_report_only
+registered Console Command: ainet_generate_report
+registered Console Command: ai_test_los
+registered Console Command: ai_clear_bad_links
+registered Console Command: npc_ammo_deplete
+registered Console Command: npc_heal
+registered Console Command: npc_steering_all
+registered Console Command: npc_steering
+registered Console Command: npc_relationships
+registered Console Command: npc_viewcone
+registered Console Command: npc_conditions
+registered Console Command: npc_task_text
+registered Console Command: npc_tasks
+registered Console Command: npc_squads
+registered Console Command: npc_combat
+registered Console Command: npc_select
+registered Console Command: npc_route
+registered Console Command: npc_nearest
+registered Console Command: npc_reset
+registered Console Command: npc_go_random
+registered Console Command: npc_go
+registered Console Command: npc_go_do_run
+registered Console Command: npc_teleport
+registered Console Command: npc_thinknow
+registered Console Command: npc_freeze_unselected
+registered Console Command: npc_freeze
+registered Console Command: npc_destroy_unselected
+registered Console Command: npc_create_aimed
+registered Console Command: npc_create
+registered Console Command: npc_create_equipment
+registered Console Command: npc_focus
+registered Console Command: npc_enemies
+registered Console Command: npc_kill
+registered Console Command: npc_destroy
+registered Console Command: npc_bipass
+registered Console Command: ai_show_graph_connect
+registered Console Command: ai_show_visibility
+registered Console Command: ai_show_node
+registered Console Command: ai_nodes
+registered Console Command: ai_hull
+registered Console Command: ai_next_hull
+registered Console Command: ai_resume
+registered Console Command: ai_step
+registered Console Command: ai_show_grid
+registered Console Command: ai_show_connect_fly
+registered Console Command: ai_show_connect_jump
+registered Console Command: ai_show_connect
+registered Console Command: ai_show_hull
+registered Console Command: ai_show_hints
+registered Console Command: ai_disable
+registered Console Command: scene_flatturn
+registered Console Command: ai_path_insert_pause_at_est_end
+registered Console Command: ai_path_adjust_speed_on_immediate_turns
+registered Console Command: ai_path_insert_pause_at_obstruction
+registered Console Command: ai_drawbattlelines
+registered Console Command: ai_follow_use_points_when_moving
+registered Console Command: ai_follow_use_points
+registered Console Command: ai_debug_follow
+registered Console Command: ai_fear_player_dist
+registered Console Command: ai_enable_fear_behavior
+registered Console Command: ai_debug_assault
+registered Console Command: ai_simulate_task_overtime
+registered Console Command: ai_LOS_mode
+registered Console Command: sv_test_scripted_sequences
+registered Console Command: ai_think_limit_label
+registered Console Command: ai_report_task_timings_on_limit
+registered Console Command: ai_auto_contact_solver
+registered Console Command: ai_debug_avoidancebounds
+registered Console Command: ai_block_damage
+registered Console Command: ai_strong_optimizations
+registered Console Command: ai_reaction_delay_alert
+registered Console Command: ai_reaction_delay_idle
+registered Console Command: ai_spread_pattern_focus_time
+registered Console Command: ai_spread_cone_focus_time
+registered Console Command: ai_spread_defocused_cone_multiplier
+registered Console Command: ai_shot_bias
+registered Console Command: ai_shot_stats_term
+registered Console Command: ai_shot_stats
+registered Console Command: ai_lead_time
+registered Console Command: ai_debug_loners
+registered Console Command: ai_debug_squads
+registered Console Command: showhitlocation
+registered Console Command: sk_npc_leg
+registered Console Command: sk_npc_arm
+registered Console Command: sk_npc_stomach
+registered Console Command: sk_npc_chest
+registered Console Command: sk_npc_head
+registered Console Command: ai_test_moveprobe_ignoresmall
+registered Console Command: ai_use_think_optimizations
+registered Console Command: ai_frametime_limit
+registered Console Command: ai_debug_dyninteractions
+registered Console Command: ai_debug_efficiency
+registered Console Command: ai_efficiency_override
+registered Console Command: ai_default_efficient
+registered Console Command: ai_use_frame_think_limits
+registered Console Command: ai_use_efficiency
+registered Console Command: ai_rebalance_thinks
+registered Console Command: ai_debug_enemies
+registered Console Command: ai_debug_doors
+registered Console Command: ai_debug_think_ticks
+registered Console Command: ai_show_think_tolerance
+registered Console Command: ai_no_select_box
+registered Console Command: scene_clamplookat
+registered Console Command: scene_showfaceto
+registered Console Command: ai_debug_expressions
+registered Console Command: ai_debug_looktargets
+registered Console Command: flex_maxawaytime
+registered Console Command: flex_minawaytime
+registered Console Command: flex_maxplayertime
+registered Console Command: flex_minplayertime
+registered Console Command: achievement_debug
+registered Console Command: gabe_undo
+registered Console Command: gabe_spawn
+registered Console Command: gabe_maxammo
+registered Console Command: gabe_glowremove
+registered Console Command: gabe_glowadd
+registered Console Command: gabe_glow_color
+registered Console Command: fart
+registered Console Command: g_debug_hopwire
+registered Console Command: hopwire_hopheight
+registered Console Command: hopwire_strider_hits
+registered Console Command: hopwire_strider_kill_dist_v
+registered Console Command: hopwire_strider_kill_dist_h
+registered Console Command: hopwire_trap
+registered Console Command: hopwire_vortex
+registered Console Command: weapon_proto1_echo_sound_duration
+registered Console Command: weapon_proto1_exit_blast_radius
+registered Console Command: weapon_proto1_penetrate_depth
+registered Console Command: weapon_proto1_ping_radius
+registered Console Command: weapon_proto1_ping_delay
+registered Console Command: weapon_proto1_alt_fire_range
+registered Console Command: weapon_proto1_mass_limit
+registered Console Command: weapon_proto1_rate_of_fire
+registered Console Command: sk_wpnscanner_proj_speed
+registered Console Command: sk_wpnscanner_proj_dmg
+registered Console Command: sk_wpnscanner_health
+registered Console Command: sk_combine_armored_kick
+registered Console Command: sk_combine_armored_health
+registered Console Command: bemod_phys_gunglueradius
+registered Console Command: bemod_phys_guntorque
+registered Console Command: bemod_phys_gunforce
+registered Console Command: bemod_phys_gunvel
+registered Console Command: bemod_phys_gunmass
+registered Console Command: gabe_release
+registered Console Command: gabe_physgun_togglesound
+registered Console Command: gabe_heal
+registered Console Command: gabe_healamt
+CSoundEmitterSystem:  Registered 5665 sounds
+CResponseSystem:  scripts\talker\response_rules.txt (46 rules, 42 criteria, and 45 responses)
+maxplayers set to 16
+Heap: 512.00 Mb
+12 CPUs (6 physical), Frequency: 4.7 Ghz,  Features: AuthenticAMD SSE SSE2 MMX RDTSC CMOV FCMOV
+execing valve.rc
+execing autoexec.cfg
+Unknown command "gabeplus_thanks"
+maxplayers set to 1
+execing skill
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_bullsquid_dmg_spit"
+Network: IP 192.168.5.1, mode MP, dedicated Yes, ports 27015 SV / 27005 CL
+---- Host_NewGame ----
+Warning! Singleplayer mode not available on dedicated server.
+Spawn Server: dm_lockdown
+TODO: Refusing to discard 0 bytes
+CMaterialSystem::ReloadMaterials bDeviceReady false
+Binding uncached material "engine/preloadtexture", artificially incrementing refcount
+material "ati_2004/detail/detailsprites" not found.
+Missing map material: ATI_2004/DETAIL/DETAILSPRITES
+execing skill_manifest.cfg
+execing skill.cfg
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_bullsquid_dmg_spit"
+Executing dedicated server config file server.cfg
+Map cycle file 'cfg\mapcycle.txt' was not found.
+Set Gravity 600.0 (0.250 tolerance)
+Error loading cfg/vscript_convar_allowlist.txt
+VSCRIPT: Started VScript virtual machine using script language 'Squirrel'
+VSCRIPT: Started VScript virtual machine using script language 'Squirrel'
+Loading AI graph
+Step 1 loading
+Checking version
+Passed first ver check
+Got version 37
+Map version 10781
+Done version checks
+Finishing load
+ERROR: Weapon (weapon_smp5) using undefined primary ammo type (MP5)
+ERROR: Weapon (weapon_smp5) using undefined secondary ammo type (MP5Grenade)
+PrecacheScriptSound 'Weapon_StickyLauncher.Empty' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.Single' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.NPC_Single' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.Burst' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.Reload' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.NPC_Reload' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.Special1' failed, no such sound script entry
+PrecacheScriptSound 'Weapon_StickyLauncher.Special2' failed, no such sound script entry
+Direct precache of npc/stalker/go_alert2a.wav
+Direct precache of buttons/button24.wav
+material "decals/fadingscorch" not found.
+Direct precache of npc/stalker/laser_burn.wav
+Direct precache of npc/stalker/laser_flesh.wav
+props_lab/monitor02.mdl : material "models/props_lab/monitor_lost" not found.
+PrecacheScriptSound 'NPC_CScanner.DeployMine' failed, no such sound script entry
+Error reading weapon data file for: weapon_alyxgun
+PrecacheScriptSound 'MonsterTripmineGrenade.Deploy' failed, no such sound script entry
+PrecacheScriptSound 'MonsterTripmineGrenade.Charge' failed, no such sound script entry
+PrecacheScriptSound 'MonsterTripmineGrenade.Activate' failed, no such sound script entry
+Direct precache of weapons/cbar_hit1.wav
+Direct precache of weapons/cbar_hit2.wav
+Found soundscape entity with no soundscape name.
+Attempted to create unknown entity type penetrating_bolt!
+NULL Ent in UTIL_PrecacheOther
+Direct precache of Weapon_Proto1.Echo
+Direct precache of Weapon_Proto1.Ping
+Direct precache of Weapon_AR2.NPC_Double
+material "sprites/bluebeam" not found.
+Direct precache of physics/metal/sawblade_stick1.wav
+Direct precache of physics/metal/sawblade_stick2.wav
+Direct precache of physics/metal/sawblade_stick3.wav
+Set motd from file 'cfg/motd_default.txt'.  ('cfg/motd.txt' was not found.)
+Set motd_text from file 'cfg/motd_text_default.txt'.  ('cfg/motd_text.txt' was not found.)
+SV_ActivateServer: setting tickrate to 66.7
+Created class baseline: 28 classes, 8017 bytes.
+Game started
+execing server.cfg
+'gabeplus_motd.cfg' not present; not executing.
+Server is hibernating
+Parent cvar in server.dll not allowed (hl2mp_bot_debug_ammo_scavenging)
+Parent cvar in server.dll not allowed (sk_houndeye_dmg_blast)
+Parent cvar in server.dll not allowed (sk_houndeye_health)
+Parent cvar in server.dll not allowed (sk_headcrab_health)
+maxplayers set to 16
+Unknown command "gabeplus_thanks"
+maxplayers set to 1
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_bullsquid_dmg_spit"
+Can't use cheat cvar sk_plr_dmg_rpg in multiplayer, unless the server has sv_cheats set to 1.
+Can't use cheat cvar sk_plr_dmg_egon_wide in multiplayer, unless the server has sv_cheats set to 1.
+Can't use cheat cvar sk_plr_dmg_rpg in multiplayer, unless the server has sv_cheats set to 1.
+Network: IP 127.0.0.1, mode MP, dedicated Yes, ports 27015 SV / 27005 CL
+Warning! Singleplayer mode not available on dedicated server.
+CMaterialSystem::ReloadMaterials bDeviceReady false
+Missing map material: ATI_2004/DETAIL/DETAILSPRITES
+Unknown command "sk_npc_dmg_crowbar"
+Unknown command "sk_plr_dmg_stunstick"
+Unknown command "sk_npc_dmg_stunstick"
+Unknown command "#====================================================================="
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#"
+Unknown command "#====================================================================="
+Unknown command "sk_npc_dmg_strider_to_plr"
+Unknown command "sk_npc_dmg_strider"
+Unknown command "sk_max_strider"
+Unknown command "sk_bullsquid_dmg_spit"
+Can't use cheat cvar sk_plr_dmg_rpg in multiplayer, unless the server has sv_cheats set to 1.
+Can't use cheat cvar sk_plr_dmg_egon_wide in multiplayer, unless the server has sv_cheats set to 1.
+Can't use cheat cvar sk_plr_dmg_rpg in multiplayer, unless the server has sv_cheats set to 1.
+Executing dedicated server config file server.cfg
+Map cycle file 'cfg\mapcycle.txt' was not found.
+Error loading cfg/vscript_convar_allowlist.txt
+VSCRIPT: Started VScript virtual machine using script language 'Squirrel'
+VSCRIPT: Started VScript virtual machine using script language 'Squirrel'
+ERROR: Weapon (weapon_smp5) using undefined primary ammo type (MP5)
+ERROR: Weapon (weapon_smp5) using undefined secondary ammo type (MP5Grenade)
+Direct precache of npc/stalker/go_alert2a.wav
+Direct precache of buttons/button24.wav
+Direct precache of npc/stalker/laser_burn.wav
+Direct precache of npc/stalker/laser_flesh.wav
+Error reading weapon data file for: weapon_alyxgun
+Direct precache of weapons/cbar_hit1.wav
+Direct precache of weapons/cbar_hit2.wav
+Attempted to create unknown entity type penetrating_bolt!
+NULL Ent in UTIL_PrecacheOther
+Direct precache of Weapon_Proto1.Echo
+Direct precache of Weapon_Proto1.Ping
+Direct precache of Weapon_AR2.NPC_Double
+Direct precache of physics/metal/sawblade_stick1.wav
+Direct precache of physics/metal/sawblade_stick2.wav
+Direct precache of physics/metal/sawblade_stick3.wav
+Set motd from file 'cfg/motd_default.txt'.  ('cfg/motd.txt' was not found.)
+Set motd_text from file 'cfg/motd_text_default.txt'.  ('cfg/motd_text.txt' was not found.)
+SV_ActivateServer: setting tickrate to 66.7
+'gabeplus_motd.cfg' not present; not executing.
+Unknown command "mmkm"
+"sv_cheats" = "1" ( def. "0" )
+ notify replicated
+ - Allow cheats on server

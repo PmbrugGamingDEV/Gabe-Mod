@@ -1,0 +1,183 @@
+﻿  BaseVSShader.cpp
+  example_model_dx9.cpp
+  example_model_dx9_helper.cpp
+  memoverride.cpp
+  sdk_bloom.cpp
+  sdk_screenspace_general.cpp
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\vcruntime.h(188,30): error C2371: 'size_t': redefinition; different basic types
+  (compiling source file 'example_model_dx9.cpp')
+      C:\GabeMod\src\materialsystem\stdshaders\predefined C++ types (compiler internal)(16,22):
+      see declaration of 'size_t'
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\vcruntime.h(188,30): error C2371: 'size_t': redefinition; different basic types
+  (compiling source file '../../public/tier0/memoverride.cpp')
+      C:\GabeMod\src\materialsystem\stdshaders\predefined C++ types (compiler internal)(16,22):
+      see declaration of 'size_t'
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\vcruntime.h(188,30): error C2371: 'size_t': redefinition; different basic types
+  (compiling source file 'example_model_dx9_helper.cpp')
+      C:\GabeMod\src\materialsystem\stdshaders\predefined C++ types (compiler internal)(16,22):
+      see declaration of 'size_t'
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\vcruntime.h(188,30): error C2371: 'size_t': redefinition; different basic types
+  (compiling source file 'sdk_bloom.cpp')
+      C:\GabeMod\src\materialsystem\stdshaders\predefined C++ types (compiler internal)(16,22):
+      see declaration of 'size_t'
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\vcruntime.h(188,30): error C2371: 'size_t': redefinition; different basic types
+  (compiling source file 'BaseVSShader.cpp')
+      C:\GabeMod\src\materialsystem\stdshaders\predefined C++ types (compiler internal)(16,22):
+      see declaration of 'size_t'
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\vcruntime.h(188,30): error C2371: 'size_t': redefinition; different basic types
+  (compiling source file 'sdk_screenspace_general.cpp')
+      C:\GabeMod\src\materialsystem\stdshaders\predefined C++ types (compiler internal)(16,22):
+      see declaration of 'size_t'
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(463,20): warning C4163: '_InterlockedExchange64': not available as an intrinsic function
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(465,20): warning C4163: '_InterlockedExchangeAdd64': not available as an intrinsic function
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(463,20): warning C4163: '_InterlockedExchange64': not available as an intrinsic function
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(465,20): warning C4163: '_InterlockedExchangeAdd64': not available as an intrinsic function
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(463,20): warning C4163: '_InterlockedExchange64': not available as an intrinsic function
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(465,20): warning C4163: '_InterlockedExchangeAdd64': not available as an intrinsic function
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(463,20): warning C4163: '_InterlockedExchange64': not available as an intrinsic function
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(465,20): warning C4163: '_InterlockedExchangeAdd64': not available as an intrinsic function
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(463,20): warning C4163: '_InterlockedExchange64': not available as an intrinsic function
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(465,20): warning C4163: '_InterlockedExchangeAdd64': not available as an intrinsic function
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(176,57): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(176,57): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(176,57): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(176,57): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\xmemory(176,57): warning C4309: 'initializing': truncation of constant value
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\GabeMod\src\public\tier1\utlsymbol.h(246,4): error C2338: static_assert failed: 'Compile time assert constraint is not true: sizeof( *this ) == sizeof( FileNameHandle_t )'
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\GabeMod\src\public\tier1\utlsymbol.h(246,4): error C2338: static_assert failed: 'Compile time assert constraint is not true: sizeof( *this ) == sizeof( FileNameHandle_t )'
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\GabeMod\src\public\tier1\utlsymbol.h(246,4): error C2338: static_assert failed: 'Compile time assert constraint is not true: sizeof( *this ) == sizeof( FileNameHandle_t )'
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\GabeMod\src\public\tier1\utlstring.h(633,82): warning C4309: 'default argument': truncation of constant value
+  (compiling source file 'example_model_dx9_helper.cpp')
+  
+C:\GabeMod\src\public\tier1\utlstring.h(633,82): warning C4309: 'default argument': truncation of constant value
+  (compiling source file 'example_model_dx9.cpp')
+  
+C:\GabeMod\src\public\tier1\utlstring.h(633,82): warning C4309: 'default argument': truncation of constant value
+  (compiling source file 'sdk_screenspace_general.cpp')
+  
+C:\GabeMod\src\public\tier1\utlsymbol.h(246,4): error C2338: static_assert failed: 'Compile time assert constraint is not true: sizeof( *this ) == sizeof( FileNameHandle_t )'
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\GabeMod\src\public\tier1\utlstring.h(633,82): warning C4309: 'default argument': truncation of constant value
+  (compiling source file 'sdk_bloom.cpp')
+  
+C:\GabeMod\src\public\tier1\utlsymbol.h(246,4): error C2338: static_assert failed: 'Compile time assert constraint is not true: sizeof( *this ) == sizeof( FileNameHandle_t )'
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\GabeMod\src\public\tier1\utlstring.h(633,82): warning C4309: 'default argument': truncation of constant value
+  (compiling source file 'BaseVSShader.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file '../../public/tier0/memoverride.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2250,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file '../../public/tier0/memoverride.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,48): warning C4305: 'initializing': truncation from 'unsigned __int64' to 'const size_t'
+  (compiling source file '../../public/tier0/memoverride.cpp')
+  
+C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.44.35207\include\type_traits(2251,50): warning C4309: 'initializing': truncation of constant value
+  (compiling source file '../../public/tier0/memoverride.cpp')
+  

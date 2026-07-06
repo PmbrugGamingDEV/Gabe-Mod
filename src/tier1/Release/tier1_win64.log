@@ -1,0 +1,128 @@
+﻿  LzmaDec.c
+  bitbuf.cpp
+  byteswap.cpp
+  characterset.cpp
+  checksum_crc.cpp
+  checksum_md5.cpp
+  checksum_sha1.cpp
+  commandbuffer.cpp
+  convar.cpp
+  datamanager.cpp
+  diff.cpp
+  exprevaluator.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'bitbuf.cpp')
+  
+  generichash.cpp
+  ilocalize.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'byteswap.cpp')
+  
+  interface.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'commandbuffer.cpp')
+  
+  KeyValues.cpp
+  keyvaluesjson.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'diff.cpp')
+  
+  kvpacker.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'datamanager.cpp')
+  
+  lzmaDecoder.cpp
+  mempool.cpp
+  memstack.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'exprevaluator.cpp')
+  
+  NetAdr.cpp
+  newbitbuf.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'convar.cpp')
+  
+  rangecheckedvar.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'mempool.cpp')
+  
+  reliabletimer.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'keyvaluesjson.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'kvpacker.cpp')
+  
+  snappy-sinksource.cpp
+  snappy-stubs-internal.cpp
+  snappy.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'rangecheckedvar.cpp')
+  
+  sparsematrix.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'lzmaDecoder.cpp')
+  
+  splitstring.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'newbitbuf.cpp')
+  
+  stringpool.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'reliabletimer.cpp')
+  
+  strtools.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'ilocalize.cpp')
+  
+  strtools_unicode.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'sparsematrix.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'splitstring.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'interface.cpp')
+  
+  tier1.cpp
+  tokenreader.cpp
+  uniqueid.cpp
+  utlbinaryblock.cpp
+  utlbuffer.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'KeyValues.cpp')
+  
+  utlbufferutil.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'strtools.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'stringpool.cpp')
+  
+  utlstring.cpp
+  utlsymbol.cpp
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'memstack.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'utlbuffer.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'utlstring.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'utlbinaryblock.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'tier1.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'utlbufferutil.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'uniqueid.cpp')
+  
+C:\GabeMod\src\public\tier0\threadtools.h(167,1): error C1189: #error:  "implement me"
+  (compiling source file 'utlsymbol.cpp')
+  

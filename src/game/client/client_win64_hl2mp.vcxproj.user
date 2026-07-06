@@ -7,7 +7,21 @@
     <LocalDebuggerWorkingDirectory>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer</LocalDebuggerWorkingDirectory>
     <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920 -h 1080 -windowed|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920 -h 1080 -windowed</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920 -h 1080 -windowed|</LocalDebuggerCommandArgumentsHistory>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920-h 1080 -refresh 144 -windowed</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 900 -refresh 144 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 850 -refresh 144 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 650 -refresh 144 -windowed -scriptlang python|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 650 -refresh 144 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920-h 1080 -refresh 144 -windowed|</LocalDebuggerCommandArgumentsHistory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920-h 1080 -refresh 144 -windowed</LocalDebuggerCommandArguments>
