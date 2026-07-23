@@ -18,6 +18,8 @@ C:\GabeMod\src\game\client\cl_camerablur.cpp;C:\GabeMod\src\game\client\Release_
 C:\GabeMod\src\game\client\c_bemod_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_bemod_physgun.obj
 C:\GabeMod\src\game\client\c_gabe_vscript.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_gabe_vscript.obj
 C:\GabeMod\src\game\client\c_weapon_jb_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_jb_physgun.obj
+C:\GabeMod\src\game\client\episodic\c_npc_advisor.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_npc_advisor.obj
+C:\GabeMod\src\game\client\episodic\c_npc_puppet.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_npc_puppet.obj
 C:\GabeMod\src\game\client\episodic\c_weapon_hopwire.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_hopwire.obj
 C:\GabeMod\src\game\client\episodic\episodic_screenspaceeffects.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\episodic_screenspaceeffects.obj
 C:\GabeMod\src\game\client\gabe_events.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_events.obj
@@ -362,6 +364,7 @@ C:\GabeMod\src\game\client\vgui_fpspanel.cpp;C:\GabeMod\src\game\client\Release_
 C:\GabeMod\src\game\client\vgui_game_viewport.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_game_viewport.obj
 C:\GabeMod\src\game\client\vgui_grid.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_grid.obj
 C:\GabeMod\src\game\client\vgui_int.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_int.obj
+C:\GabeMod\src\game\client\vgui_keyvalue.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_keyvalue.obj
 C:\GabeMod\src\game\client\vgui_loadingdiscpanel.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_loadingdiscpanel.obj
 C:\GabeMod\src\game\client\vgui_messagechars.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_messagechars.obj
 C:\GabeMod\src\game\client\vgui_netgraphpanel.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_netgraphpanel.obj
@@ -383,6 +386,7 @@ C:\GabeMod\src\game\shared\voice_status.cpp;C:\GabeMod\src\game\client\Release_m
 C:\GabeMod\src\game\client\warp_overlay.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\warp_overlay.obj
 C:\GabeMod\src\game\client\WaterLODMaterialProxy.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\WaterLODMaterialProxy.obj
 C:\GabeMod\src\game\shared\weapon_parse.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\weapon_parse.obj
+C:\GabeMod\src\game\client\weapon_hands.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\weapon_hands.obj
 C:\GabeMod\src\game\client\weapon_selection.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\weapon_selection.obj
 C:\GabeMod\src\game\client\weapons_resource.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\weapons_resource.obj
 C:\GabeMod\src\game\client\WorldDimsProxy.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\WorldDimsProxy.obj

@@ -221,6 +221,11 @@ void CHL2MP_Player::GiveJBModItems(void)
 	}
 }
 
+void CHL2MP_Player::GiveBEModItems(void)
+{
+	// Stub
+}
+
 void CHL2MP_Player::GiveAllItems(void)
 {
 	EquipSuit();
@@ -386,9 +391,19 @@ void CHL2MP_Player::GiveNoItems()
 void CHL2MP_Player::GiveBemodItems()
 {
 	EquipSuit();
-
 	GiveNamedItem("weapon_bemod_physgun");
+	GiveNamedItem("weapon_duplicator");
+	GiveNamedItem("weapon_bmcamera");
+	GiveNamedItem("weapon_proplauncher");
 
+	if (GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER)
+	{
+		GiveNamedItem("weapon_stunstick");
+	}
+	else if (GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN)
+	{
+		GiveNamedItem("weapon_crowbar");
+	}
 }
 
 void CHL2MP_Player::PickDefaultSpawnTeam( void )
@@ -478,6 +493,11 @@ void CHL2MP_Player::Spawn(void)
 	PickDefaultSpawnTeam();
 
 	BaseClass::Spawn();
+
+	char szMessage[256];
+	Q_snprintf(szMessage, sizeof(szMessage), "%s Connected!", GetPlayerName());
+
+	UTIL_ClientPrintAll(HUD_PRINTTALK, szMessage);
 	
 	if ( !IsObserver() )
 	{

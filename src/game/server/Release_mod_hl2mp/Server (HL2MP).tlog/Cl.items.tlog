@@ -3,12 +3,21 @@ C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\ser
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\server\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\achievements_hl2.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\tf_weapon_fists.obj
+C:\GabeMod\src\game\server\bemod\weapon_bmcamera.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_bmcamera.obj
+C:\GabeMod\src\game\server\bemod\weapon_duplicator.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_duplicator.obj
+C:\GabeMod\src\game\server\bemod\weld_commands.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weld_commands.obj
 C:\GabeMod\src\game\server\bemod_physgun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\bemod_physgun.obj
 C:\GabeMod\src\game\server\episodic\Episode3\npc_combine_armored.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_combine_armored.obj
 C:\GabeMod\src\game\server\episodic\Episode3\npc_wpnscanner.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_wpnscanner.obj
 C:\GabeMod\src\game\server\episodic\Episode3\weapon_proto1.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_proto1.obj
 C:\GabeMod\src\game\server\episodic\grenade_hopwire.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\grenade_hopwire.obj
+C:\GabeMod\src\game\server\episodic\npc_advisor.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_advisor.obj
+C:\GabeMod\src\game\server\episodic\npc_combine_cannon.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_combine_cannon.obj
+C:\GabeMod\src\game\server\episodic\npc_hunter.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_hunter.obj
+C:\GabeMod\src\game\server\episodic\npc_magnusson.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_magnusson.obj
+C:\GabeMod\src\game\server\episodic\npc_puppet.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_puppet.obj
 C:\GabeMod\src\game\server\episodic\weapon_hopwire.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_hopwire.obj
+C:\GabeMod\src\game\server\episodic\weapon_striderbuster.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_striderbuster.obj
 C:\GabeMod\src\game\server\fartcmd.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\fartcmd.obj
 C:\GabeMod\src\game\server\func_sphere.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_sphere.obj
 C:\GabeMod\src\game\server\gabe_cmds.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_cmds.obj
@@ -287,6 +296,7 @@ C:\GabeMod\src\game\server\jbm_physgun.cpp;C:\GabeMod\src\game\server\Release_mo
 C:\GabeMod\src\game\server\lightglow.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\lightglow.obj
 C:\GabeMod\src\game\server\lights.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\lights.obj
 C:\GabeMod\src\game\server\logic_eventlistener.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\logic_eventlistener.obj
+C:\GabeMod\src\game\server\logic_hide.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\logic_hide.obj
 C:\GabeMod\src\game\server\logic_measure_movement.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\logic_measure_movement.obj
 C:\GabeMod\src\game\server\logic_navigation.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\logic_navigation.obj
 C:\GabeMod\src\game\server\logicauto.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\logicauto.obj
@@ -461,6 +471,7 @@ C:\GabeMod\src\game\server\weapon_eattach.cpp;C:\GabeMod\src\game\server\Release
 C:\GabeMod\src\game\server\weapon_hax.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_hax.obj
 C:\GabeMod\src\game\server\weapon_lasergun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_lasergun.obj
 C:\GabeMod\src\game\server\weapon_multitool.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_multitool.obj
+C:\GabeMod\src\game\server\weapon_proplauncher.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_proplauncher.obj
 C:\GabeMod\src\game\server\weapon_stickylauncher.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_stickylauncher.obj
 C:\GabeMod\src\game\server\weapon_supergun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_supergun.obj
 C:\GabeMod\src\game\server\weight_button.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weight_button.obj

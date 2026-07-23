@@ -2541,6 +2541,8 @@ bool CPhysicsProp::CreateVPhysics()
 
 	IPhysicsObject *pPhysicsObject = VPhysicsInitNormal( SOLID_VPHYSICS, 0, asleep, &tmpSolid );
 
+
+
 	if ( !pPhysicsObject )
 	{
 		SetSolid( SOLID_NONE );
@@ -2559,31 +2561,34 @@ bool CPhysicsProp::CreateVPhysics()
 		}
 	}
 
-	// fix up any noncompliant blades.
-	if( HasInteraction( PROPINTER_PHYSGUN_LAUNCH_SPIN_Z ) )
+	if (pPhysicsObject)
 	{
-		if( !(VPhysicsGetObject()->GetGameFlags() & FVPHYSICS_DMG_SLICE) )
+		// fix up any noncompliant blades.
+		if( HasInteraction( PROPINTER_PHYSGUN_LAUNCH_SPIN_Z ) )
 		{
-			PhysSetGameFlags( pPhysicsObject, FVPHYSICS_DMG_SLICE );
-
-#if 0
-			if( g_pDeveloper->GetInt() )
+			if( !(VPhysicsGetObject()->GetGameFlags() & FVPHYSICS_DMG_SLICE) )
 			{
-				// Highlight them in developer mode.
-				m_debugOverlays |= (OVERLAY_TEXT_BIT|OVERLAY_BBOX_BIT);
+				PhysSetGameFlags( pPhysicsObject, FVPHYSICS_DMG_SLICE );
+
+	#if 0
+				if( g_pDeveloper->GetInt() )
+				{
+					// Highlight them in developer mode.
+					m_debugOverlays |= (OVERLAY_TEXT_BIT|OVERLAY_BBOX_BIT);
+				}
+	#endif
 			}
-#endif
 		}
-	}
 
-	if( HasInteraction( PROPINTER_PHYSGUN_DAMAGE_NONE ) )
-	{
-		PhysSetGameFlags( pPhysicsObject, FVPHYSICS_NO_IMPACT_DMG );
-	}
+		if( HasInteraction( PROPINTER_PHYSGUN_DAMAGE_NONE ) )
+		{
+			PhysSetGameFlags( pPhysicsObject, FVPHYSICS_NO_IMPACT_DMG );
+		}
 
-	if ( HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) )
-	{
-		PhysSetGameFlags(pPhysicsObject, FVPHYSICS_NO_PLAYER_PICKUP);
+		if ( HasSpawnFlags(SF_PHYSPROP_PREVENT_PICKUP) )
+		{
+			PhysSetGameFlags(pPhysicsObject, FVPHYSICS_NO_PLAYER_PICKUP);
+		}
 	}
 
 	return true;

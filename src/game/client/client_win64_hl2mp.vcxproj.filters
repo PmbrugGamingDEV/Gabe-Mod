@@ -76,6 +76,9 @@
     <Filter Include="Source Files\Gabe Mod Files\Prototypes">
       <UniqueIdentifier>{1b736d78-e05c-4845-b9c8-21d58bd3c7a6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\BEMod">
+      <UniqueIdentifier>{29559b0c-a066-421a-95ca-2a82ba7d14e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\bitmap.lib">
@@ -2021,6 +2024,12 @@
     <ClInclude Include="episodic\episodic_screenspaceeffects.h">
       <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
     </ClInclude>
+    <ClInclude Include="vgui_keyvalue.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
+    <ClInclude Include="weapon_hands.h">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3688,9 +3697,6 @@
     <ClCompile Include="c_weapon_jb_physgun.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
-    <ClCompile Include="c_bemod_physgun.cpp">
-      <Filter>Source Files\Gabe Mod Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\shared\hl2\survival_gamerules.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -3708,6 +3714,21 @@
     </ClCompile>
     <ClCompile Include="episodic\c_weapon_hopwire.cpp">
       <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="vgui_keyvalue.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="c_bemod_physgun.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="weapon_hands.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\c_npc_advisor.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\c_npc_puppet.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup />

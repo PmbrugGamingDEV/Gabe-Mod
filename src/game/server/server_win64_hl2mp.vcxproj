@@ -522,6 +522,8 @@ exit 1
     <ClInclude Include="..\..\public\const.h" />
     <ClInclude Include="..\..\public\vphysics\constraints.h" />
     <ClInclude Include="..\..\public\coordsize.h" />
+    <ClInclude Include="bemod\weapon_bmcamera.h" />
+    <ClInclude Include="bemod\weapon_duplicator.h" />
     <ClInclude Include="cplane.h" />
     <ClInclude Include="damagemodifier.h" />
     <ClInclude Include="..\..\public\datamap.h" />
@@ -540,6 +542,8 @@ exit 1
     <ClInclude Include="..\shared\entitylist_base.h" />
     <ClInclude Include="..\shared\env_detail_controller.h" />
     <ClInclude Include="episodic\grenade_hopwire.h" />
+    <ClInclude Include="episodic\npc_hunter.h" />
+    <ClInclude Include="episodic\weapon_striderbuster.h" />
     <ClInclude Include="EventLog.h" />
     <ClInclude Include="..\shared\expressionsample.h" />
     <ClInclude Include="..\..\public\tier0\fasttimer.h" />
@@ -1014,6 +1018,7 @@ exit 1
     <ClInclude Include="..\shared\weapon_proficiency.h" />
     <ClInclude Include="weapon_camera.h" />
     <ClInclude Include="WEAPON_LASERGUN.H" />
+    <ClInclude Include="weapon_proplauncher.h" />
     <ClInclude Include="weapon_stickylauncher.h" />
     <ClInclude Include="world.h" />
     <ClInclude Include="hl2\ai_behavior_actbusy.h" />
@@ -1167,12 +1172,21 @@ exit 1
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
+    <ClCompile Include="bemod\weapon_bmcamera.cpp" />
+    <ClCompile Include="bemod\weapon_duplicator.cpp" />
+    <ClCompile Include="bemod\weld_commands.cpp" />
     <ClCompile Include="bemod_physgun.cpp" />
     <ClCompile Include="episodic\Episode3\npc_combine_armored.cpp" />
     <ClCompile Include="episodic\Episode3\npc_wpnscanner.cpp" />
     <ClCompile Include="episodic\Episode3\weapon_proto1.cpp" />
     <ClCompile Include="episodic\grenade_hopwire.cpp" />
+    <ClCompile Include="episodic\npc_advisor.cpp" />
+    <ClCompile Include="episodic\npc_combine_cannon.cpp" />
+    <ClCompile Include="episodic\npc_hunter.cpp" />
+    <ClCompile Include="episodic\npc_magnusson.cpp" />
+    <ClCompile Include="episodic\npc_puppet.cpp" />
     <ClCompile Include="episodic\weapon_hopwire.cpp" />
+    <ClCompile Include="episodic\weapon_striderbuster.cpp" />
     <ClCompile Include="fartcmd.cpp" />
     <ClCompile Include="func_sphere.cpp" />
     <ClCompile Include="gabe_cmds.cpp" />
@@ -1526,6 +1540,7 @@ exit 1
     <ClCompile Include="lightglow.cpp" />
     <ClCompile Include="lights.cpp" />
     <ClCompile Include="logic_eventlistener.cpp" />
+    <ClCompile Include="logic_hide.cpp" />
     <ClCompile Include="logic_measure_movement.cpp" />
     <ClCompile Include="logic_navigation.cpp" />
     <ClCompile Include="logicauto.cpp" />
@@ -1770,6 +1785,7 @@ exit 1
     <ClCompile Include="weapon_hax.cpp" />
     <ClCompile Include="weapon_lasergun.cpp" />
     <ClCompile Include="weapon_multitool.cpp" />
+    <ClCompile Include="weapon_proplauncher.cpp" />
     <ClCompile Include="weapon_stickylauncher.cpp" />
     <ClCompile Include="weapon_supergun.cpp" />
     <ClCompile Include="weight_button.cpp" />

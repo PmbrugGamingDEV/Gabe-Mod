@@ -91,6 +91,9 @@
     <Filter Include="Source Files\Gabe Mod Files\Prototypes">
       <UniqueIdentifier>{a62a6d64-01db-401d-90de-66f4c1bc78a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\BEMod">
+      <UniqueIdentifier>{a291a85d-f1b3-4b34-a96d-97beadfd70f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\choreoobjects.lib">
@@ -2143,6 +2146,21 @@
     </ClInclude>
     <ClInclude Include="episodic\grenade_hopwire.h">
       <Filter>Source Files\Gabe Mod Files\Prototypes</Filter>
+    </ClInclude>
+    <ClInclude Include="bemod\weapon_bmcamera.h">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClInclude>
+    <ClInclude Include="bemod\weapon_duplicator.h">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClInclude>
+    <ClInclude Include="weapon_proplauncher.h">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClInclude>
+    <ClInclude Include="episodic\npc_hunter.h">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClInclude>
+    <ClInclude Include="episodic\weapon_striderbuster.h">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4240,9 +4258,6 @@
     <ClCompile Include="hl2\vehicle_jeep.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
-    <ClCompile Include="bemod_physgun.cpp">
-      <Filter>Source Files\Gabe Mod Files\Weapons</Filter>
-    </ClCompile>
     <ClCompile Include="hl2mp\hl2mp_client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -4278,6 +4293,42 @@
     </ClCompile>
     <ClCompile Include="hl2\weapon_alyxgun.cpp">
       <Filter>Source Files\HL2 DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="bemod_physgun.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="bemod\weapon_bmcamera.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="bemod\weapon_duplicator.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="bemod\weld_commands.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="weapon_proplauncher.cpp">
+      <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\npc_advisor.cpp">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\npc_combine_cannon.cpp">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\npc_hunter.cpp">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\npc_magnusson.cpp">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\npc_puppet.cpp">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\weapon_striderbuster.cpp">
+      <Filter>Source Files\Gabe Mod Files\NPCS</Filter>
+    </ClCompile>
+    <ClCompile Include="logic_hide.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup />

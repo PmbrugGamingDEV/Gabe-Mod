@@ -1,0 +1,21 @@
+@include "base.fgd"
+@include "hl2mp.fgd"
+
+@PointClass base(Targetname) = logic_hide :
+	"Hides or shows another entity's visuals and collision."
+[
+	HiddenTarget(target_destination) :
+		"Name of the entity to hide or show."
+
+	input Hide(void) :
+		"Hide the target entity."
+
+	input Show(void) :
+		"Show the target entity."
+
+	output OnHidden(void) :
+		"Fired after the target is hidden."
+
+	output OnShown(void) :
+		"Fired after the target is shown."
+]

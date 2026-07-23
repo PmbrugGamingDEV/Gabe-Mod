@@ -363,6 +363,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" (
     <ClInclude Include="..\..\public\vgui_controls\CheckButtonList.h" />
     <ClInclude Include="..\..\public\vgui_controls\CircularProgressBar.h" />
     <ClInclude Include="..\..\public\Color.h" />
+    <ClInclude Include="..\..\public\vgui_controls\CodeEditor.h" />
     <ClInclude Include="..\..\public\vgui_controls\ComboBox.h" />
     <ClInclude Include="..\..\public\vgui_controls\consoledialog.h" />
     <ClInclude Include="..\..\public\vgui_controls\ControllerMap.h" />
@@ -455,6 +456,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" (
     <ClCompile Include="CheckButton.cpp" />
     <ClCompile Include="CheckButtonList.cpp" />
     <ClCompile Include="CircularProgressBar.cpp" />
+    <ClCompile Include="CodeEditor.cpp" />
     <ClCompile Include="ComboBox.cpp" />
     <ClCompile Include="consoledialog.cpp" />
     <ClCompile Include="ControllerMap.cpp" />

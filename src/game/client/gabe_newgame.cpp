@@ -558,6 +558,9 @@ public:
 		m_pHL2Mode = new CheckButton(this, "Half-Life 2 Mode", "Spawn With all Half-Life 2 weapons");
 		m_pHL2Mode->SetSelected(false);
 
+		m_pBEModMode = new CheckButton(this, "BEMod Mode", "Buildemod Gamemode (Like the Buildemod on Moddb)");
+		m_pBEModMode->SetSelected(false);
+
 		ApplySingleplayerLock();
 
 		m_bLastSingleplayer = true;
@@ -596,6 +599,7 @@ public:
 		m_pSandboxMode->SetPos(pad, y);		  m_pSandboxMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 		m_pJBModMode->SetPos(pad, y);		  m_pJBModMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 		m_pHL2Mode->SetPos(pad, y);			  m_pHL2Mode->SetSize(w - pad * 2, rowH); y += rowH + 4;
+		m_pBEModMode->SetPos(pad, y);		  m_pBEModMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
 
 		UpdateValueLabels();
 	}
@@ -649,6 +653,7 @@ public:
 	bool GetHL1Mode() const { return m_pHL1Mode->IsSelected(); }
 	bool GetJBModMode() const { return m_pJBModMode->IsSelected(); }
 	bool GetHL2Mode() const { return m_pHL2Mode->IsSelected(); }
+	bool GetBEModMode() const { return m_pBEModMode->IsSelected(); }
 
 private:
 	void ApplySingleplayerLock()
@@ -720,6 +725,7 @@ private:
 	CheckButton* m_pSandboxMode;
 	CheckButton* m_pJBModMode;
 	CheckButton* m_pHL2Mode;
+	CheckButton* m_pBEModMode;
 };
 
 // ------------------------------------------------------------
@@ -971,6 +977,7 @@ private:
 		const bool sandboxmode = m_pSettingsTab->GetSandboxMode();
 		const bool jbmodmode = m_pSettingsTab->GetJBModMode();
 		const bool hl2mode = m_pSettingsTab->GetHL2Mode();
+		const bool bemodmode = m_pSettingsTab->GetBEModMode();
 
 		char hostname[128];
 		char password[128];
@@ -1033,6 +1040,9 @@ private:
 			engine->ClientCmd_Unrestricted(cmd);
 
 			Q_snprintf(cmd, sizeof(cmd), "gabe_hl2 %d\n", hl2mode ? 1 : 0);
+			engine->ClientCmd_Unrestricted(cmd);
+
+			Q_snprintf(cmd, sizeof(cmd), "gabe_bemod %d\n", bemodmode ? 1 : 0);
 			engine->ClientCmd_Unrestricted(cmd);
 		}
 

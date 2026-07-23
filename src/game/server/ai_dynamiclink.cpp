@@ -635,7 +635,9 @@ void CAI_RadialLinkController::PollMotionThink()
 
 	if( pParent )
 	{
-		if( pParent->VPhysicsGetObject()->IsAsleep() )
+		IPhysicsObject* pObj = pParent->VPhysicsGetObject();
+
+		if( pObj && pObj->IsAsleep() )
 		{
 			if( !m_bAtRest )
 			{

@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright � 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -6,6 +6,7 @@
 //=============================================================================//
 
 #include "cbase.h"
+#include "convar.h"
 #include "beam_shared.h"
 #include "player.h"
 #include "gamerules.h"
@@ -15,38 +16,63 @@
 #include "physics.h"
 #include "in_buttons.h"
 #include "IEffects.h"
-#include "engine/IEngineSound.h"
 #include "ndebugoverlay.h"
 #include "physics_saverestore.h"
 #include "player_pickup.h"
-#include "SoundEmitterSystem/isoundemittersystembase.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+ConVar phys_gunarrival("phys_gunarrival", "30.0f", FCVAR_REPLICATED | FCVAR_NOTIFY, "Multiplier for physgun speed.");
 
-ConVar bemod_phys_gunmass("bemod_phys_gunmass", "200");
-ConVar bemod_phys_gunvel("bemod_phys_gunvel", "400");
-ConVar bemod_phys_gunforce("bemod_phys_gunforce", "5e5");
-ConVar bemod_phys_guntorque("bemod_phys_guntorque", "100");
-ConVar bemod_phys_gunglueradius("bemod_phys_gunglueradius", "128");
+void AdjustObjectSpeed(IPhysicsObject* pObject, const Vector& targetPos)
+{
+	Vector currentPos;
+	Vector vel;
+	AngularImpulse angVel;
+
+	// Get current position and velocity
+	pObject->GetPosition(&currentPos, NULL);
+	pObject->GetVelocity(&vel, &angVel);
+
+	// Calculate direction and distance to target position
+	Vector direction = targetPos - currentPos;
+	float distance = direction.Length();
+	direction.NormalizeInPlace();
+
+	// Get the speed multiplier from the ConVar
+	float speedMultiplier = phys_gunarrival.GetFloat();
+
+	// Adjust velocity to move towards target position faster
+	Vector newVelocity = direction * distance * speedMultiplier;
+	pObject->SetVelocityInstantaneous(&newVelocity, &angVel);
+}
+
+
+ConVar phys_gunmass("bemod_phys_gunmass", "200");
+ConVar phys_gunvel("bemod_phys_gunvel", "400");
+ConVar phys_gunforce("bemod_phys_gunforce", "5e5");
+ConVar phys_guntorque("bemod_phys_guntorque", "100");
+ConVar phys_gunglueradius("bemod_phys_gunglueradius", "128");
+
+
 
 static int g_physgunBeam;
-#define PHYSGUN_BEAM_SPRITE		"sprites/physbeam.vmt"
+#define PHYSGUN_BEAM_SPRITE		"sprites/redglow1.vmt"
 
-#define MAX_PELLETS	16
+#define MAX_PELLETS	50
 
-class CWeaponBemodGravityGun;
+class CBemodWeaponGravityGun;
 
-class CBemodGravityPellet : public CBaseAnimating
+class CBMGravityPellet : public CBaseAnimating
 {
-	DECLARE_CLASS(CBemodGravityPellet, CBaseAnimating);
+	DECLARE_CLASS(CBMGravityPellet, CBaseAnimating);
 public:
 	DECLARE_DATADESC();
 
-	~CBemodGravityPellet();
+	~CBMGravityPellet();
 	void Precache()
 	{
-		SetModelName(MAKE_STRING("models/weapons/w_bugbait.mdl"));
+		SetModelName(MAKE_STRING("models/weapons/glueblob.mdl"));
 		PrecacheModel(STRING(GetModelName()));
 		BaseClass::Precache();
 	}
@@ -105,10 +131,10 @@ public:
 	bool				m_isInert;
 };
 
-LINK_ENTITY_TO_CLASS(bm_gravity_pellet, CBemodGravityPellet);
+LINK_ENTITY_TO_CLASS(bm_gravity_pellet, CBMGravityPellet);
 PRECACHE_REGISTER(bm_gravity_pellet);
 
-BEGIN_DATADESC(CBemodGravityPellet)
+BEGIN_DATADESC(CBMGravityPellet)
 
 DEFINE_PHYSPTR(m_pConstraint),
 DEFINE_FIELD(m_isInert, FIELD_BOOLEAN),
@@ -118,7 +144,7 @@ DEFINE_INPUTFUNC(FIELD_VOID, "ConstraintBroken", InputOnBreak),
 END_DATADESC()
 
 
-CBemodGravityPellet::~CBemodGravityPellet()
+CBMGravityPellet::~CBMGravityPellet()
 {
 	if (m_pConstraint)
 	{
@@ -126,13 +152,13 @@ CBemodGravityPellet::~CBemodGravityPellet()
 	}
 }
 
-class CBemodGravControllerPoint : public IMotionEvent
+class CBMGravControllerPoint : public IMotionEvent
 {
 	DECLARE_SIMPLE_DATADESC();
 
 public:
-	CBemodGravControllerPoint(void);
-	~CBemodGravControllerPoint(void);
+	CBMGravControllerPoint(void);
+	~CBMGravControllerPoint(void);
 	void AttachEntity(CBaseEntity* pEntity, IPhysicsObject* pPhys, const Vector& position);
 	void DetachEntity(void);
 	void SetMaxVelocity(float maxVel)
@@ -183,8 +209,7 @@ public:
 	IPhysicsMotionController* m_controller;
 };
 
-
-BEGIN_SIMPLE_DATADESC(CBemodGravControllerPoint)
+BEGIN_SIMPLE_DATADESC(CBMGravControllerPoint)
 
 DEFINE_FIELD(m_localPosition, FIELD_VECTOR),
 DEFINE_FIELD(m_targetPosition, FIELD_POSITION_VECTOR),
@@ -208,18 +233,18 @@ DEFINE_FIELD(m_timeToArrive, FIELD_FLOAT),
 END_DATADESC()
 
 
-CBemodGravControllerPoint::CBemodGravControllerPoint(void)
+CBMGravControllerPoint::CBMGravControllerPoint(void)
 {
 	m_attachedEntity = NULL;
 }
 
-CBemodGravControllerPoint::~CBemodGravControllerPoint(void)
+CBMGravControllerPoint::~CBMGravControllerPoint(void)
 {
 	DetachEntity();
 }
 
 
-void CBemodGravControllerPoint::AttachEntity(CBaseEntity* pEntity, IPhysicsObject* pPhys, const Vector& position)
+void CBMGravControllerPoint::AttachEntity(CBaseEntity* pEntity, IPhysicsObject* pPhys, const Vector& position)
 {
 	m_attachedEntity = pEntity;
 	pPhys->WorldToLocal(&m_localPosition, position);
@@ -231,13 +256,13 @@ void CBemodGravControllerPoint::AttachEntity(CBaseEntity* pEntity, IPhysicsObjec
 	m_controller->AttachObject(pPhys, true);
 	m_controller->SetPriority(IPhysicsMotionController::HIGH_PRIORITY);
 	SetTargetPosition(position);
-	m_maxAcceleration = bemod_phys_gunforce.GetFloat() * pPhys->GetInvMass();
+	m_maxAcceleration = phys_gunforce.GetFloat() * pPhys->GetInvMass();
 	m_targetRotation = pEntity->GetAbsAngles();
-	float torque = bemod_phys_guntorque.GetFloat();
+	float torque = phys_guntorque.GetFloat();
 	m_maxAngularAcceleration = torque * pPhys->GetInvInertia();
 }
 
-void CBemodGravControllerPoint::DetachEntity(void)
+void CBMGravControllerPoint::DetachEntity(void)
 {
 	CBaseEntity* pEntity = m_attachedEntity;
 	if (pEntity)
@@ -261,8 +286,7 @@ void CBemodGravControllerPoint::DetachEntity(void)
 
 extern void AxisAngleQAngle(const Vector& axis, float angle, QAngle& outAngles);
 
-
-IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionController* pController, IPhysicsObject* pObject, float deltaTime, Vector& linear, AngularImpulse& angular)
+IMotionEvent::simresult_e CBMGravControllerPoint::Simulate(IPhysicsMotionController* pController, IPhysicsObject* pObject, float deltaTime, Vector& linear, AngularImpulse& angular)
 {
 	Vector vel;
 	AngularImpulse angVel;
@@ -288,13 +312,15 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 	pObject->LocalToWorld(&world, m_localPosition);
 	m_worldPosition = world;
 	pObject->GetVelocity(&vel, &angVel);
-	//pObject->GetVelocityAtPoint( world, &vel );
 	float damping = 1.0;
 	world += vel * deltaTime * damping;
 	Vector delta = (m_targetPosition - world) * fracRemainingSimTime * invDeltaTime;
 	Vector alignDir;
 	linear = vec3_origin;
 	angular = vec3_origin;
+
+	// Call our custom function to adjust the object's speed
+	AdjustObjectSpeed(pObject, m_targetPosition);
 
 	if (m_align)
 	{
@@ -304,7 +330,6 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 		AngularImpulse torque;
 
 		pObject->GetShadowPosition(&origin, &angles);
-		// align local normal to target normal
 		VMatrix tmp = SetupMatrixOrgAngles(origin, angles);
 		Vector worldNormal = tmp.VMul3x3(m_localAlignNormal);
 		axis = CrossProduct(worldNormal, m_targetAlignNormal);
@@ -314,7 +339,6 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 		if (alignRotation < 10)
 		{
 			float dot = DotProduct(worldNormal, m_targetAlignNormal);
-			// probably 180 degrees off
 			if (dot < 0)
 			{
 				if (worldNormal.x < 0.5)
@@ -329,24 +353,18 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 			}
 		}
 
-		// Solve for the rotation around the target normal (at the local align pos) that will 
-		// move the grabbed spot to the destination.
 		Vector worldRotCenter = tmp.VMul4x3(m_localAlignPosition);
 		Vector rotSrc = world - worldRotCenter;
 		Vector rotDest = m_targetPosition - worldRotCenter;
 
-		// Get a basis in the plane perpendicular to m_targetAlignNormal
 		Vector srcN = rotSrc;
 		VectorNormalize(srcN);
 		Vector tangent = CrossProduct(srcN, m_targetAlignNormal);
 		float len = VectorNormalize(tangent);
 
-		// needs at least ~5 degrees, or forget rotation (0.08 ~= sin(5))
 		if (len > 0.08)
 		{
 			Vector binormal = CrossProduct(m_targetAlignNormal, tangent);
-
-			// Now project the src & dest positions into that plane
 			Vector planeSrc(DotProduct(rotSrc, tangent), DotProduct(rotSrc, binormal), 0);
 			Vector planeDest(DotProduct(rotDest, tangent), DotProduct(rotDest, binormal), 0);
 
@@ -358,22 +376,18 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 				{
 					destRadius = rotRadius;
 				}
-				//float ratio = rotRadius / destRadius;
 				float angleSrc = atan2(planeSrc.y, planeSrc.x);
 				float angleDest = atan2(planeDest.y, planeDest.x);
 				float angleDiff = angleDest - angleSrc;
 				angleDiff = RAD2DEG(angleDiff);
 				axis += m_targetAlignNormal * angleDiff;
-				//world = m_targetPosition;// + rotDest * (1-ratio);
-//				NDebugOverlay::Line( worldRotCenter, worldRotCenter-m_targetAlignNormal*50, 255, 0, 0, false, 0.1 );
-//				NDebugOverlay::Line( worldRotCenter, worldRotCenter+tangent*50, 0, 255, 0, false, 0.1 );
-//				NDebugOverlay::Line( worldRotCenter, worldRotCenter+binormal*50, 0, 0, 255, false, 0.1 );
+				world = m_targetPosition;
 			}
 		}
 
 		torque = WorldToLocalRotation(tmp, axis, 1);
 		torque *= fracRemainingSimTime * invDeltaTime;
-		torque -= angVel * 1.0;	 // damping
+		torque -= angVel * 1.0;
 		for (int i = 0; i < 3; i++)
 		{
 			if (torque[i] > 0)
@@ -389,15 +403,11 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 		}
 		torque *= invDeltaTime;
 		angular += torque;
-		// Calculate an acceleration that pulls the object toward the constraint
-		// When you're out of alignment, don't pull very hard
 		float factor = fabsf(alignRotation);
 		if (factor < 5)
 		{
 			factor = clamp(factor, 0, 5) * (1 / 5);
 			alignDir = m_targetAlignPosition - worldRotCenter;
-			// Limit movement to the part along m_targetAlignNormal if worldRotCenter is on the backside of 
-			// of the target plane (one inch epsilon)!
 			float planeForward = DotProduct(alignDir, m_targetAlignNormal);
 			if (planeForward > 1)
 			{
@@ -412,11 +422,9 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 			linear += accel;
 		}
 		linear -= vel * damping * invDeltaTime;
-		// UNDONE: Factor in the change in worldRotCenter due to applied torque!
 	}
 	else
 	{
-		// clamp future velocity to max speed
 		Vector nextVel = delta + vel;
 		float nextSpeed = nextVel.Length();
 		if (nextSpeed > m_maxVel)
@@ -445,23 +453,26 @@ IMotionEvent::simresult_e CBemodGravControllerPoint::Simulate(IPhysicsMotionCont
 }
 
 
-struct bm_pelletlist_t
+
+
+
+struct BMpelletlist_t
 {
 	DECLARE_SIMPLE_DATADESC();
 
 	Vector						localNormal;	// normal in parent space
-	CHandle<CBemodGravityPellet>		pellet;
+	CHandle<CBMGravityPellet>		pellet;
 	EHANDLE						parent;
 };
 
-class CWeaponBemodGravityGun : public CBaseCombatWeapon
+class CBemodWeaponGravityGun : public CBaseCombatWeapon
 {
 	DECLARE_DATADESC();
 
 public:
-	DECLARE_CLASS(CWeaponBemodGravityGun, CBaseCombatWeapon);
+	DECLARE_CLASS(CBemodWeaponGravityGun, CBaseCombatWeapon);
 
-	CWeaponBemodGravityGun();
+	CBemodWeaponGravityGun();
 	void Spawn(void);
 	void OnRestore(void);
 	void Precache(void);
@@ -469,7 +480,6 @@ public:
 	void PrimaryAttack(void);
 	void SecondaryAttack(void);
 	void WeaponIdle(void);
-	void FreezeOBJ(void);
 	void ItemPostFrame(void);
 	virtual bool Holster(CBaseCombatWeapon* pSwitchingTo)
 	{
@@ -501,12 +511,7 @@ public:
 	void EffectUpdate(void);
 	void EffectDestroy(void);
 
-	void SoundCreate(void);
-	void SoundDestroy(void);
-	void SoundStop(void);
-	void SoundStart(void);
-	void SoundUpdate(void);
-	void AddPellet(CBemodGravityPellet* pPellet, CBaseEntity* pParent, const Vector& surfaceNormal);
+	void AddPellet(CBMGravityPellet* pPellet, CBaseEntity* pParent, const Vector& surfaceNormal);
 	void DeleteActivePellets();
 	void SortPelletsForObject(CBaseEntity* pObject);
 	void SetObjectPelletsColor(int r, int g, int b);
@@ -558,8 +563,8 @@ private:
 	CNetworkVar(int, m_viewModelIndex);
 	Vector		m_originalObjectPosition;
 
-	CBemodGravControllerPoint		m_gravCallback;
-	bm_pelletlist_t m_activePellets[MAX_PELLETS];
+	CBMGravControllerPoint		m_gravCallback;
+	BMpelletlist_t m_activePellets[MAX_PELLETS];
 	int			m_pelletCount;
 	int			m_objectPelletCount;
 
@@ -569,7 +574,7 @@ private:
 	CNetworkVar(bool, m_glueTouching);
 };
 
-IMPLEMENT_SERVERCLASS_ST(CWeaponBemodGravityGun, DT_WeaponBemodGravityGun)
+IMPLEMENT_SERVERCLASS_ST(CBemodWeaponGravityGun, DT_BemodWeaponGravityGun)
 SendPropVector(SENDINFO_NAME(m_gravCallback.m_targetPosition, m_targetPosition), -1, SPROP_COORD),
 SendPropVector(SENDINFO_NAME(m_gravCallback.m_worldPosition, m_worldPosition), -1, SPROP_COORD),
 SendPropInt(SENDINFO(m_active), 1, SPROP_UNSIGNED),
@@ -577,13 +582,13 @@ SendPropInt(SENDINFO(m_glueTouching), 1, SPROP_UNSIGNED),
 SendPropModelIndex(SENDINFO(m_viewModelIndex)),
 END_SEND_TABLE()
 
-LINK_ENTITY_TO_CLASS(weapon_bemod_physgun, CWeaponBemodGravityGun);
+LINK_ENTITY_TO_CLASS(weapon_bemod_physgun, CBemodWeaponGravityGun);
 PRECACHE_WEAPON_REGISTER(weapon_bemod_physgun);
 
 //---------------------------------------------------------
 // Save/Restore
 //---------------------------------------------------------
-BEGIN_SIMPLE_DATADESC(bm_pelletlist_t)
+BEGIN_SIMPLE_DATADESC(BMpelletlist_t)
 
 DEFINE_FIELD(localNormal, FIELD_VECTOR),
 DEFINE_FIELD(pellet, FIELD_EHANDLE),
@@ -591,7 +596,7 @@ DEFINE_FIELD(parent, FIELD_EHANDLE),
 
 END_DATADESC()
 
-BEGIN_DATADESC(CWeaponBemodGravityGun)
+BEGIN_DATADESC(CBemodWeaponGravityGun)
 
 DEFINE_FIELD(m_active, FIELD_INTEGER),
 DEFINE_FIELD(m_useDown, FIELD_BOOLEAN),
@@ -623,7 +628,7 @@ enum physgun_soundIndex { SI_LOCKEDON = 0, SI_SCANNING = 1, SI_LIGHTOBJECT = 2, 
 //=========================================================
 //=========================================================
 
-CWeaponBemodGravityGun::CWeaponBemodGravityGun()
+CBemodWeaponGravityGun::CBemodWeaponGravityGun()
 {
 	m_active = false;
 	m_bFiresUnderwater = true;
@@ -633,15 +638,15 @@ CWeaponBemodGravityGun::CWeaponBemodGravityGun()
 
 //=========================================================
 //=========================================================
-void CWeaponBemodGravityGun::Spawn()
+void CBemodWeaponGravityGun::Spawn()
 {
 	BaseClass::Spawn();
-	//	SetModel( GetWorldModel() );
+	SetModel(GetWorldModel());
 
 	FallInit();
 }
 
-void CWeaponBemodGravityGun::OnRestore(void)
+void CBemodWeaponGravityGun::OnRestore(void)
 {
 	BaseClass::OnRestore();
 
@@ -654,27 +659,21 @@ void CWeaponBemodGravityGun::OnRestore(void)
 
 //=========================================================
 //=========================================================
-void CWeaponBemodGravityGun::Precache(void)
+void CBemodWeaponGravityGun::Precache(void)
 {
 	BaseClass::Precache();
 
 	g_physgunBeam = PrecacheModel(PHYSGUN_BEAM_SPRITE);
-
-	PrecacheScriptSound("Weapon_Physgun.Scanning");
-	PrecacheScriptSound("Weapon_Physgun.LockedOn");
-	PrecacheScriptSound("Weapon_Physgun.Scanning");
-	PrecacheScriptSound("Weapon_Physgun.LightObject");
-	PrecacheScriptSound("Weapon_Physgun.HeavyObject");
 }
 
-void CWeaponBemodGravityGun::EffectCreate(void)
+void CBemodWeaponGravityGun::EffectCreate(void)
 {
 	EffectUpdate();
 	m_active = true;
 }
 
 
-void CWeaponBemodGravityGun::EffectUpdate(void)
+void CBemodWeaponGravityGun::EffectUpdate(void)
 {
 	Vector start, angles, forward, right;
 	trace_t tr;
@@ -731,11 +730,17 @@ void CWeaponBemodGravityGun::EffectUpdate(void)
 	CBaseEntity* pObject = m_hObject;
 	if (pObject)
 	{
-		if (m_useDown)
+		if (m_useDown) // if already been pressed 
 		{
-			if (pOwner->m_afButtonPressed & IN_USE)
+			if (pOwner->m_afButtonPressed & IN_USE) // then if use pressed
 			{
 				m_useDown = false;
+				IPhysicsObject* pPhys = pObject->VPhysicsGetObject();
+				pPhys->EnableMotion(true);
+
+				//Reattach
+				DetachObject();
+				AttachObject(pObject, start, tr.endpos, distance);
 			}
 		}
 		else
@@ -743,19 +748,8 @@ void CWeaponBemodGravityGun::EffectUpdate(void)
 			if (pOwner->m_afButtonPressed & IN_USE)
 			{
 				m_useDown = true;
-			}
-		}
-
-		if (m_useDown)
-		{
-			pOwner->SetPhysicsFlag(PFLAG_DIROVERRIDE, true);
-			if (pOwner->m_nButtons & IN_FORWARD)
-			{
-				m_distance = UTIL_Approach(1024, m_distance, gpGlobals->frametime * 100);
-			}
-			if (pOwner->m_nButtons & IN_BACK)
-			{
-				m_distance = UTIL_Approach(40, m_distance, gpGlobals->frametime * 100);
+				IPhysicsObject* pPhys = pObject->VPhysicsGetObject();
+				pPhys->EnableMotion(false);
 			}
 		}
 
@@ -799,7 +793,7 @@ void CWeaponBemodGravityGun::EffectUpdate(void)
 			newPosition = tr.endpos;
 		}
 
-		CreatePelletAttraction(bemod_phys_gunglueradius.GetFloat(), pObject);
+		CreatePelletAttraction(phys_gunglueradius.GetFloat(), pObject);
 
 		// If I'm looking more than 20 degrees away from the glue point, then give up
 		// This lets the player "gesture" for the glue to let go.
@@ -813,7 +807,7 @@ void CWeaponBemodGravityGun::EffectUpdate(void)
 
 		if (m_pelletHeld >= 0 && gpGlobals->curtime > m_glueTime)
 		{
-			CBemodGravityPellet* pPelletAttract = m_activePellets[m_pelletAttract].pellet;
+			CBMGravityPellet* pPelletAttract = m_activePellets[m_pelletAttract].pellet;
 
 			g_pEffects->Sparks(pPelletAttract->GetAbsOrigin());
 		}
@@ -837,36 +831,10 @@ void CWeaponBemodGravityGun::EffectUpdate(void)
 	{
 		m_gravCallback.ClearAutoAlign();
 	}
+
+	NetworkStateChanged();
 }
 
-void CWeaponBemodGravityGun::SoundCreate(void)
-{
-	m_soundState = SS_SCANNING;
-	SoundStart();
-}
-
-
-void CWeaponBemodGravityGun::SoundDestroy(void)
-{
-	SoundStop();
-}
-
-
-void CWeaponBemodGravityGun::SoundStop(void)
-{
-	switch (m_soundState)
-	{
-	case SS_SCANNING:
-		GetOwner()->StopSound("Weapon_Physgun.Scanning");
-		break;
-	case SS_LOCKEDON:
-		GetOwner()->StopSound("Weapon_Physgun.Scanning");
-		GetOwner()->StopSound("Weapon_Physgun.LockedOn");
-		GetOwner()->StopSound("Weapon_Physgun.LightObject");
-		GetOwner()->StopSound("Weapon_Physgun.HeavyObject");
-		break;
-	}
-}
 
 
 
@@ -894,104 +862,7 @@ static float UTIL_LineFraction(float value, float low, float high, float scale)
 	return scale * (value - low) / delta;
 }
 
-void CWeaponBemodGravityGun::SoundStart(void)
-{
-	CPASAttenuationFilter filter(GetOwner());
-	filter.MakeReliable();
-
-	switch (m_soundState)
-	{
-	case SS_SCANNING:
-	{
-		EmitSound(filter, GetOwner()->entindex(), "Weapon_Physgun.Scanning");
-	}
-	break;
-	case SS_LOCKEDON:
-	{
-		// BUGBUG - If you start a sound with a pitch of 100, the pitch shift doesn't work!
-
-		EmitSound(filter, GetOwner()->entindex(), "Weapon_Physgun.LockedOn");
-		EmitSound(filter, GetOwner()->entindex(), "Weapon_Physgun.Scanning");
-		EmitSound(filter, GetOwner()->entindex(), "Weapon_Physgun.LightObject");
-		EmitSound(filter, GetOwner()->entindex(), "Weapon_Physgun.HeavyObject");
-	}
-	break;
-	}
-	//   volume, att, flags, pitch
-}
-
-void CWeaponBemodGravityGun::SoundUpdate(void)
-{
-	int newState;
-
-	if (m_hObject)
-		newState = SS_LOCKEDON;
-	else
-		newState = SS_SCANNING;
-
-	if (newState != m_soundState)
-	{
-		SoundStop();
-		m_soundState = newState;
-		SoundStart();
-	}
-
-	switch (m_soundState)
-	{
-	case SS_SCANNING:
-		break;
-	case SS_LOCKEDON:
-	{
-		CPASAttenuationFilter filter(GetOwner());
-		filter.MakeReliable();
-
-		float height = m_hObject->GetAbsOrigin().z - m_originalObjectPosition.z;
-
-		// go from pitch 90 to 150 over a height of 500
-		int pitch = 90 + (int)UTIL_LineFraction(height, 0, 500, 60);
-
-		CSoundParameters params;
-		if (GetParametersForSound("Weapon_Physgun.LockedOn", params, NULL))
-		{
-			EmitSound_t ep(params);
-			ep.m_nFlags = SND_CHANGE_VOL | SND_CHANGE_PITCH;
-			ep.m_nPitch = pitch;
-
-			EmitSound(filter, GetOwner()->entindex(), ep);
-		}
-
-		// attenutate the movement sounds over 200 units of movement
-		float distance = UTIL_LineFraction(m_movementLength, 0, 200, 1.0);
-
-		// blend the "mass" sounds between 50 and 500 kg
-		IPhysicsObject* pPhys = m_hObject->VPhysicsGetObject();
-
-		float fade = UTIL_LineFraction(pPhys->GetMass(), 50, 500, 1.0);
-
-		if (GetParametersForSound("Weapon_Physgun.LightObject", params, NULL))
-		{
-			EmitSound_t ep(params);
-			ep.m_nFlags = SND_CHANGE_VOL;
-			ep.m_flVolume = fade * distance;
-
-			EmitSound(filter, GetOwner()->entindex(), ep);
-		}
-
-		if (GetParametersForSound("Weapon_Physgun.HeavyObject", params, NULL))
-		{
-			EmitSound_t ep(params);
-			ep.m_nFlags = SND_CHANGE_VOL;
-			ep.m_flVolume = (1.0 - fade) * distance;
-
-			EmitSound(filter, GetOwner()->entindex(), ep);
-		}
-	}
-	break;
-	}
-}
-
-
-void CWeaponBemodGravityGun::AddPellet(CBemodGravityPellet* pPellet, CBaseEntity* pAttach, const Vector& surfaceNormal)
+void CBemodWeaponGravityGun::AddPellet(CBMGravityPellet* pPellet, CBaseEntity* pAttach, const Vector& surfaceNormal)
 {
 	Assert(m_pelletCount < MAX_PELLETS);
 
@@ -1007,7 +878,7 @@ void CWeaponBemodGravityGun::AddPellet(CBemodGravityPellet* pPellet, CBaseEntity
 	m_pelletCount++;
 }
 
-void CWeaponBemodGravityGun::SortPelletsForObject(CBaseEntity* pObject)
+void CBemodWeaponGravityGun::SortPelletsForObject(CBaseEntity* pObject)
 {
 	m_objectPelletCount = 0;
 	for (int i = 0; i < m_pelletCount; i++)
@@ -1017,7 +888,7 @@ void CWeaponBemodGravityGun::SortPelletsForObject(CBaseEntity* pObject)
 		{
 			if (i != 0)
 			{
-				bm_pelletlist_t tmp = m_activePellets[m_objectPelletCount];
+				BMpelletlist_t tmp = m_activePellets[m_objectPelletCount];
 				m_activePellets[m_objectPelletCount] = m_activePellets[i];
 				m_activePellets[i] = tmp;
 			}
@@ -1028,7 +899,7 @@ void CWeaponBemodGravityGun::SortPelletsForObject(CBaseEntity* pObject)
 	SetObjectPelletsColor(192, 255, 192);
 }
 
-void CWeaponBemodGravityGun::SetObjectPelletsColor(int r, int g, int b)
+void CBemodWeaponGravityGun::SetObjectPelletsColor(int r, int g, int b)
 {
 	color32 color;
 	color.r = r;
@@ -1038,7 +909,7 @@ void CWeaponBemodGravityGun::SetObjectPelletsColor(int r, int g, int b)
 
 	for (int i = 0; i < m_objectPelletCount; i++)
 	{
-		CBemodGravityPellet* pPellet = m_activePellets[i].pellet;
+		CBMGravityPellet* pPellet = m_activePellets[i].pellet;
 		if (!pPellet || pPellet->IsInert())
 			continue;
 
@@ -1046,7 +917,7 @@ void CWeaponBemodGravityGun::SetObjectPelletsColor(int r, int g, int b)
 	}
 }
 
-CBaseEntity* CWeaponBemodGravityGun::GetBeamEntity()
+CBaseEntity* CBemodWeaponGravityGun::GetBeamEntity()
 {
 	CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 	if (!pOwner)
@@ -1060,13 +931,13 @@ CBaseEntity* CWeaponBemodGravityGun::GetBeamEntity()
 	return pOwner;
 }
 
-void CWeaponBemodGravityGun::DeleteActivePellets()
+void CBemodWeaponGravityGun::DeleteActivePellets()
 {
 	CBaseEntity* pEnt = GetBeamEntity();
 
 	for (int i = 0; i < m_pelletCount; i++)
 	{
-		CBemodGravityPellet* pPellet = m_activePellets[i].pellet;
+		CBMGravityPellet* pPellet = m_activePellets[i].pellet;
 		if (!pPellet)
 			continue;
 
@@ -1088,7 +959,7 @@ void CWeaponBemodGravityGun::DeleteActivePellets()
 	m_pelletCount = 0;
 }
 
-void CWeaponBemodGravityGun::CreatePelletAttraction(float radius, CBaseEntity* pObject)
+void CBemodWeaponGravityGun::CreatePelletAttraction(float radius, CBaseEntity* pObject)
 {
 	int nearPellet = -1;
 	int objectPellet = -1;
@@ -1113,12 +984,12 @@ void CWeaponBemodGravityGun::CreatePelletAttraction(float radius, CBaseEntity* p
 
 		for (int i = 0; i < m_objectPelletCount; i++)
 		{
-			CBemodGravityPellet* pPellet = m_activePellets[i].pellet;
+			CBMGravityPellet* pPellet = m_activePellets[i].pellet;
 			if (!pPellet)
 				continue;
 			for (int j = m_objectPelletCount; j < m_pelletCount; j++)
 			{
-				CBemodGravityPellet* pTest = m_activePellets[j].pellet;
+				CBMGravityPellet* pTest = m_activePellets[j].pellet;
 				if (!pTest)
 					continue;
 
@@ -1168,7 +1039,7 @@ void CWeaponBemodGravityGun::CreatePelletAttraction(float radius, CBaseEntity* p
 }
 
 
-IPhysicsObject* CWeaponBemodGravityGun::GetPelletPhysObject(int pelletIndex)
+IPhysicsObject* CBemodWeaponGravityGun::GetPelletPhysObject(int pelletIndex)
 {
 	if (pelletIndex < 0)
 		return NULL;
@@ -1180,15 +1051,14 @@ IPhysicsObject* CWeaponBemodGravityGun::GetPelletPhysObject(int pelletIndex)
 	return g_PhysWorldObject;
 }
 
-void CWeaponBemodGravityGun::EffectDestroy(void)
+void CBemodWeaponGravityGun::EffectDestroy(void)
 {
 	m_active = false;
-	SoundStop();
 
 	DetachObject();
 }
 
-void CWeaponBemodGravityGun::DetachObject(void)
+void CBemodWeaponGravityGun::DetachObject(void)
 {
 	m_pelletHeld = -1;
 	m_pelletAttract = -1;
@@ -1206,10 +1076,9 @@ void CWeaponBemodGravityGun::DetachObject(void)
 	}
 }
 
-void CWeaponBemodGravityGun::AttachObject(CBaseEntity* pObject, const Vector& start, const Vector& end, float distance)
+void CBemodWeaponGravityGun::AttachObject(CBaseEntity* pObject, const Vector& start, const Vector& end, float distance)
 {
 	m_hObject = pObject;
-	m_useDown = false;
 	IPhysicsObject* pPhysics = pObject ? (pObject->VPhysicsGetObject()) : NULL;
 	if (pPhysics && pObject->GetMoveType() == MOVETYPE_VPHYSICS)
 	{
@@ -1217,16 +1086,12 @@ void CWeaponBemodGravityGun::AttachObject(CBaseEntity* pObject, const Vector& st
 
 		m_gravCallback.AttachEntity(pObject, pPhysics, end);
 		float mass = pPhysics->GetMass();
-		Msg("Object mass: %.2f lbs (%.2f kg)\n", kg2lbs(mass), mass);
-		float vel = bemod_phys_gunvel.GetFloat();
-		if (mass > bemod_phys_gunmass.GetFloat())
+		float vel = phys_gunvel.GetFloat();
+		if (mass > phys_gunmass.GetFloat())
 		{
-			vel = (vel * bemod_phys_gunmass.GetFloat()) / mass;
+			vel = (vel * phys_gunmass.GetFloat()) / mass;
 		}
 		m_gravCallback.SetMaxVelocity(vel);
-		//		Msg( "Object mass: %.2f lbs (%.2f kg) %f %f %f\n", kg2lbs(mass), mass, pObject->GetAbsOrigin().x, pObject->GetAbsOrigin().y, pObject->GetAbsOrigin().z );
-		//		Msg( "ANG: %f %f %f\n", pObject->GetAbsAngles().x, pObject->GetAbsAngles().y, pObject->GetAbsAngles().z );
-
 		m_originalObjectPosition = pObject->GetAbsOrigin();
 
 		m_pelletAttract = -1;
@@ -1249,28 +1114,25 @@ void CWeaponBemodGravityGun::AttachObject(CBaseEntity* pObject, const Vector& st
 
 //=========================================================
 //=========================================================
-void CWeaponBemodGravityGun::PrimaryAttack(void)
+void CBemodWeaponGravityGun::PrimaryAttack(void)
 {
 	if (!m_active)
 	{
 		SendWeaponAnim(ACT_VM_PRIMARYATTACK);
 		EffectCreate();
-		SoundCreate();
 	}
 	else
 	{
 		EffectUpdate();
-		SoundUpdate();
 	}
 }
 
-void CWeaponBemodGravityGun::SecondaryAttack(void)
+void CBemodWeaponGravityGun::SecondaryAttack(void)
 {
 	m_flNextSecondaryAttack = gpGlobals->curtime + 0.1;
 	if (m_active)
 	{
 		EffectDestroy();
-		SoundDestroy();
 		return;
 	}
 
@@ -1318,7 +1180,7 @@ void CWeaponBemodGravityGun::SecondaryAttack(void)
 
 	VectorAngles(tr.plane.normal, angles);
 	Vector endPoint = tr.endpos + tr.plane.normal;
-	CBemodGravityPellet* pPellet = (CBemodGravityPellet*)CBaseEntity::Create("bm_gravity_pellet", endPoint, angles, this);
+	CBMGravityPellet* pPellet = (CBMGravityPellet*)CBaseEntity::Create("gravity_pellet", endPoint, angles, this);
 	if (pHit)
 	{
 		pPellet->SetParent(pHit);
@@ -1331,13 +1193,13 @@ void CWeaponBemodGravityGun::SecondaryAttack(void)
 	pBeam->PointEntInit(endPoint, pEnt);
 	pBeam->SetEndAttachment(1);
 	pBeam->SetBrightness(255);
-	pBeam->SetColor(255, 0, 0);
+	pBeam->SetColor(0, 0, 255);
 	pBeam->RelinkBeam();
 	pBeam->LiveForTime(0.1);
 
 }
 
-void CWeaponBemodGravityGun::WeaponIdle(void)
+void CBemodWeaponGravityGun::WeaponIdle(void)
 {
 	if (HasWeaponIdleTimeElapsed())
 	{
@@ -1348,7 +1210,7 @@ void CWeaponBemodGravityGun::WeaponIdle(void)
 			// pellet is touching object, so glue it
 			if (pObject && m_glueTouching)
 			{
-				CBemodGravityPellet* pPellet = m_activePellets[m_pelletAttract].pellet;
+				CBMGravityPellet* pPellet = m_activePellets[m_pelletAttract].pellet;
 				if (pPellet->MakeConstraint(pObject))
 				{
 					WeaponSound(SPECIAL1);
@@ -1358,41 +1220,17 @@ void CWeaponBemodGravityGun::WeaponIdle(void)
 			}
 
 			EffectDestroy();
-			SoundDestroy();
+
 		}
 	}
 }
 
-void CWeaponBemodGravityGun::FreezeOBJ(void)
-{
-	if (m_hObject)
-	{
-		IPhysicsObject* pPhys = m_hObject->VPhysicsGetObject();
-		if (pPhys)
-		{
-			if (pPhys->IsMoveable())
-			{
-				pPhys->EnableMotion(false);
-			}
-			else
-			{
-				pPhys->EnableMotion(true);
-				pPhys->Wake();
-			}
-		}
-	}
-}
-
-void CWeaponBemodGravityGun::ItemPostFrame(void)
+void CBemodWeaponGravityGun::ItemPostFrame(void)
 {
 	CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 	if (!pOwner)
 		return;
 
-	if (pOwner->m_afButtonPressed & IN_USE)
-	{
-		FreezeOBJ();
-	}
 	if (pOwner->m_afButtonPressed & IN_ATTACK2)
 	{
 		SecondaryAttack();
@@ -1419,7 +1257,7 @@ void CWeaponBemodGravityGun::ItemPostFrame(void)
 // Purpose: 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CWeaponBemodGravityGun::HasAnyAmmo(void)
+bool CBemodWeaponGravityGun::HasAnyAmmo(void)
 {
 	//Always report that we have ammo
 	return true;
@@ -1427,7 +1265,7 @@ bool CWeaponBemodGravityGun::HasAnyAmmo(void)
 
 //=========================================================
 //=========================================================
-bool CWeaponBemodGravityGun::Reload(void)
+bool CBemodWeaponGravityGun::Reload(void)
 {
 	CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 
@@ -1442,9 +1280,8 @@ bool CWeaponBemodGravityGun::Reload(void)
 	return false;
 }
 
-/*
 #define NUM_COLLISION_TESTS 2500
-void CC_CollisionTest(const CCommand& args)
+void CC_CollisionTest1(const CCommand& args)
 {
 	if (!physenv)
 		return;
@@ -1541,4 +1378,4 @@ void CC_CollisionTest(const CCommand& args)
 	}
 #endif
 }
-static ConCommand collision_test("collision_test", CC_CollisionTest, "Tests collision system", FCVAR_CHEAT); */
+static ConCommand collision_test1("collision_test1", CC_CollisionTest1, "Tests collision system", FCVAR_CHEAT);

@@ -55,6 +55,7 @@ public:
 
 	virtual void Precache( void );
 	void GiveJBModItems(void);
+	void GiveBEModItems(void);
 	virtual void Spawn( void );
 	virtual void PostThink( void );
 	virtual void PreThink( void );

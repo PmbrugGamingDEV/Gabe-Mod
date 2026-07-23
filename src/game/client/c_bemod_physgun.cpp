@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//===== Copyright ? 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -10,7 +10,7 @@
 #include "in_buttons.h"
 #include "beamdraw.h"
 #include "c_weapon__stubs.h"
-#include "clienteffectprecachesystem.h"
+#include "ClientEffectPrecacheSystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -19,11 +19,17 @@ CLIENTEFFECT_REGISTER_BEGIN(PrecacheEffectBemodGravityGun)
 CLIENTEFFECT_MATERIAL("sprites/physbeam")
 CLIENTEFFECT_REGISTER_END()
 
-class C_BemodBeamQuadratic : public CDefaultClientRenderable
+class C_BEModBeamQuadratic : public CDefaultClientRenderable
 {
 public:
-	C_BemodBeamQuadratic();
+	C_BEModBeamQuadratic();
 	void			Update(C_BaseEntity* pOwner);
+
+	matrix3x4_t z;
+	const matrix3x4_t& RenderableToWorldTransform()
+	{
+		return z;
+	}
 
 	// IClientRenderable
 	virtual const Vector& GetRenderOrigin(void) { return m_worldPosition; }
@@ -47,16 +53,14 @@ public:
 	int						m_active;
 	int						m_glueTouching;
 	int						m_viewModelIndex;
-
-	MATRIX3X4_STUB;
 };
 
 
-class C_WeaponBemodGravityGun : public C_BaseCombatWeapon
+class C_BemodWeaponGravityGun : public C_BaseCombatWeapon
 {
-	DECLARE_CLASS(C_WeaponBemodGravityGun, C_BaseCombatWeapon);
+	DECLARE_CLASS(C_BemodWeaponGravityGun, C_BaseCombatWeapon);
 public:
-	C_WeaponBemodGravityGun() {}
+	C_BemodWeaponGravityGun() {}
 
 	DECLARE_CLIENTCLASS();
 	DECLARE_PREDICTABLE();
@@ -88,14 +92,14 @@ public:
 	}
 
 private:
-	C_WeaponBemodGravityGun(const C_WeaponBemodGravityGun&);
+	C_BemodWeaponGravityGun(const C_BemodWeaponGravityGun&);
 
-	C_BemodBeamQuadratic	m_beam;
+	C_BEModBeamQuadratic	m_beam;
 };
 
-STUB_WEAPON_CLASS_IMPLEMENT(weapon_bemod_physgun, C_WeaponBemodGravityGun);
+STUB_WEAPON_CLASS_IMPLEMENT(weapon_bemod_physgun, C_BemodWeaponGravityGun);
 
-IMPLEMENT_CLIENTCLASS_DT(C_WeaponBemodGravityGun, DT_WeaponBemodGravityGun, CWeaponBemodGravityGun)
+IMPLEMENT_CLIENTCLASS_DT(C_BemodWeaponGravityGun, DT_BemodWeaponGravityGun, CBemodWeaponGravityGun)
 RecvPropVector(RECVINFO_NAME(m_beam.m_targetPosition, m_targetPosition)),
 RecvPropVector(RECVINFO_NAME(m_beam.m_worldPosition, m_worldPosition)),
 RecvPropInt(RECVINFO_NAME(m_beam.m_active, m_active)),
@@ -104,12 +108,13 @@ RecvPropInt(RECVINFO_NAME(m_beam.m_viewModelIndex, m_viewModelIndex)),
 END_RECV_TABLE()
 
 
-C_BemodBeamQuadratic::C_BemodBeamQuadratic()
+C_BEModBeamQuadratic::C_BEModBeamQuadratic()
 {
 	m_pOwner = NULL;
+	m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 }
 
-void C_BemodBeamQuadratic::Update(C_BaseEntity* pOwner)
+void C_BEModBeamQuadratic::Update(C_BaseEntity* pOwner)
 {
 	m_pOwner = pOwner;
 	if (m_active)
@@ -126,11 +131,11 @@ void C_BemodBeamQuadratic::Update(C_BaseEntity* pOwner)
 	else if (!m_active && m_hRenderHandle != INVALID_CLIENT_RENDER_HANDLE)
 	{
 		ClientLeafSystem()->RemoveRenderable(m_hRenderHandle);
+		m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 	}
 }
 
-
-int	C_BemodBeamQuadratic::DrawModel(int)
+int	C_BEModBeamQuadratic::DrawModel(int)
 {
 	Vector points[3];
 	QAngle tmpAngle;
@@ -161,7 +166,10 @@ int	C_BemodBeamQuadratic::DrawModel(int)
 	}
 
 	float scrollOffset = gpGlobals->curtime - (int)gpGlobals->curtime;
-	materials->GetRenderContext()->Bind(pMat);
+
+	CMatRenderContextPtr pRenderContext(materials);
+	pRenderContext->Bind(pMat);
+
 	DrawBeamQuadratic(points[0], points[1], points[2], 13, color, scrollOffset);
 	return 1;
 }

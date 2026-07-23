@@ -36,6 +36,11 @@ STUB_WEAPON_CLASS(weapon_smp5, WeaponSMP5, C_BaseHLCombatWeapon);
 STUB_WEAPON_CLASS(weapon_hopwire, WeaponHopwire, C_BaseHLCombatWeapon);
 STUB_WEAPON_CLASS(weapon_proto1, WeaponProto1, C_BaseHLCombatWeapon);
 
+STUB_WEAPON_CLASS(weapon_bmcamera, WeaponBMCamera, C_BaseHLCombatWeapon);
+STUB_WEAPON_CLASS(weapon_duplicator, WeaponDuplicator, C_BaseHLCombatWeapon);
+
+STUB_WEAPON_CLASS(weapon_proplauncher, WeaponPropLauncher, C_BaseCombatWeapon);
+
 // Half-Life 1
 
 // Row 0

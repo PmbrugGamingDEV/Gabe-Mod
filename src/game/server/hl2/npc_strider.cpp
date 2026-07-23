@@ -4769,7 +4769,6 @@ bool CNPC_Strider::ShouldProbeCollideAgainstEntity( CBaseEntity *pEntity )
 // Purpose: Lets us keep track of attached Strider busters
 // Input  : *pAttached - strider buster that is attached
 //-----------------------------------------------------------------------------
-#ifdef HL2_EPISODIC
 void CNPC_Strider::StriderBusterAttached( CBaseEntity *pAttached )
 {
 	// Add another to the list
@@ -4790,8 +4789,6 @@ void CNPC_Strider::StriderBusterDetached( CBaseEntity *pAttached )
 		m_hAttachedBusters.FastRemove(elem);
 	}
 }
-
-#endif // HL2_EPISODIC
 
 //-----------------------------------------------------------------------------
 //

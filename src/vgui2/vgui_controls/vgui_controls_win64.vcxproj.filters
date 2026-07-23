@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup >
+  <ItemGroup>
     <Filter Include="Public Header Files">
       <UniqueIdentifier>{BDBAD8B6-F777-0C5E-367D-3CE1B8CD9ADE}</UniqueIdentifier>
     </Filter>
@@ -11,8 +11,7 @@
       <UniqueIdentifier>{308191AE-A754-30DF-D5BD-5928E19D585F}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
-  <ItemGroup  />
-  <ItemGroup >
+  <ItemGroup>
     <ClInclude Include="..\..\public\vgui_controls\AnalogBar.h">
       <Filter>Public Header Files</Filter>
     </ClInclude>
@@ -283,8 +282,11 @@
     <ClInclude Include="..\..\public\vgui_controls\WizardSubPanel.h">
       <Filter>Public Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\public\vgui_controls\CodeEditor.h">
+      <Filter>Public Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
-  <ItemGroup >
+  <ItemGroup>
     <ClCompile Include="AnalogBar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -516,10 +518,13 @@
     <ClCompile Include="WizardSubPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CodeEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
-  <ItemGroup  />
-  <ItemGroup  />
-  <ItemGroup >
+  <ItemGroup />
+  <ItemGroup />
+  <ItemGroup>
     <None Include="_vpc_\manifest_vgui_controls\win64\manifest.txt">
       <Filter>VPC Scripts</Filter>
     </None>

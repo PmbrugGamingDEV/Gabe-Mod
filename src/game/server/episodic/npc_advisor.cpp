@@ -27,13 +27,15 @@
 #include "movevars_shared.h"
 #include "particle_parse.h"
 #include "weapon_physcannon.h"
-// #include "mathlib/noise.h"
+#include "mathlib/noise.h"
 
 // this file contains the definitions for the message ID constants (eg ADVISOR_MSG_START_BEAM etc)
-#include "npc_advisor_shared.h"
+#include "episodic/npc_advisor_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+#define ADVISOR_MODEL "models/advisor.mdl"
 
 //
 // Custom activities.
@@ -373,7 +375,7 @@ void CNPC_Advisor::Spawn()
 
 	Precache();
 
-	SetModel( STRING( GetModelName() ) );
+	SetModel( ADVISOR_MODEL );
 
 	m_iHealth = sk_advisor_health.GetFloat();
 	m_takedamage = DAMAGE_NO;
@@ -817,7 +819,7 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 				// swap them if necessary (1 must be the bottom)
 				if (m_levitateCallback.m_vecGoalPos1.z > m_levitateCallback.m_vecGoalPos2.z)
 				{
-					swap(m_levitateCallback.m_vecGoalPos1,m_levitateCallback.m_vecGoalPos2);
+					std::swap(m_levitateCallback.m_vecGoalPos1,m_levitateCallback.m_vecGoalPos2);
 				}
 
 				m_levitateCallback.m_flFloat = 0.06f; // this is an absolute accumulation upon gravity
@@ -839,7 +841,7 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 				}
 			}
 
-			/*
+			
 			// Draw boxes around the objects we're levitating.
 			for ( int i = 0; i < m_physicsObjects.Count(); i++ )
 			{
@@ -852,7 +854,7 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 				{
 					NDebugOverlay::Box( pEnt->GetAbsOrigin(), pEnt->CollisionProp()->OBBMins(), pEnt->CollisionProp()->OBBMaxs(), 0, 255, 0, 1, 0.1 );
 				}
-			}*/
+			}
 
 			break;
 		}	
@@ -1011,7 +1013,7 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 
 		case TASK_ADVISOR_PIN_PLAYER:
 		{
-			/*
+			
 			// bail out if the pin entity went away.
 			CBaseEntity *pPinEnt = m_hPlayerPinPos;
 			if (!pPinEnt)
@@ -1057,7 +1059,6 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 			GetEnemy()->SetAbsOrigin( nuPos );
 
 			break;
-			*/
 		}
 
 		default:
@@ -1070,28 +1071,22 @@ void CNPC_Advisor::RunTask( const Task_t *pTask )
 
 #endif
 
-// helper function for testing whether or not an avisor is allowed to grab an object
-static bool AdvisorCanPickObject(CBasePlayer *pPlayer, CBaseEntity *pEnt)
+// Helper function for testing whether an advisor is allowed to grab an object.
+static bool AdvisorCanPickObject(CBasePlayer* pPlayer, CBaseEntity* pEnt)
 {
-	Assert( pPlayer != NULL );
+	Assert(pPlayer != NULL);
 
-	// Is the player carrying something?
-	CBaseEntity *pHeldObject = GetPlayerHeldEntity(pPlayer);
-
-	if( !pHeldObject )
-	{
-		pHeldObject = PhysCannonGetHeldEntity( pPlayer->GetActiveWeapon() );
-	}
-
-	if( pHeldObject == pEnt )
-	{
+	if (!pPlayer || !pEnt)
 		return false;
-	}
 
-	if ( pEnt->GetCollisionGroup() == COLLISION_GROUP_DEBRIS )
-	{
+	CBaseEntity* pHeldObject =
+		PhysCannonGetHeldEntity(pPlayer->GetActiveWeapon());
+
+	if (pHeldObject == pEnt)
 		return false;
-	}
+
+	if (pEnt->GetCollisionGroup() == COLLISION_GROUP_DEBRIS)
+		return false;
 
 	return true;
 }
@@ -1544,14 +1539,13 @@ Vector CNPC_Advisor::GetThrowFromPos( CBaseEntity *pEnt )
 }
 #endif
 
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CNPC_Advisor::Precache()
 {
 	BaseClass::Precache();
 	
-	PrecacheModel( STRING( GetModelName() ) );
+	PrecacheModel( ADVISOR_MODEL );
 
 #if NPC_ADVISOR_HAS_BEHAVIOR
 	PrecacheModel( "sprites/lgtning.vmt" );

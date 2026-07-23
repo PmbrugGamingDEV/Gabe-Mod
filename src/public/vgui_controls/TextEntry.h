@@ -308,6 +308,8 @@ private:
 public:
 	Menu *GetEditMenu(); // retrieve copy/cut/paste menu
 
+	int GetCursorPosition() const { return _cursorPos; }
+
 private:
 	void	FlipToLastIME();
 

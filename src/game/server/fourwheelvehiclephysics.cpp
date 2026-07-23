@@ -400,6 +400,16 @@ bool CFourWheelVehiclePhysics::Initialize( const char *pVehicleScript, unsigned 
 	m_flMaxSpeed = vehicle.engine.maxSpeed;
 
 	IPhysicsObject *pBody = m_pOuter->VPhysicsInitNormal( SOLID_VPHYSICS, 0, false, &solid );
+	if (!pBody)
+	{
+		Warning(
+			"Vehicle physics creation failed for entity %s, model %s\n",
+			m_pOuter->GetClassname(),
+			STRING(m_pOuter->GetModelName())
+		);
+
+		return false;
+	}
 	PhysSetGameFlags( pBody, FVPHYSICS_NO_SELF_COLLISIONS | FVPHYSICS_MULTIOBJECT_ENTITY );
 	m_pVehicle = physenv->CreateVehicleController( pBody, vehicle, nVehicleType, physgametrace );
 	m_wheelCount = m_pVehicle->GetWheelCount();

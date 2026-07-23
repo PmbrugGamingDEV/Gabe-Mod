@@ -835,6 +835,7 @@ exit 1
     <ClInclude Include="vgui_helpers.h" />
     <ClInclude Include="vgui_imagehealthpanel.h" />
     <ClInclude Include="vgui_int.h" />
+    <ClInclude Include="vgui_keyvalue.h" />
     <ClInclude Include="vgui_schemevisualizer.h" />
     <ClInclude Include="vgui_video.h" />
     <ClInclude Include="vgui_video_player.h" />
@@ -844,6 +845,7 @@ exit 1
     <ClInclude Include="viewangleanim.h" />
     <ClInclude Include="ViewConeImage.h" />
     <ClInclude Include="viewrender.h" />
+    <ClInclude Include="weapon_hands.h" />
     <ClInclude Include="weapon_selection.h" />
     <ClInclude Include="weapons_resource.h" />
     <ClInclude Include="mp3player.h" />
@@ -1154,6 +1156,8 @@ exit 1
     <ClCompile Include="c_bemod_physgun.cpp" />
     <ClCompile Include="c_gabe_vscript.cpp" />
     <ClCompile Include="c_weapon_jb_physgun.cpp" />
+    <ClCompile Include="episodic\c_npc_advisor.cpp" />
+    <ClCompile Include="episodic\c_npc_puppet.cpp" />
     <ClCompile Include="episodic\c_weapon_hopwire.cpp" />
     <ClCompile Include="episodic\episodic_screenspaceeffects.cpp" />
     <ClCompile Include="gabe_events.cpp" />
@@ -1658,6 +1662,7 @@ exit 1
     <ClCompile Include="vgui_game_viewport.cpp" />
     <ClCompile Include="vgui_grid.cpp" />
     <ClCompile Include="vgui_int.cpp" />
+    <ClCompile Include="vgui_keyvalue.cpp" />
     <ClCompile Include="vgui_loadingdiscpanel.cpp" />
     <ClCompile Include="vgui_messagechars.cpp" />
     <ClCompile Include="vgui_netgraphpanel.cpp" />
@@ -1679,6 +1684,7 @@ exit 1
     <ClCompile Include="warp_overlay.cpp" />
     <ClCompile Include="WaterLODMaterialProxy.cpp" />
     <ClCompile Include="..\shared\weapon_parse.cpp" />
+    <ClCompile Include="weapon_hands.cpp" />
     <ClCompile Include="weapon_selection.cpp" />
     <ClCompile Include="weapons_resource.cpp" />
     <ClCompile Include="WorldDimsProxy.cpp" />
