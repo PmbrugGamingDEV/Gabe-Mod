@@ -10,6 +10,7 @@
 #include "ai_baseactor.h"
 #include "npc_playercompanion.h"
 #include "ai_behavior_holster.h"
+#include "ai_behavior_passenger.h"
 
 class CNPC_Alyx : public CNPC_PlayerCompanion
 {
@@ -30,6 +31,12 @@ public:
 	bool	ShouldLookForBetterWeapon() { return false; }
 	bool	IsReadinessCapable() { return false; }
 	void	DeathSound( const CTakeDamageInfo &info );
+
+	PassengerState_e	GetPassengerState(void) const { return m_PassengerState; }
+
+private:
+	PassengerState_e m_PassengerState;
+public:
 
 	EHANDLE	m_hEmpTool;
 

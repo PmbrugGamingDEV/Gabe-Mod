@@ -2583,6 +2583,153 @@ static void Script_DebugOverlay_SweptBox(
 	NDebugOverlay::SweptBox(start, end, mins, maxs, ang, r, g, b, a, duration);
 }
 
+
+static HSCRIPT VScript_CreateVehicle(
+	const char* pszClassname,
+	const char* pszModel,
+	const char* pszVehicleScript,
+	const Vector origin,
+	const QAngle angles)
+{
+	if (!pszClassname || !pszClassname[0])
+	{
+		Warning("CreateVehicle: no classname specified\n");
+		return NULL;
+	}
+
+	if (!pszModel || !pszModel[0])
+	{
+		Warning("CreateVehicle: no model specified\n");
+		return NULL;
+	}
+
+	if (!pszVehicleScript || !pszVehicleScript[0])
+	{
+		Warning("CreateVehicle: no vehicle script specified\n");
+		return NULL;
+	}
+
+	CBaseEntity* pEntity =
+		CreateEntityByName(pszClassname);
+
+	if (!pEntity)
+	{
+		Warning(
+			"CreateVehicle: couldn't create '%s'\n",
+			pszClassname
+		);
+
+		return NULL;
+	}
+
+	// Set these BEFORE spawning.
+	pEntity->KeyValue(
+		"model",
+		pszModel
+	);
+
+	pEntity->KeyValue(
+		"vehiclescript",
+		pszVehicleScript
+	);
+
+	pEntity->SetAbsOrigin(origin);
+	pEntity->SetAbsAngles(angles);
+
+	DispatchSpawn(pEntity);
+
+	if (pEntity->IsMarkedForDeletion())
+	{
+		Warning(
+			"CreateVehicle: '%s' deleted itself while spawning\n",
+			pszClassname
+		);
+
+		return NULL;
+	}
+
+	pEntity->Activate();
+
+	return ToHScript(pEntity);
+}
+
+static HSCRIPT VScript_CreateJeep(
+	const Vector origin,
+	const QAngle angles)
+{
+	return VScript_CreateVehicle(
+		"prop_vehicle_jeep",
+		"models/buggy.mdl",
+		"scripts/vehicles/jeep_test.txt",
+		origin,
+		angles
+	);
+}
+
+static HSCRIPT VScript_CreateAirboat(
+	const Vector origin,
+	const QAngle angles)
+{
+	return VScript_CreateVehicle(
+		"prop_vehicle_airboat",
+		"models/airboat.mdl",
+		"scripts/vehicles/airboat.txt",
+		origin,
+		angles
+	);
+}
+
+static HSCRIPT VScript_CreateCustomCar(
+	const char* pszModel,
+	const char* pszVehicleScript,
+	const Vector origin,
+	const QAngle angles)
+{
+	return VScript_CreateVehicle(
+		"prop_vehicle_jeep",
+		pszModel,
+		pszVehicleScript,
+		origin,
+		angles
+	);
+}
+
+static HSCRIPT VScript_CreateJeepForPlayer(
+	HSCRIPT hPlayer)
+{
+	CBaseEntity* pEntity = ToEnt(hPlayer);
+
+	if (!pEntity || !pEntity->IsPlayer())
+		return NULL;
+
+	CBasePlayer* pPlayer =
+		ToBasePlayer(pEntity);
+
+	Vector forward;
+
+	AngleVectors(
+		pPlayer->EyeAngles(),
+		&forward
+	);
+
+	Vector spawnPosition =
+		pPlayer->GetAbsOrigin() +
+		forward * 200.0f;
+
+	spawnPosition.z += 32.0f;
+
+	QAngle angles(
+		0,
+		pPlayer->EyeAngles().y,
+		0
+	);
+
+	return VScript_CreateJeep(
+		spawnPosition,
+		angles
+	);
+}
+
 bool VScriptServerInit()
 {
 	VMPROF_START
@@ -2739,6 +2886,42 @@ bool VScriptServerInit()
 					"EmitAmbientSound",
 					"Play an ambient sound"
 				);
+
+				ScriptRegisterFunctionNamed(
+					g_pScriptVM,
+					VScript_CreateVehicle,
+					"CreateVehicle",
+					"Creates a custom Source vehicle."
+				);
+
+				ScriptRegisterFunctionNamed(
+					g_pScriptVM,
+					VScript_CreateJeep,
+					"CreateJeep",
+					"Creates an HL2 jeep."
+				);
+
+				ScriptRegisterFunctionNamed(
+					g_pScriptVM,
+					VScript_CreateAirboat,
+					"CreateAirboat",
+					"Creates an HL2 airboat."
+				);
+
+				ScriptRegisterFunctionNamed(
+					g_pScriptVM,
+					VScript_CreateCustomCar,
+					"CreateCustomCar",
+					"Creates a custom vehicle using jeep physics."
+				);
+
+				ScriptRegisterFunctionNamed(
+					g_pScriptVM,
+					VScript_CreateJeepForPlayer,
+					"CreateJeepForPlayer",
+					"Creates a jeep in front of a player."
+				);
+
 				ScriptRegisterFunctionNamed( g_pScriptVM, UTIL_ShowMessageAll, "ShowMessage", "Print a hud message on all clients" );
 				ScriptRegisterFunction( g_pScriptVM, SendToConsole, "Send a string to the console as a command" );
 				ScriptRegisterFunction( g_pScriptVM, SendToServerConsole, "Send a string that gets executed on the server as a ServerCommand. Respects sv_allow_point_servercommand." );

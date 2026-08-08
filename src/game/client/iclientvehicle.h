@@ -55,5 +55,4 @@ public:
 #endif
 };
 
-
 #endif // ICLIENTVEHICLE_H

@@ -348,7 +348,7 @@ void CGrenadeBeam::CreateBeams(void)
 		m_pBeam[i]->SetBeamFlag( FBEAM_SHADEOUT );
 	}
 }
-/*
+
 void CGrenadeBeam::DebugBeams(void)
 {
 		if (m_nNumHits > 0)
@@ -371,7 +371,6 @@ void CGrenadeBeam::DebugBeams(void)
 		NDebugOverlay::Cross3D(m_pHitLocation[i],	Vector(-8,-8,-8),Vector(8,8,8),0,255,0,true,0.1);
 	}
 }
-*/
 
 //------------------------------------------------------------------------------
 // Purpose :

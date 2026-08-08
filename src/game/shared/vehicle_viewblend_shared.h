@@ -37,12 +37,16 @@ struct ViewLockData_t
 // that derives from IClientVehicle can use it. To use it, contain one of the
 // following structs, fill out the first section, and then call VehicleViewSmoothing()
 // inside your GetVehicleViewPosition() function.
+// This is separate from the base vehicle implementation so that any class 
+// that derives from IClientVehicle can use it. To use it, contain one of the
+// following structs, fill out the first section, and then call VehicleViewSmoothing()
+// inside your GetVehicleViewPosition() function.
 struct ViewSmoothingData_t
 {
 	DECLARE_SIMPLE_DATADESC();
 
 	// Fill these out in your vehicle
-	CBaseAnimating	*pVehicle;
+	CBaseAnimating* pVehicle;
 	bool	bClampEyeAngles;	// Perform eye Z clamping
 	float	flPitchCurveZero;	// Pitch values below this are clamped to zero.
 	float	flPitchCurveLinear;	// Pitch values above this are mapped directly.
@@ -59,13 +63,16 @@ struct ViewSmoothingData_t
 
 	// Don't change these, they're used by VehicleViewSmoothing()
 	bool	bRunningEnterExit;
+	float   flEnterExitStartTime;
 	bool	bWasRunningAnim;
-	float	flEnterExitStartTime;	// Time we began our animation at
-	float	flEnterExitDuration;	// Duration of the animation
+	float	flAnimTimeElapsed;
+	float	flEnterExitDuration;
 	QAngle	vecAnglesSaved;
 	Vector	vecOriginSaved;
 	QAngle	vecAngleDiffSaved;	// The original angular error between the entry/exit anim and player's view when we started playing the anim.
 	QAngle	vecAngleDiffMin;	// Tracks the minimum angular error achieved so we can converge on the anim's angles.
+	bool bBlendAnglesAPC;		// TheQuartz, only for non entry anims, to blend the view angles correctly
+	float flAPCTimeToStart;
 };
 
 // TEMP: Shared vehicle view smoothing
@@ -75,5 +82,10 @@ void SharedVehicleViewSmoothing(CBasePlayer *pPlayer,
 								const Vector &vecEyeExitEndpoint, 
 								ViewSmoothingData_t *pData, 
 								float *pFOV );
+
+void VehicleViewSmoothing(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData, float* pFOV);
+void VehicleViewSmoothingSTR(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData, float* pFOV);
+void VehicleViewSmoothingAPC(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData, float* pFOV);
+void VehicleViewSmoothingHLC(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData, float* pFOV);
 
 #endif // VEHICLE_VIEWBLEND_SHARED_H

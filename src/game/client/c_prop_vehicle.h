@@ -10,6 +10,8 @@
 
 #include "iclientvehicle.h"
 #include "vehicle_viewblend_shared.h"
+#include "vgui_all.h"
+
 class C_PropVehicleDriveable : public C_BaseAnimating, public IClientVehicle
 {
 
@@ -37,6 +39,10 @@ public:
 	virtual void FinishMove( C_BasePlayer *player, CUserCmd *ucmd, CMoveData *move ) {}
 
 	virtual void ItemPostFrame( C_BasePlayer *pPlayer ) {}
+
+	float		 GetFuelAmt() const { return m_flFuel; } // Get the amount of fuel
+
+	int GetSpeed() const { return m_nSpeed; }
 
 // IClientVehicle overrides.
 public:
@@ -93,6 +99,7 @@ protected:
 
 	CHandle<C_BasePlayer>		m_hPlayer;
 	int							m_nSpeed;
+	float						m_flFuel;
 	int							m_nRPM;
 	float						m_flThrottle;
 	int							m_nBoostTimeLeft;
@@ -130,5 +137,27 @@ protected:
 	ViewSmoothingData_t			m_ViewSmoothingData;
 };
 
+//-----------------------------------------------------------------------------
+// CHudVehicleStats
+//-----------------------------------------------------------------------------
+class CHudVehicleStats : public CHudElement, public vgui::Panel
+{
+	DECLARE_CLASS_SIMPLE(CHudVehicleStats, vgui::Panel);
+
+public:
+	CHudVehicleStats(const char* pElementName);
+
+	virtual void Init();
+	virtual void VidInit();
+	virtual void OnThink();
+	virtual void Paint();
+	virtual bool ShouldDraw();
+
+private:
+	C_PropVehicleDriveable* m_pVehicle;
+	C_BaseCombatCharacter*  m_pOwner;
+
+	vgui::HFont				    hFont;
+};
 
 #endif // C_PROP_VEHICLE_H

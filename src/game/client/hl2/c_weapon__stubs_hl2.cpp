@@ -15,6 +15,8 @@
 
 STUB_WEAPON_CLASS( cycler_weapon, WeaponCycler, C_BaseCombatWeapon );
 
+STUB_WEAPON_CLASS(weapon_brickbat, WeaponBrickbat, C_BaseHLCombatWeapon);
+
 STUB_WEAPON_CLASS( weapon_binoculars, WeaponBinoculars, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_bugbait, WeaponBugBait, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_flaregun, Flaregun, C_BaseHLCombatWeapon );
@@ -40,6 +42,8 @@ STUB_WEAPON_CLASS(weapon_bmcamera, WeaponBMCamera, C_BaseHLCombatWeapon);
 STUB_WEAPON_CLASS(weapon_duplicator, WeaponDuplicator, C_BaseHLCombatWeapon);
 
 STUB_WEAPON_CLASS(weapon_proplauncher, WeaponPropLauncher, C_BaseCombatWeapon);
+
+STUB_WEAPON_CLASS(weapon_fuelcan, WeaponFuelCan, C_BaseCombatWeapon);
 
 // Half-Life 1
 

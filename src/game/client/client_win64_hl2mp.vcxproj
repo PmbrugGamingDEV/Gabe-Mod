@@ -154,7 +154,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <PreLinkEvent />
     <Link>
       <AdditionalOptions> /ignore:4221</AdditionalOptions>
-      <AdditionalDependencies>;shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)\client.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -336,7 +336,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <PreLinkEvent />
     <Link>
       <AdditionalOptions> /ignore:4221</AdditionalOptions>
-      <AdditionalDependencies>;shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)\client.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -502,6 +502,7 @@ exit 1
     <Library Include="..\..\lib\public\x64\vtf.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\public\imath.h" />
     <ClInclude Include="..\..\public\mysticlight\IMysticLight.h" />
     <ClInclude Include="..\server\hl1\hl1_gamerules.h" />
     <ClInclude Include="..\server\hl1\HL1_WEAPON_MP5.H" />
@@ -735,6 +736,7 @@ exit 1
     <ClInclude Include="..\shared\hintsystem.h" />
     <ClInclude Include="history_resource.h" />
     <ClInclude Include="hl1\hud_numbers.h" />
+    <ClInclude Include="hl2\hud_radar.h" />
     <ClInclude Include="hltvcamera.h" />
     <ClInclude Include="hud.h" />
     <ClInclude Include="hud_basechat.h" />
@@ -1155,9 +1157,11 @@ exit 1
     <ClCompile Include="cl_camerablur.cpp" />
     <ClCompile Include="c_bemod_physgun.cpp" />
     <ClCompile Include="c_gabe_vscript.cpp" />
+    <ClCompile Include="c_vehicle_apc.cpp" />
     <ClCompile Include="c_weapon_jb_physgun.cpp" />
     <ClCompile Include="episodic\c_npc_advisor.cpp" />
     <ClCompile Include="episodic\c_npc_puppet.cpp" />
+    <ClCompile Include="episodic\c_vehicle_jeep_episodic.cpp" />
     <ClCompile Include="episodic\c_weapon_hopwire.cpp" />
     <ClCompile Include="episodic\episodic_screenspaceeffects.cpp" />
     <ClCompile Include="gabe_events.cpp" />
@@ -1173,6 +1177,7 @@ exit 1
     <ClCompile Include="hl1\hl1_menu_rm.cpp" />
     <ClCompile Include="hl1\hl1_usermessages.cpp" />
     <ClCompile Include="hl1\hud_numbers.cpp" />
+    <ClCompile Include="hl2\hud_radar.cpp" />
     <ClCompile Include="hud_killfeed.cpp" />
     <ClCompile Include="hud_mtool.cpp" />
     <ClCompile Include="mp3player.cpp" />

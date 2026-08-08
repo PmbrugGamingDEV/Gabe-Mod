@@ -346,7 +346,7 @@ bool CWeaponPistol::Deploy(void)
 	if (!pPlayer)
 		return false;
 
-	GabeMod::HudText(pPlayer, "TIP: Hold right mouse button to fire a burst of bullets.");
+	GabeMod::CGabeScriptFuncs::HudText(pPlayer, "TIP: Hold right mouse button to fire a burst of bullets.");
 #endif
 
 	return BaseClass::Deploy();

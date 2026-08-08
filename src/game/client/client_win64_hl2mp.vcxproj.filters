@@ -2030,6 +2030,12 @@
     <ClInclude Include="weapon_hands.h">
       <Filter>Source Files\Gabe Mod Files\BEMod</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\public\imath.h">
+      <Filter>Game Shared Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hl2\hud_radar.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3728,6 +3734,15 @@
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
     <ClCompile Include="episodic\c_npc_puppet.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="c_vehicle_apc.cpp">
+      <Filter>Source Files\HL2 DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="episodic\c_vehicle_jeep_episodic.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hl2\hud_radar.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>

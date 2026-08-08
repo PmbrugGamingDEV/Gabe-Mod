@@ -28,8 +28,19 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern ConVar sk_npc_dmg_brickbat;
-extern ConVar sk_plr_dmg_brickbat;
+ConVar sk_npc_dmg_brickbat(
+	"sk_npc_dmg_brickbat",
+	"10",
+	FCVAR_REPLICATED,
+	"Brickbat damage dealt by NPCs"
+);
+
+ConVar sk_plr_dmg_brickbat(
+	"sk_plr_dmg_brickbat",
+	"10",
+	FCVAR_REPLICATED,
+	"Brickbat damage dealt by players"
+);
 
 struct BrickbatAmmo_s
 {
@@ -49,8 +60,8 @@ BrickbatAmmo_s	BrickBatAmmoArray[NUM_BRICKBAT_AMMO_TYPES] =
 IMPLEMENT_SERVERCLASS_ST(CWeaponBrickbat, DT_WeaponBrickbat)
 END_SEND_TABLE()
 
-//LINK_ENTITY_TO_CLASS( weapon_brickbat, CWeaponBrickbat );
-//PRECACHE_WEAPON_REGISTER(weapon_brickbat);
+LINK_ENTITY_TO_CLASS( weapon_brickbat, CWeaponBrickbat );
+PRECACHE_WEAPON_REGISTER(weapon_brickbat);
 
 acttable_t	CWeaponBrickbat::m_acttable[] = 
 {
@@ -146,7 +157,7 @@ bool CWeaponBrickbat::Deploy( void )
 //------------------------------------------------------------------------------
 void CWeaponBrickbat::SetPickupTouch( void )
 {
-	SetTouch( BrickbatTouch );
+	SetTouch(&CWeaponBrickbat::BrickbatTouch);
 }
 
 
@@ -569,7 +580,7 @@ void CWeaponBrickbat::DrawAmmo( void )
 		vm->SetModel( BrickBatAmmoArray[m_iCurrentAmmoType].m_sViewModel );
 	}
 
-	//Msg("Drawing %s...\n",BrickBatAmmoArray[m_iCurrentAmmoType].m_sClassName);
+	Msg("Drawing %s...\n",BrickBatAmmoArray[m_iCurrentAmmoType].m_sClassName);
 	m_bNeedDraw = false;
 
 	SendWeaponAnim(ACT_VM_DRAW);
@@ -586,7 +597,7 @@ void CWeaponBrickbat::DrawAmmo( void )
 //-----------------------------------------------------------------------------
 void CWeaponBrickbat::ItemPostFrame( void )
 {
-	/*  HANDY FOR DEBUG
+
 	for (int i=0;i<NUM_BRICKBAT_AMMO_TYPES;i++)
 	{
 		Msg("%i %s",m_nAmmoCount[i],BrickBatAmmoArray[i].m_sClassName);
@@ -596,7 +607,6 @@ void CWeaponBrickbat::ItemPostFrame( void )
 		}
 		Msg("\n");
 	}
-	*/
 
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 

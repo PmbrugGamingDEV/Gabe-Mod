@@ -20,6 +20,7 @@
 #include "entityblocker.h"
 #include "vehicle_baseserver.h"
 #include "vehicle_viewblend_shared.h"
+#include "vscript_shared.h"
 
 class CNPC_VehicleDriver;
 class CFourWheelVehiclePhysics;
@@ -165,6 +166,7 @@ class CPropVehicleDriveable : public CPropVehicle, public IDrivableVehicle, publ
 {
 	DECLARE_CLASS( CPropVehicleDriveable, CPropVehicle );
 	DECLARE_SERVERCLASS();
+	DECLARE_ENT_SCRIPTDESC();
 	DECLARE_DATADESC();
 public:
 	CPropVehicleDriveable( void );
@@ -232,6 +234,71 @@ public:
 	// If this is a vehicle, returns the vehicle interface
 	virtual IServerVehicle *GetServerVehicle() { return m_pServerVehicle; }
 
+	void		 SetFuelAmt(float fuelamt) { m_flFuel = clamp(fuelamt, 0.0f, 100.0f); } // Set the amount of fuel
+
+	void AddFuel(float flAmount) // Add fuel
+	{
+		SetFuelAmt(m_flFuel + flAmount);
+	}
+
+	void RemoveFuel(float flAmount)	 // Remove fuel
+	{
+		SetFuelAmt(m_flFuel - flAmount);
+	}
+
+	float GetFuelAmt() const { return m_flFuel; } // Get the amount of fuel
+
+	int GetSpeed() const { return m_nSpeed; }
+
+	//-----------------------------------------------------------------------------
+	// VScript vehicle API
+	//-----------------------------------------------------------------------------
+
+	void ScriptStartEngine();
+	void ScriptStopEngine();
+
+	void ScriptLock();
+	void ScriptUnlock();
+	bool ScriptIsLocked();
+
+	void ScriptEnable();
+	void ScriptDisable();
+
+	HSCRIPT ScriptGetDriver();
+
+	void ScriptEnterVehicle(HSCRIPT hPlayer);
+	void ScriptExitVehicle();
+
+	float ScriptGetVehicleSpeed();
+	Vector ScriptGetVehicleVelocity();
+
+	void ScriptSetVehiclePosition(const Vector& vecPosition);
+	Vector ScriptGetVehiclePosition();
+
+	void ScriptSetVehicleAngles(const QAngle& angles);
+	QAngle ScriptGetVehicleAngles();
+
+	void ScriptSetVehicleHealth(int health);
+	int ScriptGetVehicleHealth();
+
+	void ScriptSetVehicleDamageable(bool bDamageable);
+	bool ScriptIsVehicleDamageable();
+
+	void ScriptSetVehicleModel(const char* pszModel);
+
+	void ScriptApplyForce(const Vector& force);
+	void ScriptApplyForceOffset(const Vector& force, const Vector& position);
+
+	void ScriptSetVelocity(const Vector& velocity);
+	void ScriptAddVelocity(const Vector& velocity);
+
+	void ScriptRemoveVehicle();
+
+	bool ScriptHasDriver();
+
+	const char* ScriptGetVehicleClassname();
+	const char* ScriptGetVehicleModel();
+
 protected:
 
 	virtual bool	ShouldThink() { return ( GetDriver() != NULL ); }
@@ -254,8 +321,10 @@ protected:
 	CNetworkHandle( CBasePlayer, m_hPlayer );
 public:
 
-	CNetworkVar( int, m_nSpeed );
+	CNetworkVar( int, m_nSpeed ); // The speed in Miles Per Hour
+	CNetworkVar( float, m_flFuel ); // The fuel amount
 	CNetworkVar( int, m_nRPM );
+
 	CNetworkVar( float, m_flThrottle );
 	CNetworkVar( int, m_nBoostTimeLeft );
 	CNetworkVar( int, m_nHasBoost );

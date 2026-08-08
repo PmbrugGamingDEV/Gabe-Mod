@@ -5,6 +5,8 @@
 #include <vgui/VGUI.h>
 #include <vgui/ISurface.h>
 
+#include "iclientmode.h"
+
 // Base
 #include <vgui_controls/panel.h>
 #include <vgui_controls/editablepanel.h>

@@ -1799,6 +1799,8 @@ void CPropAirboat::DriveVehicle( float flFrameTime, CUserCmd *ucmd, int iButtons
 	m_flThrottle = m_VehiclePhysics.GetThrottle();
 	m_nSpeed = m_VehiclePhysics.GetSpeed();
 	m_nRPM = m_VehiclePhysics.GetRPM();
+
+	BaseClass::DriveVehicle(flFrameTime, ucmd, iButtonsDown, iButtonsReleased);
 }
 
 

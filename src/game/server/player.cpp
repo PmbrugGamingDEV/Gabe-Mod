@@ -6177,7 +6177,7 @@ void CBasePlayer::ImpulseCommands( )
 	m_nImpulse = 0;
 }
 
-#ifdef HL2_EPISODIC
+//#ifdef HL2_EPISODIC
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -6214,7 +6214,7 @@ void CC_CH_CreateJalopy( void )
 
 static ConCommand ch_createjalopy("ch_createjalopy", CC_CH_CreateJalopy, "Spawn jalopy in front of the player.", FCVAR_CHEAT);
 
-#endif // HL2_EPISODIC
+//#endif // HL2_EPISODIC
 
 //-----------------------------------------------------------------------------
 // Purpose: 

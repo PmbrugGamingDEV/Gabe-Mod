@@ -1714,7 +1714,6 @@ void CJBMWeaponGravityGun::FreezeObject()
 {
 	if (m_active && m_hObject)
 	{
-		// FIXME(JBMOD): Don't freeze vehicles for now
 		CBaseEntity* pObject = m_hObject;
 		if (pObject->GetServerVehicle() != NULL)
 		{
@@ -1728,6 +1727,30 @@ void CJBMWeaponGravityGun::FreezeObject()
 			m_activeFreeze[m_freezeCount].parent = m_hObject;
 			m_activeFreeze[m_freezeCount].physobject = pPhysicsObject;
 			m_freezeCount++;
+
+			CBeam* h_Beam = CBeam::BeamCreate("sprites/physbeam.vmt", 20.0f);
+
+			if (h_Beam)
+			{
+				h_Beam->EntsInit(this, m_hObject);
+
+				h_Beam->SetStartAttachment(1);
+
+				h_Beam->SetEndAttachment(0);
+
+				h_Beam->SetBrightness(255);
+
+				h_Beam->SetColor(0, 255, 0);
+
+				h_Beam->LiveForTime(0.1f);
+
+				h_Beam->RelinkBeam();
+
+				for (int i = 0; i < 15; i++)
+				{
+					g_pEffects->Sparks(m_hObject->GetAbsOrigin(), 1, 1);
+				}
+			}
 
 			pPhysicsObject->EnableMotion(false);
 

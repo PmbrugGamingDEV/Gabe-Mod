@@ -7,7 +7,8 @@
 #include "cbase.h"
 #include "vehicle_jeep_episodic.h"
 #include "collisionutils.h"
-#include "npc_alyx_episodic.h"
+#include "npc_alyx.h"
+#include "ai_behavior_passenger.h"
 #include "particle_parse.h"
 #include "particle_system.h"
 #include "hl2_player.h"
@@ -633,16 +634,24 @@ void CPropJeepEpisodic::InputAddBusterToCargo( inputdata_t &data )
 // Purpose: 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CPropJeepEpisodic::PassengerInTransition( void )
+bool CPropJeepEpisodic::PassengerInTransition(void)
 {
-	// FIXME: Big hack - we need a way to bridge this data better
-	// TODO: Get a list of passengers we can traverse instead
-	CNPC_Alyx *pAlyx = CNPC_Alyx::GetAlyx();
-	if ( pAlyx )
+	CNPC_Alyx* pAlyx = NULL;
+
+	CBaseEntity* pEntity = gEntList.FindEntityByClassname(NULL, "npc_alyx");
+
+	if (pEntity)
 	{
-		if ( pAlyx->GetPassengerState() == PASSENGER_STATE_ENTERING ||
-			 pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING )
+		pAlyx = dynamic_cast<CNPC_Alyx*>(pEntity);
+	}
+
+	if (pAlyx)
+	{
+		if (pAlyx->GetPassengerState() == PASSENGER_STATE_ENTERING ||
+			pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING)
+		{
 			return true;
+		}
 	}
 
 	return false;
@@ -938,11 +947,18 @@ void CPropJeepEpisodic::UpdateRadar( bool forceUpdate )
 		}
 
 		//Notify Alyx so she can talk about the radar contact
-		CNPC_Alyx *pAlyx = CNPC_Alyx::GetAlyx();
+		CNPC_Alyx* pAlyx = NULL;
 
-		if( !bDetectedDog && pAlyx != NULL && pAlyx->GetVehicle() )
+		CBaseEntity* pEntity = gEntList.FindEntityByClassname(NULL, "npc_alyx");
+
+		if (pEntity)
 		{
-			pAlyx->SpeakIfAllowed( TLK_PASSENGER_NEW_RADAR_CONTACT );
+			pAlyx = dynamic_cast<CNPC_Alyx*>(pEntity);
+
+			if( !bDetectedDog && pAlyx != NULL && pAlyx->GetVehicle() )
+			{
+				pAlyx->SpeakIfAllowed( TLK_PASSENGER_NEW_RADAR_CONTACT );
+			}
 		}
 	}
 
@@ -1060,10 +1076,16 @@ void CPropJeepEpisodic::Think( void )
 	BaseClass::Think();
 
 	// If our passenger is transitioning, then don't let the player drive off
-	CNPC_Alyx *pAlyx = CNPC_Alyx::GetAlyx();
-	if ( pAlyx && pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING )
+	// Notify Alyx so she can talk about the radar contact
+	CBaseEntity* pEntity = gEntList.FindEntityByClassname(NULL, "npc_alyx");
+	if (pEntity)
 	{
-		m_throttleDisableTime = gpGlobals->curtime + 0.25f;		
+		CNPC_Alyx* pAlyx = dynamic_cast<CNPC_Alyx*>(pEntity);
+
+		if ( pAlyx && pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING )
+		{
+			m_throttleDisableTime = gpGlobals->curtime + 0.25f;		
+		}
 	}
 
 	// Update our cargo entering our hold
@@ -1761,4 +1783,3 @@ bool CPropJeepEpisodic::AllowBlockedExit( CBaseCombatCharacter *pPassenger, int 
 	// sticking the player through player clips or into geometry.
 	return GetSmoothedVelocity().IsLengthLessThan( jalopy_blocked_exit_max_speed.GetFloat() );
 }
-

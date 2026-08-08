@@ -56,9 +56,9 @@ namespace GabeMod
 #define GABE_PRINTVISUALTEXT		4
 
 #ifndef CLIENT_DLL
-	CBasePlayer* GetPlayer()
+			 CBasePlayer* CGabeScriptFuncs::GetPlayer()
 #else
-	C_BasePlayer* GetPlayer()
+			 C_BasePlayer* CGabeScriptFuncs::GetPlayer()
 #endif
 	{
 		if (gpGlobals->maxClients == 1)
@@ -92,13 +92,13 @@ namespace GabeMod
 	// =========================
 	// 🔹 Messaging
 	// =========================
-	void PrintToYou(CBasePlayer* pPlayer, int dest, const char* msg)
+	void CGabeScriptFuncs::PrintToYou(CBasePlayer* pPlayer, int dest, const char* msg)
 	{
 		if (!pPlayer) return;
 		ClientPrint(pPlayer, dest, msg);
 	}
 
-	void PrintToAllPlayers(int dest, const char* msg) // INVALID ON CLIENTSIDE
+	void CGabeScriptFuncs::PrintToAllPlayers(int dest, const char* msg) // INVALID ON CLIENTSIDE
 	{
 #ifndef CLIENT_DLL
 		UTIL_ClientPrintAll(dest, msg);
@@ -108,19 +108,19 @@ namespace GabeMod
 	// =========================
 	// 🔹 Debug Overlay
 	// =========================
-	void ScreenText(const char* text, float x, float y, float time, int r, int g, int b, int a)
+	void CGabeScriptFuncs::ScreenText(const char* text, float x, float y, float time, int r, int g, int b, int a)
 	{
 		if (!debugoverlay) return;
 		debugoverlay->AddScreenTextOverlay(x, y, time, r, g, b, a, text);
 	}
 
 #ifndef CLIENT_DLL
-	void DebugLine(const Vector& start, const Vector& end, float time)
+	void CGabeScriptFuncs::DebugLine(const Vector& start, const Vector& end, float time)
 	{
 		NDebugOverlay::Line(start, end, 0, 255, 0, true, time);
 	}
 
-	void DebugBox(const Vector& pos, float size, float time)
+	void CGabeScriptFuncs::DebugBox(const Vector& pos, float size, float time)
 	{
 		NDebugOverlay::Box(pos,
 			-Vector(size, size, size),
@@ -133,7 +133,7 @@ namespace GabeMod
 	// =========================
 	// 🔹 Math / Player vectors
 	// =========================
-	Vector Forward(CBasePlayer* pPlayer)
+	Vector CGabeScriptFuncs::Forward(CBasePlayer* pPlayer)
 	{
 		Vector forward;
 		if (!pPlayer) return vec3_origin;
@@ -142,7 +142,7 @@ namespace GabeMod
 		return forward;
 	}
 
-	Vector ShootPos(CBasePlayer* pPlayer)
+	Vector CGabeScriptFuncs::ShootPos(CBasePlayer* pPlayer)
 	{
 		if (!pPlayer) return vec3_origin;
 		return pPlayer->Weapon_ShootPosition();
@@ -151,7 +151,7 @@ namespace GabeMod
 	// =========================
 	// 🔹 Trace helpers
 	// =========================
-	CBaseEntity* TraceEntity(CBasePlayer* pPlayer, float dist)
+	CBaseEntity* CGabeScriptFuncs::TraceEntity(CBasePlayer* pPlayer, float dist)
 	{
 		if (!pPlayer) return NULL;
 
@@ -166,7 +166,7 @@ namespace GabeMod
 		return tr.m_pEnt;
 	}
 
-	void Trace(CBasePlayer* pPlayer, float dist, trace_t& tr)
+	void CGabeScriptFuncs::Trace(CBasePlayer* pPlayer, float dist, trace_t& tr)
 	{
 		if (!pPlayer)
 			return;
@@ -185,7 +185,7 @@ namespace GabeMod
 	// =========================
 	// 🔹 Physics
 	// =========================
-	void ApplyForce(CBaseEntity* pEnt, const Vector& force)
+	void CGabeScriptFuncs::ApplyForce(CBaseEntity* pEnt, const Vector& force)
 	{
 		if (!pEnt) return;
 
@@ -195,7 +195,7 @@ namespace GabeMod
 		pPhys->ApplyForceCenter(force);
 	}
 
-	void SetMass(CBaseEntity* pEnt, float mass)
+	void CGabeScriptFuncs::SetMass(CBaseEntity* pEnt, float mass)
 	{
 		if (!pEnt) return;
 
@@ -208,7 +208,7 @@ namespace GabeMod
 	// =========================
 	// 🔹 Spawning
 	// =========================
-	CBaseEntity* SpawnProp(const char* model, const Vector& pos, const QAngle& ang)
+	CBaseEntity* CGabeScriptFuncs::SpawnProp(const char* model, const Vector& pos, const QAngle& ang)
 	{
 		CBaseEntity* pProp = CreateEntityByName("prop_physics");
 
@@ -226,7 +226,7 @@ namespace GabeMod
 		return pProp;
 	}
 
-	CBaseEntity* SpawnEntity(const char* classname, const Vector& pos, const QAngle& ang)
+	CBaseEntity* CGabeScriptFuncs::SpawnEntity(const char* classname, const Vector& pos, const QAngle& ang)
 	{
 		CBaseEntity* pEnt = CreateEntityByName(classname);
 
@@ -245,7 +245,7 @@ namespace GabeMod
 	// =========================
 	// 🔹 Entity helpers
 	// =========================
-	CBaseEntity* FindByName(const char* name)
+	CBaseEntity* CGabeScriptFuncs::FindByName(const char* name)
 	{
 		CBaseEntity* pEnt = NULL;
 
@@ -257,7 +257,7 @@ namespace GabeMod
 		return NULL;
 	}
 
-	void Remove(CBaseEntity* pEnt)
+	void CGabeScriptFuncs::Remove(CBaseEntity* pEnt)
 	{
 		if (!pEnt) return;
 		UTIL_Remove(pEnt);
@@ -266,12 +266,12 @@ namespace GabeMod
 	// =========================
 	// 🔹 Gameplay helpers
 	// =========================
-	void GiveAllWeapons(CHL2MP_Player* pPlayer)
+	void CGabeScriptFuncs::GiveAllWeapons(CHL2MP_Player* pPlayer)
 	{
 		pPlayer->GiveAllItems();
 	}
 
-	void Heal(CBasePlayer* pPlayer, int amount)
+	void CGabeScriptFuncs::Heal(CBasePlayer* pPlayer, int amount)
 	{
 		if (!pPlayer) return;
 
@@ -279,7 +279,7 @@ namespace GabeMod
 		pPlayer->SetHealth(newHealth);
 	}
 
-	void Damage(CBasePlayer* pPlayer, int amount)
+	void CGabeScriptFuncs::Damage(CBasePlayer* pPlayer, int amount)
 	{
 		if (!pPlayer) return;
 
@@ -289,7 +289,7 @@ namespace GabeMod
 		pPlayer->TakeDamage(dmg);
 	}
 
-	CBaseEntity* Gabe_FindByName(const char* name)
+	CBaseEntity* CGabeScriptFuncs::Gabe_FindByName(const char* name)
 	{
 		if (!name)
 			return nullptr;
@@ -297,7 +297,7 @@ namespace GabeMod
 		return gEntList.FindEntityByName(nullptr, name);
 	}
 
-	CBaseEntity* Gabe_FindByClass(const char* classname)
+	CBaseEntity* CGabeScriptFuncs::Gabe_FindByClass(const char* classname)
 	{
 		if (!classname)
 			return nullptr;
@@ -305,7 +305,7 @@ namespace GabeMod
 		return gEntList.FindEntityByClassname(nullptr, classname);
 	}
 
-	CBaseEntity* Gabe_FindClosestEntity(const Vector& origin, const char* classname, float maxDist)
+	CBaseEntity* CGabeScriptFuncs::Gabe_FindClosestEntity(const Vector& origin, const char* classname, float maxDist)
 	{
 		CBaseEntity* pEntity = nullptr;
 		CBaseEntity* pBest = nullptr;
@@ -325,7 +325,7 @@ namespace GabeMod
 		return pBest;
 	}
 
-	void Gabe_DealDamage(
+	void CGabeScriptFuncs::Gabe_DealDamage(
 		CBaseEntity* victim,
 		CBaseEntity* attacker,
 		float damage,
@@ -338,7 +338,7 @@ namespace GabeMod
 		victim->TakeDamage(info);
 	}
 
-	void Gabe_RadiusDamage(
+	void CGabeScriptFuncs::Gabe_RadiusDamage(
 		const Vector& origin,
 		CBaseEntity* attacker,
 		float damage,
@@ -349,7 +349,7 @@ namespace GabeMod
 		RadiusDamage(info, origin, radius, CLASS_NONE, nullptr);
 	}
 
-	void Gabe_TraceFromPlayer(
+	void CGabeScriptFuncs::Gabe_TraceFromPlayer(
 		CBasePlayer* player,
 		float distance,
 		trace_t& tr)
@@ -372,7 +372,7 @@ namespace GabeMod
 			&tr);
 	}
 
-	bool Gabe_HasLineOfSight(CBaseEntity* from, CBaseEntity* to)
+	bool CGabeScriptFuncs::Gabe_HasLineOfSight(CBaseEntity* from, CBaseEntity* to)
 	{
 		if (!from || !to)
 			return false;
@@ -390,7 +390,7 @@ namespace GabeMod
 		return (tr.m_pEnt == to || tr.fraction == 1.0f);
 	}
 
-	bool Gabe_IsInFOV(CBaseEntity* viewer, CBaseEntity* target, float fovDegrees)
+	bool CGabeScriptFuncs::Gabe_IsInFOV(CBaseEntity* viewer, CBaseEntity* target, float fovDegrees)
 	{
 		if (!viewer || !target)
 			return false;
@@ -407,7 +407,7 @@ namespace GabeMod
 		return dot >= cosHalfFOV;
 	}
 
-	IPhysicsObject* Gabe_GetPhys(CBaseEntity* ent)
+	IPhysicsObject* CGabeScriptFuncs::Gabe_GetPhys(CBaseEntity* ent)
 	{
 		if (!ent)
 			return nullptr;
@@ -419,7 +419,7 @@ namespace GabeMod
 	// CONSTRAINTS
 	////////////////////////////////////////////////////////////////////
 
-	IPhysicsConstraint* Gabe_CreateFixed(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateFixed(
 		CBaseEntity* refEnt,
 		CBaseEntity* attachedEnt)
 	{
@@ -444,7 +444,7 @@ namespace GabeMod
 			params);
 	}
 
-	IPhysicsConstraint* Gabe_CreateBreakableFixed(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateBreakableFixed(
 		CBaseEntity* refEnt,
 		CBaseEntity* attachedEnt)
 	{
@@ -469,7 +469,7 @@ namespace GabeMod
 			params);
 	}
 
-	IPhysicsConstraint* Gabe_FixedToWorld(CBaseEntity* ent)
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_FixedToWorld(CBaseEntity* ent)
 	{
 		if (!ent)
 			return nullptr;
@@ -492,7 +492,7 @@ namespace GabeMod
 			params);
 	}
 
-	IPhysicsConstraint* Gabe_CreateBallSocket(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateBallSocket(
 		CBaseEntity* ent1,
 		CBaseEntity* ent2,
 		const Vector& worldPos)
@@ -518,7 +518,7 @@ namespace GabeMod
 			params);
 	}
 
-	IPhysicsConstraint* Gabe_CreateRope(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateRope(
 		CBaseEntity* ent1,
 		CBaseEntity* ent2,
 		const Vector& worldPos1,
@@ -548,7 +548,7 @@ namespace GabeMod
 			params);
 	}
 
-	IPhysicsConstraint* Gabe_CreateSlider(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateSlider(
 		CBaseEntity* refEnt,
 		CBaseEntity* attachedEnt,
 		const Vector& slideAxisWorld,
@@ -579,7 +579,7 @@ namespace GabeMod
 			params);
 	}
 
-	void Gabe_SetSliderMotor(
+	void CGabeScriptFuncs::Gabe_SetSliderMotor(
 		IPhysicsConstraint* constraint,
 		float velocity,
 		float maxForce)
@@ -590,7 +590,7 @@ namespace GabeMod
 		constraint->SetLinearMotor(velocity, maxForce);
 	}
 
-	IPhysicsConstraint* Gabe_CreateHinge(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateHinge(
 		CBaseEntity* ent1,
 		CBaseEntity* ent2,
 		const Vector& worldPos,
@@ -615,7 +615,7 @@ namespace GabeMod
 			params);
 	}
 
-	IPhysicsConstraint* Gabe_CreateLimitedHinge(
+	IPhysicsConstraint* CGabeScriptFuncs::Gabe_CreateLimitedHinge(
 		CBaseEntity* ent1,
 		CBaseEntity* ent2,
 		const Vector& worldPos,
@@ -645,7 +645,7 @@ namespace GabeMod
 			params);
 	}
 
-	void Gabe_SetBreakable(
+	void CGabeScriptFuncs::Gabe_SetBreakable(
 		constraint_breakableparams_t& breakParams,
 		float forceLimit,
 		float torqueLimit)
@@ -654,7 +654,7 @@ namespace GabeMod
 		breakParams.torqueLimit = torqueLimit;
 	}
 
-	void Gabe_DestroyConstraint(IPhysicsConstraint* constraint)
+	void CGabeScriptFuncs::Gabe_DestroyConstraint(IPhysicsConstraint* constraint)
 	{
 		if (!constraint)
 			return;
@@ -665,7 +665,7 @@ namespace GabeMod
 	////////////////////////
 //  Display a message //
 ////////////////////////
-	void HudText(CBasePlayer* pPlayer,
+	void CGabeScriptFuncs::HudText(CBasePlayer* pPlayer,
 		const char* pszText,
 		int r, int g, int b,
 		float x, float y,
@@ -699,12 +699,17 @@ namespace GabeMod
 #endif
 
 #ifdef CLIENT_DLL
-	void MessageBox(const char* title, const char* message)
+	void CGabeScriptFuncs::MessageBox(const char* title, const char* message)
 	{
 		vgui::MessageBox* pMsgBox = new vgui::MessageBox(title, message);
 		pMsgBox->DoModal();
 	}
 #endif
+
+	void RegisterVScriptFunctions()
+	{
+
+	}
 }
 
 #ifndef CLIENT_DLL
@@ -713,10 +718,10 @@ ConVar gabe_healamt("gabe_healamt", "25", FCVAR_CHEAT, "Amount of health to heal
 
 CON_COMMAND(gabe_heal, "Heal player with specified amount")
 {
-	CBasePlayer* p = GabeMod::GetPlayer();
+	CBasePlayer* p = GabeMod::CGabeScriptFuncs::GetPlayer();
 	if (!p) return;
 
-	GabeMod::Heal(p, gabe_healamt.GetInt());
+	GabeMod::CGabeScriptFuncs::Heal(p, gabe_healamt.GetInt());
 }
 #endif
 

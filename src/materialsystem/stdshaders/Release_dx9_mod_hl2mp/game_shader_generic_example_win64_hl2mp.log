@@ -1,4 +1,11 @@
-﻿  game_shader_generic_example_win64_hl2mp.vcxproj -> C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\game_shader_generic_example.dll
+﻿  BaseVSShader.cpp
+  example_model_dx9.cpp
+  example_model_dx9_helper.cpp
+  memoverride.cpp
+  sdk_bloom.cpp
+  sdk_screenspace_general.cpp
+     Creating library Release_dx9_mod_hl2mp\game_shader_generic_example.lib and object Release_dx9_mod_hl2mp\game_shader_generic_example.exp
+  game_shader_generic_example_win64_hl2mp.vcxproj -> C:\GabeMod\src\materialsystem\stdshaders\Release_dx9_mod_hl2mp\game_shader_generic_example.dll
   Publishing to ..\..\..\game\mod_hl2mp\bin\x64
           1 file(s) copied.
           1 file(s) copied.

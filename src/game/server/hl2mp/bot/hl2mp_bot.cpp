@@ -107,10 +107,38 @@ const char *DifficultyLevelToString( CHL2MPBot::DifficultyType skill )
 //-----------------------------------------------------------------------------------------------------
 const char *GetRandomBotName( void )
 {
-	static const char *nameList[] =
+	static const char* nameList[] =
 	{
-		"Bot Name",
-		NULL
+		"Ben Dover",
+		"Wilma Diqfit",
+		"Eileen Dover",
+		"Dixie Normous",
+		"Hugh Jass",
+		"Mike Litoris",
+		"Anita Max Wynn",
+		"Amanda Hugginkiss",
+		"Seymour Butts",
+		"Phil McCracken",
+		"Drew Peacock",
+		"Jenna Tolls",
+		"Wayne Carr",
+		"Gabe Itch",
+		"Holden Hiscock",
+		"Peter File",
+		"Tess Tickles",
+		"Wilma Fingerdoo",
+		"Chris P. Bacon",
+		"Maya Butt",
+		"Barry McKockiner",
+		"Anita Hanjaob",
+		"Jack Ingoff",
+		"Dixie Rect",
+		"Mike Oxlong",
+		"Bot Ross",
+		"Byte Me Fatass!!1!",
+		"SegFault Sam",
+
+		NULL // Array terminator
 	};
 	static int nameCount = 0;
 	static int nameIndex = 0;

@@ -5,6 +5,7 @@
 #include "tier1/fmtstr.h"
 #include "tier1/utlbuffer.h"
 #include "mathlib/mathlib.h"
+#include "imath.h"
 #include "convar.h"
 #ifdef CLIENT_DLL
 #include "iclientmode.h"

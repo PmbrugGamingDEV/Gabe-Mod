@@ -17,9 +17,11 @@ C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\client\Rel
 C:\GabeMod\src\game\client\cl_camerablur.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\cl_camerablur.obj
 C:\GabeMod\src\game\client\c_bemod_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_bemod_physgun.obj
 C:\GabeMod\src\game\client\c_gabe_vscript.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_gabe_vscript.obj
+C:\GabeMod\src\game\client\c_vehicle_apc.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_vehicle_apc.obj
 C:\GabeMod\src\game\client\c_weapon_jb_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_jb_physgun.obj
 C:\GabeMod\src\game\client\episodic\c_npc_advisor.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_npc_advisor.obj
 C:\GabeMod\src\game\client\episodic\c_npc_puppet.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_npc_puppet.obj
+C:\GabeMod\src\game\client\episodic\c_vehicle_jeep_episodic.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_vehicle_jeep_episodic.obj
 C:\GabeMod\src\game\client\episodic\c_weapon_hopwire.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_hopwire.obj
 C:\GabeMod\src\game\client\episodic\episodic_screenspaceeffects.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\episodic_screenspaceeffects.obj
 C:\GabeMod\src\game\client\gabe_events.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_events.obj
@@ -35,6 +37,7 @@ C:\GabeMod\src\game\client\hl1\hl1_menu_hls.cpp;C:\GabeMod\src\game\client\Relea
 C:\GabeMod\src\game\client\hl1\hl1_menu_rm.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hl1_menu_rm.obj
 C:\GabeMod\src\game\client\hl1\hl1_usermessages.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hl1_usermessages.obj
 C:\GabeMod\src\game\client\hl1\hud_numbers.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_numbers.obj
+C:\GabeMod\src\game\client\hl2\hud_radar.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_radar.obj
 C:\GabeMod\src\game\client\hud_killfeed.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_killfeed.obj
 C:\GabeMod\src\game\client\hud_mtool.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_mtool.obj
 C:\GabeMod\src\game\client\mp3player.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\mp3player.obj

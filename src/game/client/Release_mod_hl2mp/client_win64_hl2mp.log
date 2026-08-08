@@ -1,8 +1,11 @@
-﻿  c_bemod_physgun.cpp
+﻿  weapon_pistol.cpp
+  NMath.lib(NMath.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
      Creating library .\Release_mod_hl2mp\\client.lib and object .\Release_mod_hl2mp\\client.exp
+  Generating code
+  Finished generating code
+NMath.lib(NMath.obj) : warning LNK4099: PDB 'NMath.pdb' was not found with 'NMath.lib(NMath.obj)' or at 'C:\GabeMod\src\game\client\Release_mod_hl2mp\NMath.pdb'; linking object as if no debug info
+NMath.lib(pch.obj) : warning LNK4099: PDB 'NMath.pdb' was not found with 'NMath.lib(pch.obj)' or at 'C:\GabeMod\src\game\client\Release_mod_hl2mp\NMath.pdb'; linking object as if no debug info
   client_win64_hl2mp.vcxproj -> C:\GabeMod\src\game\client\Release_mod_hl2mp\client.dll
-  'pwsh.exe' is not recognized as an internal or external command,
-  operable program or batch file.
   Publishing to ..\..\..\game\mod_hl2mp\bin\x64
           1 file(s) copied.
           1 file(s) copied.

@@ -666,6 +666,20 @@
 		"TextColor"	"255 255 255 192"
 
 	}
+
+HudVehicleStats
+{
+    "fieldName"     "HudVehicleStats"
+
+    "xpos"          "16"
+    "ypos"          "290"
+
+    "wide"          "220"
+    "tall"          "100"
+
+    "visible"       "1"
+    "enabled"       "1"
+}
 	
 	HUDAutoAim
 	{

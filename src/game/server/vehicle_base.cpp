@@ -18,6 +18,7 @@
 #include "func_break.h"
 #include "physics_impact_damage.h"
 #include "entityblocker.h"
+#include "vscript_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -27,42 +28,95 @@
 ConVar g_debug_vehiclebase( "g_debug_vehiclebase", "0", FCVAR_CHEAT );
 extern ConVar g_debug_vehicledriver;
 
-// CFourWheelServerVehicle
-BEGIN_SIMPLE_DATADESC_( CFourWheelServerVehicle, CBaseServerVehicle )
+static void ScriptVehicleInput(
+	CBaseEntity* pVehicle,
+	const char* pszInput)
+{
+	if (!pVehicle || !pszInput)
+		return;
 
-	DEFINE_EMBEDDED( m_ViewSmoothing ),
+	variant_t value;
+
+	pVehicle->AcceptInput(
+		pszInput,
+		pVehicle,
+		pVehicle,
+		value,
+		0
+	);
+}
+
+ConVar gabe_vehicle_fuel_enabled(
+	"gabe_vehicle_fuel_enabled",
+	"1",
+	FCVAR_REPLICATED,
+	"Enable or disable vehicle fuel."
+);
+
+ConVar gabe_vehicle_fuel_rate(
+	"gabe_vehicle_fuel_rate",
+	"0.25",
+	FCVAR_REPLICATED,
+	"Fuel consumed per second at full throttle."
+);
+
+ConVar gabe_vehicle_fuel_idle_rate(
+	"gabe_vehicle_fuel_idle_rate",
+	"0.01",
+	FCVAR_REPLICATED,
+	"Fuel consumed per second while idling."
+);
+
+ConVar gabe_vehicle_fuel_start(
+	"gabe_vehicle_fuel_start",
+	"100",
+	FCVAR_REPLICATED,
+	"Fuel vehicles spawn with."
+);
+
+ConVar gabe_vehicle_fuel_max(
+	"gabe_vehicle_fuel_max",
+	"100",
+	FCVAR_REPLICATED,
+	"Maximum vehicle fuel capacity."
+);
+
+// CFourWheelServerVehicle
+BEGIN_SIMPLE_DATADESC_(CFourWheelServerVehicle, CBaseServerVehicle)
+
+DEFINE_EMBEDDED(m_ViewSmoothing),
 
 END_DATADESC()
 
 // CPropVehicle
-BEGIN_DATADESC( CPropVehicle )
+BEGIN_DATADESC(CPropVehicle)
 
-	DEFINE_EMBEDDED( m_VehiclePhysics ),
+DEFINE_EMBEDDED(m_VehiclePhysics),
 
-	// These are necessary to save here because the 'owner' of these fields must be the prop_vehicle
-	DEFINE_PHYSPTR( m_VehiclePhysics.m_pVehicle ),
-	DEFINE_PHYSPTR_ARRAY( m_VehiclePhysics.m_pWheels ),
+// These are necessary to save here because the 'owner' of these fields must be the prop_vehicle
+DEFINE_PHYSPTR(m_VehiclePhysics.m_pVehicle),
+DEFINE_PHYSPTR_ARRAY(m_VehiclePhysics.m_pWheels),
 
-	DEFINE_FIELD( m_nVehicleType, FIELD_INTEGER ),
+DEFINE_FIELD(m_nVehicleType, FIELD_INTEGER),
 
-	// Physics Influence
-	DEFINE_FIELD( m_hPhysicsAttacker, FIELD_EHANDLE ),
-	DEFINE_FIELD( m_flLastPhysicsInfluenceTime, FIELD_TIME ),
+// Physics Influence
+DEFINE_FIELD(m_hPhysicsAttacker, FIELD_EHANDLE),
+DEFINE_FIELD(m_flLastPhysicsInfluenceTime, FIELD_TIME),
 
 #ifdef HL2_EPISODIC
-	DEFINE_UTLVECTOR( m_hPhysicsChildren, FIELD_EHANDLE ),
+DEFINE_UTLVECTOR(m_hPhysicsChildren, FIELD_EHANDLE),
 #endif // HL2_EPISODIC
 
-	// Keys
-	DEFINE_KEYFIELD( m_vehicleScript, FIELD_STRING, "VehicleScript" ),
-	DEFINE_FIELD( m_vecSmoothedVelocity, FIELD_VECTOR ),
+// Keys
+DEFINE_KEYFIELD(m_vehicleScript, FIELD_STRING, "VehicleScript"),
+DEFINE_FIELD(m_vecSmoothedVelocity, FIELD_VECTOR),
 
-	// Inputs
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "Throttle", InputThrottle ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "Steer", InputSteering ),
-	DEFINE_INPUTFUNC( FIELD_FLOAT, "Action", InputAction ),
-	DEFINE_INPUTFUNC( FIELD_VOID, "HandBrakeOn", InputHandBrakeOn ),
-	DEFINE_INPUTFUNC( FIELD_VOID, "HandBrakeOff", InputHandBrakeOff ),
+// Inputs
+DEFINE_INPUTFUNC(FIELD_FLOAT, "Throttle", InputThrottle),
+DEFINE_INPUTFUNC(FIELD_FLOAT, "Steer", InputSteering),
+DEFINE_INPUTFUNC(FIELD_FLOAT, "Action", InputAction),
+DEFINE_INPUTFUNC(FIELD_VOID, "HandBrakeOn", InputHandBrakeOn),
+DEFINE_INPUTFUNC(FIELD_VOID, "HandBrakeOff", InputHandBrakeOff),
 
 END_DATADESC()
 
@@ -314,6 +368,7 @@ IMPLEMENT_SERVERCLASS_ST(CPropVehicleDriveable, DT_PropVehicleDriveable)
 	SendPropEHandle(SENDINFO(m_hPlayer)),
 //	SendPropFloat(SENDINFO_DT_NAME(m_controls.throttle, m_throttle), 8,	SPROP_ROUNDUP,	0.0f,	1.0f),
 	SendPropInt(SENDINFO(m_nSpeed),	8),
+	SendPropFloat(SENDINFO(m_flFuel)),
 	SendPropInt(SENDINFO(m_nRPM), 13),
 	SendPropFloat(SENDINFO(m_flThrottle), 0, SPROP_NOSCALE ),
 	SendPropInt(SENDINFO(m_nBoostTimeLeft), 8),
@@ -347,6 +402,7 @@ BEGIN_DATADESC( CPropVehicleDriveable )
 
 	DEFINE_EMBEDDEDBYREF( m_pServerVehicle ),
 	DEFINE_FIELD( m_nSpeed, FIELD_INTEGER ),
+	DEFINE_FIELD(m_flFuel, FIELD_FLOAT),
 	DEFINE_FIELD( m_nRPM, FIELD_INTEGER ),
 	DEFINE_FIELD( m_flThrottle, FIELD_FLOAT ),
 	DEFINE_FIELD( m_nBoostTimeLeft, FIELD_INTEGER ),
@@ -461,6 +517,15 @@ void CPropVehicleDriveable::Spawn( void )
 	m_flMinimumSpeedToEnterExit = 0;
 	m_takedamage = DAMAGE_EVENTS_ONLY;
 	m_bEngineLocked = false;
+
+	if (gabe_vehicle_fuel_enabled.GetBool())
+	{
+		SetFuelAmt(gabe_vehicle_fuel_start.GetFloat());
+	}
+	else
+	{
+		SetFuelAmt(gabe_vehicle_fuel_max.GetFloat());
+	}
 }
 
 
@@ -671,6 +736,26 @@ void CPropVehicleDriveable::DriveVehicle( float flFrameTime, CUserCmd *ucmd, int
 {
 	int iButtons = ucmd->buttons;
 
+	if (gabe_vehicle_fuel_enabled.GetBool())
+	{
+
+		if (m_flFuel <= 0.0f)
+		{
+			SetFuelAmt(0.0f);
+
+			if (IsEngineOn())
+				StopEngine();
+
+			m_flThrottle = 0.0f;
+
+			return;
+		}
+
+	}
+
+	if (!IsEngineOn())
+		return;
+
 	m_VehiclePhysics.UpdateDriverControls( ucmd, flFrameTime );
 
 	m_nSpeed = m_VehiclePhysics.GetSpeed();	//send speed to client
@@ -678,6 +763,32 @@ void CPropVehicleDriveable::DriveVehicle( float flFrameTime, CUserCmd *ucmd, int
 	m_nBoostTimeLeft = m_VehiclePhysics.BoostTimeLeft();
 	m_nHasBoost = m_VehiclePhysics.HasBoost();
 	m_flThrottle = m_VehiclePhysics.GetThrottle();
+
+
+	if (gabe_vehicle_fuel_enabled.GetBool())
+	{
+		if (IsEngineOn())
+		{
+			float flFuelUsage = gabe_vehicle_fuel_idle_rate.GetFloat();
+
+			flFuelUsage +=
+				fabs(m_flThrottle) *
+				gabe_vehicle_fuel_rate.GetFloat();
+
+			RemoveFuel(flFuelUsage * flFrameTime);
+		}
+
+		if (m_flFuel <= 0.0f)
+		{
+			SetFuelAmt(0.0f);
+
+			if (IsEngineOn())
+				StopEngine();
+
+			m_flThrottle = 0.0f;
+		}
+	}
+
 
 	m_nScannerDisabledWeapons = false;		// off for now, change once we have scanners
 	m_nScannerDisabledVehicle = false;		// off for now, change once we have scanners
@@ -766,17 +877,19 @@ void CPropVehicleDriveable::Think()
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CPropVehicleDriveable::SetupMove( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *pHelper, CMoveData *move )
+void CPropVehicleDriveable::SetupMove(
+	CBasePlayer* player,
+	CUserCmd* ucmd,
+	IMoveHelper* pHelper,
+	CMoveData* move)
 {
-	// If the engine's not active, prevent driving
-	if ( !IsEngineOn() || m_bEngineLocked )
+	if (!IsEngineOn() || m_bEngineLocked)
 		return;
 
-	// If the player's entering/exiting the vehicle, prevent movement
-	if ( m_bEnterAnimOn || m_bExitAnimOn )
+	if (m_bEnterAnimOn || m_bExitAnimOn)
 		return;
 
-	DriveVehicle( player, ucmd );
+	DriveVehicle(player, ucmd);
 }
 
 //-----------------------------------------------------------------------------
@@ -820,8 +933,7 @@ bool CPropVehicleDriveable::CanEnterVehicle( CBaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 bool CPropVehicleDriveable::CanExitVehicle( CBaseEntity *pEntity )
 {
-	// Prevent exiting if the vehicle's locked, or if it's moving too fast.
-	return ( !m_bEnterAnimOn && !m_bExitAnimOn && !m_bLocked && (m_nSpeed <= m_flMinimumSpeedToEnterExit) );
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -829,11 +941,20 @@ bool CPropVehicleDriveable::CanExitVehicle( CBaseEntity *pEntity )
 //-----------------------------------------------------------------------------
 void CPropVehicleDriveable::InputTurnOn( inputdata_t &inputdata )
 {
-	m_bEngineLocked = false;
+    m_bEngineLocked = false;
 
-	StartEngine();
-	m_VehiclePhysics.SetDisableEngine( false );
+	if (gabe_vehicle_fuel_enabled.GetBool())
+	{
 
+		if (m_flFuel <= 0.0f)
+		{
+			StopEngine();
+			return;
+		}
+	}
+
+    m_VehiclePhysics.SetDisableEngine( false );
+    StartEngine();
 }
 
 //-----------------------------------------------------------------------------
@@ -858,12 +979,21 @@ bool CPropVehicleDriveable::IsEngineOn( void )
 //-----------------------------------------------------------------------------
 // Purpose: Turn on the engine, but only if we're allowed to
 //-----------------------------------------------------------------------------
-void CPropVehicleDriveable::StartEngine( void )
+void CPropVehicleDriveable::StartEngine(void)
 {
-	if ( m_bEngineLocked )
+	if (m_bEngineLocked)
 	{
-		m_VehiclePhysics.SetHandbrake( true );
+		m_VehiclePhysics.SetHandbrake(true);
 		return;
+	}
+
+	if (gabe_vehicle_fuel_enabled.GetBool())
+	{
+
+		if (m_flFuel <= 0.0f) // We're out of fuel, so don't start.
+		{
+			return;
+		}
 	}
 
 	m_VehiclePhysics.TurnOn();
@@ -1341,3 +1471,428 @@ bool CFourWheelServerVehicle::GetWheelContactPoint( int nWheelIndex, Vector &vec
 	}
 	return false;
 }
+
+//-----------------------------------------------------------------------------
+// Engine
+//-----------------------------------------------------------------------------
+
+void CPropVehicleDriveable::ScriptStartEngine()
+{
+	// This lets the normal vehicle input code handle everything.
+	ScriptVehicleInput(this, "TurnOn");
+}
+
+void CPropVehicleDriveable::ScriptStopEngine()
+{
+	ScriptVehicleInput(this, "TurnOff");
+}
+
+
+//-----------------------------------------------------------------------------
+// Locking
+//-----------------------------------------------------------------------------
+
+void CPropVehicleDriveable::ScriptLock()
+{
+	ScriptVehicleInput(this, "Lock");
+}
+
+void CPropVehicleDriveable::ScriptUnlock()
+{
+	ScriptVehicleInput(this, "Unlock");
+}
+
+bool CPropVehicleDriveable::ScriptIsLocked()
+{
+	return m_bLocked;
+}
+
+
+//-----------------------------------------------------------------------------
+// Enable / disable
+//-----------------------------------------------------------------------------
+
+void CPropVehicleDriveable::ScriptEnable()
+{
+	ScriptVehicleInput(this, "Enable");
+}
+
+void CPropVehicleDriveable::ScriptDisable()
+{
+	ScriptVehicleInput(this, "Disable");
+}
+
+
+//-----------------------------------------------------------------------------
+// Driver
+//-----------------------------------------------------------------------------
+
+HSCRIPT CPropVehicleDriveable::ScriptGetDriver()
+{
+	CBaseEntity* pDriver = GetDriver();
+
+	if (!pDriver)
+		return NULL;
+
+	return ToHScript(pDriver);
+}
+
+bool CPropVehicleDriveable::ScriptHasDriver()
+{
+	return GetDriver() != NULL;
+}
+
+void CPropVehicleDriveable::ScriptEnterVehicle(HSCRIPT hPlayer)
+{
+	if (!hPlayer)
+		return;
+
+	CBaseEntity* pEntity = ToEnt(hPlayer);
+
+	if (!pEntity || !pEntity->IsPlayer())
+		return;
+
+	CBasePlayer* pPlayer = ToBasePlayer(pEntity);
+
+	if (!pPlayer)
+		return;
+
+	if (GetDriver())
+		return;
+
+	IServerVehicle *server = GetServerVehicle();
+
+	pPlayer->GetInVehicle(server, VEHICLE_ROLE_DRIVER);
+}
+
+void CPropVehicleDriveable::ScriptExitVehicle()
+{
+	CBaseEntity* pDriver = GetDriver();
+
+	if (!pDriver || !pDriver->IsPlayer())
+		return;
+
+	CBasePlayer* pPlayer = ToBasePlayer(pDriver);
+
+	if (!pPlayer)
+		return;
+
+	pPlayer->LeaveVehicle();
+}
+
+float CPropVehicleDriveable::ScriptGetVehicleSpeed()
+{
+	return GetAbsVelocity().Length();
+}
+
+Vector CPropVehicleDriveable::ScriptGetVehicleVelocity()
+{
+	return GetAbsVelocity();
+}
+
+void CPropVehicleDriveable::ScriptSetVehiclePosition(
+	const Vector& vecPosition)
+{
+	SetAbsOrigin(vecPosition);
+}
+
+Vector CPropVehicleDriveable::ScriptGetVehiclePosition()
+{
+	return GetAbsOrigin();
+}
+
+void CPropVehicleDriveable::ScriptSetVehicleAngles(
+	const QAngle& angles)
+{
+	SetAbsAngles(angles);
+}
+
+QAngle CPropVehicleDriveable::ScriptGetVehicleAngles()
+{
+	return GetAbsAngles();
+}
+
+void CPropVehicleDriveable::ScriptSetVehicleHealth(int health)
+{
+	if (health < 0)
+		health = 0;
+
+	SetHealth(health);
+}
+
+int CPropVehicleDriveable::ScriptGetVehicleHealth()
+{
+	return GetHealth();
+}
+
+void CPropVehicleDriveable::ScriptSetVehicleDamageable(
+	bool bDamageable)
+{
+	m_takedamage = bDamageable ? DAMAGE_YES : DAMAGE_NO;
+}
+
+bool CPropVehicleDriveable::ScriptIsVehicleDamageable()
+{
+	return m_takedamage != DAMAGE_NO;
+}
+
+void CPropVehicleDriveable::ScriptApplyForce(
+	const Vector& force)
+{
+	IPhysicsObject* pPhysics = VPhysicsGetObject();
+
+	if (!pPhysics)
+		return;
+
+	pPhysics->ApplyForceCenter(force);
+}
+
+void CPropVehicleDriveable::ScriptApplyForceOffset(
+	const Vector& force,
+	const Vector& position)
+{
+	IPhysicsObject* pPhysics = VPhysicsGetObject();
+
+	if (!pPhysics)
+		return;
+
+	pPhysics->ApplyForceOffset(
+		force,
+		position
+	);
+}
+
+void CPropVehicleDriveable::ScriptSetVelocity(
+	const Vector& velocity)
+{
+	IPhysicsObject* pPhysics = VPhysicsGetObject();
+
+	if (pPhysics)
+	{
+		pPhysics->SetVelocity(
+			&velocity,
+			NULL
+		);
+
+		return;
+	}
+
+	SetAbsVelocity(velocity);
+}
+
+void CPropVehicleDriveable::ScriptAddVelocity(
+	const Vector& velocity)
+{
+	Vector current = GetAbsVelocity();
+
+	current += velocity;
+
+	ScriptSetVelocity(current);
+}
+
+void CPropVehicleDriveable::ScriptSetVehicleModel(
+	const char* pszModel)
+{
+	if (!pszModel || !pszModel[0])
+		return;
+
+	int modelIndex = PrecacheModel(pszModel);
+
+	if (modelIndex <= 0)
+		return;
+
+	SetModel(pszModel);
+}
+
+const char* CPropVehicleDriveable::ScriptGetVehicleClassname()
+{
+	return GetClassname();
+}
+
+const char* CPropVehicleDriveable::ScriptGetVehicleModel()
+{
+	return STRING(GetModelName());
+}
+
+void CPropVehicleDriveable::ScriptRemoveVehicle()
+{
+	UTIL_Remove(this);
+}
+
+BEGIN_ENT_SCRIPTDESC_ROOT(CPropVehicleDriveable, "Vehicles")
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptStartEngine,
+	"StartEngine",
+	"Starts the vehicle engine."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptStopEngine,
+	"StopEngine",
+	"Stops the vehicle engine."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptLock,
+	"Lock",
+	"Locks the vehicle."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptUnlock,
+	"Unlock",
+	"Unlocks the vehicle."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptIsLocked,
+	"IsLocked",
+	"Returns whether the vehicle is locked."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptEnable,
+	"Enable",
+	"Enables the vehicle."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptDisable,
+	"Disable",
+	"Disables the vehicle."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetDriver,
+	"GetDriver",
+	"Returns the vehicle driver."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptHasDriver,
+	"HasDriver",
+	"Returns true when the vehicle has a driver."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptEnterVehicle,
+	"EnterVehicle",
+	"Places a player in the driver seat."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptExitVehicle,
+	"ExitVehicle",
+	"Removes the current driver."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehicleSpeed,
+	"GetVehicleSpeed",
+	"Gets the vehicle's world velocity magnitude."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehicleVelocity,
+	"GetVehicleVelocity",
+	"Gets the vehicle velocity."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptSetVehiclePosition,
+	"SetVehiclePosition",
+	"Moves the vehicle."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehiclePosition,
+	"GetVehiclePosition",
+	"Gets the vehicle position."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptSetVehicleAngles,
+	"SetVehicleAngles",
+	"Sets the vehicle angles."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehicleAngles,
+	"GetVehicleAngles",
+	"Gets the vehicle angles."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptSetVehicleHealth,
+	"SetVehicleHealth",
+	"Sets vehicle health."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehicleHealth,
+	"GetVehicleHealth",
+	"Gets vehicle health."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptSetVehicleDamageable,
+	"SetVehicleDamageable",
+	"Sets whether the vehicle can take damage."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptIsVehicleDamageable,
+	"IsVehicleDamageable",
+	"Returns whether the vehicle can take damage."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptApplyForce,
+	"ApplyForce",
+	"Applies a force to the vehicle."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptApplyForceOffset,
+	"ApplyForceOffset",
+	"Applies a force at a world position."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptSetVelocity,
+	"SetVehicleVelocity",
+	"Sets the vehicle velocity."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptAddVelocity,
+	"AddVehicleVelocity",
+	"Adds to the vehicle velocity."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptSetVehicleModel,
+	"SetVehicleModel",
+	"Changes the vehicle model."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehicleClassname,
+	"GetVehicleClassname",
+	"Returns the vehicle classname."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptGetVehicleModel,
+	"GetVehicleModel",
+	"Returns the vehicle model."
+)
+
+DEFINE_SCRIPTFUNC_NAMED(
+	ScriptRemoveVehicle,
+	"RemoveVehicle",
+	"Removes the vehicle."
+)
+
+END_SCRIPTDESC()

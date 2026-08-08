@@ -53,7 +53,7 @@ public:
 	void 		KillBeam();
 	void		CreateBeams(void);
 	void		UpdateBeams(void);
-	//void		DebugBeams(void);
+	void		DebugBeams(void);
 	void		GetChaserTargetPos(Vector *vPosition);
 	void		GetNextTargetPos(Vector *vPosition);
 	int			UpdateTransmitState(void);

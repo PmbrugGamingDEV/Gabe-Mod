@@ -2339,6 +2339,445 @@ static const char* Script_GetMapListString()
 	return out;
 }
 
+//-----------------------------------------------------------------------------
+// Basic arithmetic
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathAdd(float a, float b)
+{
+	return g_pMath->Add(a, b);
+}
+
+static float ScriptNMathSubtract(float a, float b)
+{
+	return g_pMath->Subtract(a, b);
+}
+
+static float ScriptNMathMultiply(float a, float b)
+{
+	return g_pMath->Multiply(a, b);
+}
+
+static float ScriptNMathDivide(float a, float b)
+{
+	if (b == 0.0f)
+	{
+		Warning("NMath.Divide: division by zero.\n");
+		return 0.0f;
+	}
+
+	return g_pMath->Divide(a, b);
+}
+
+//-----------------------------------------------------------------------------
+// Powers and roots
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathSquare(float value)
+{
+	return g_pMath->Square(value);
+}
+
+static float ScriptNMathCube(float value)
+{
+	return g_pMath->Cube(value);
+}
+
+static float ScriptNMathPower(float base, float exponent)
+{
+	return g_pMath->Power(base, exponent);
+}
+
+static float ScriptNMathSquareRoot(float value)
+{
+	if (value < 0.0f)
+	{
+		Warning("NMath.SquareRoot: negative input.\n");
+		return 0.0f;
+	}
+
+	return g_pMath->SquareRoot(value);
+}
+
+//-----------------------------------------------------------------------------
+// Utility
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathAbsolute(float value)
+{
+	return g_pMath->Absolute(value);
+}
+
+static float ScriptNMathMinimum(float a, float b)
+{
+	return g_pMath->Minimum(a, b);
+}
+
+static float ScriptNMathMaximum(float a, float b)
+{
+	return g_pMath->Maximum(a, b);
+}
+
+static float ScriptNMathClamp(
+	float value,
+	float minimum,
+	float maximum)
+{
+	if (minimum > maximum)
+	{
+		Warning(
+			"NMath.Clamp: minimum is greater than maximum.\n");
+
+		return value;
+	}
+
+	return g_pMath->Clamp(value, minimum, maximum);
+}
+
+//-----------------------------------------------------------------------------
+// Rounding
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathFloor(float value)
+{
+	return static_cast<float>(
+		g_pMath->Floor(static_cast<double>(value)));
+}
+
+static float ScriptNMathCeiling(float value)
+{
+	return static_cast<float>(
+		g_pMath->Ceiling(static_cast<double>(value)));
+}
+
+static float ScriptNMathRound(float value)
+{
+	return static_cast<float>(
+		g_pMath->Round(static_cast<double>(value)));
+}
+
+//-----------------------------------------------------------------------------
+// Trigonometry
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathSin(float radians)
+{
+	return static_cast<float>(
+		g_pMath->Sin(static_cast<double>(radians)));
+}
+
+static float ScriptNMathCos(float radians)
+{
+	return static_cast<float>(
+		g_pMath->Cos(static_cast<double>(radians)));
+}
+
+static float ScriptNMathTan(float radians)
+{
+	return static_cast<float>(
+		g_pMath->Tan(static_cast<double>(radians)));
+}
+
+//-----------------------------------------------------------------------------
+// Angle conversion
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathDegreesToRadians(float degrees)
+{
+	return static_cast<float>(
+		g_pMath->DegreesToRadians(
+			static_cast<double>(degrees)));
+}
+
+static float ScriptNMathRadiansToDegrees(float radians)
+{
+	return static_cast<float>(
+		g_pMath->RadiansToDegrees(
+			static_cast<double>(radians)));
+}
+
+//-----------------------------------------------------------------------------
+// Logarithms and exponentials
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathLog(float value)
+{
+	if (value <= 0.0f)
+	{
+		Warning(
+			"NMath.Log: input must be greater than zero.\n");
+
+		return 0.0f;
+	}
+
+	return static_cast<float>(
+		g_pMath->Log(static_cast<double>(value)));
+}
+
+static float ScriptNMathLog10(float value)
+{
+	if (value <= 0.0f)
+	{
+		Warning(
+			"NMath.Log10: input must be greater than zero.\n");
+
+		return 0.0f;
+	}
+
+	return static_cast<float>(
+		g_pMath->Log10(static_cast<double>(value)));
+}
+
+static float ScriptNMathExp(float value)
+{
+	return static_cast<float>(
+		g_pMath->Exp(static_cast<double>(value)));
+}
+
+//-----------------------------------------------------------------------------
+// Constants
+//-----------------------------------------------------------------------------
+
+static float ScriptNMathGetPi()
+{
+	return static_cast<float>(g_pMath->GetPi());
+}
+
+static float ScriptNMathGetEulersNumber()
+{
+	return static_cast<float>(
+		g_pMath->GetEulersNumber());
+}
+
+//-----------------------------------------------------------------------------
+// Uniform distributions
+//-----------------------------------------------------------------------------
+
+static int ScriptNRandomInt(int lower, int upper)
+{
+	return g_pRandom->RandomInt(lower, upper);
+}
+
+static float ScriptNRandomFloat(float lower, float upper)
+{
+	return g_pRandom->RandomFloat(lower, upper);
+}
+
+static float ScriptNRandomDouble(float lower, float upper)
+{
+	return static_cast<float>(
+		g_pRandom->RandomDouble(
+			static_cast<double>(lower),
+			static_cast<double>(upper)));
+}
+
+static float ScriptNRandomLongDouble(float lower, float upper)
+{
+	return static_cast<float>(
+		g_pRandom->RandomLongDouble(
+			static_cast<long double>(lower),
+			static_cast<long double>(upper)));
+}
+
+//-----------------------------------------------------------------------------
+// Normal distributions
+//-----------------------------------------------------------------------------
+
+static float ScriptNRandomGaussianFloat(float mean, float stddev)
+{
+	return g_pRandom->RandomGaussianFloat(mean, stddev);
+}
+
+static float ScriptNRandomGaussianDouble(float mean, float stddev)
+{
+	return static_cast<float>(
+		g_pRandom->RandomGaussianDouble(
+			static_cast<double>(mean),
+			static_cast<double>(stddev)));
+}
+
+static float ScriptNRandomGaussianLongDouble(float mean, float stddev)
+{
+	return static_cast<float>(
+		g_pRandom->RandomGaussianLongDouble(
+			static_cast<long double>(mean),
+			static_cast<long double>(stddev)));
+}
+
+//-----------------------------------------------------------------------------
+// Boolean
+//-----------------------------------------------------------------------------
+
+static bool ScriptNRandomBool()
+{
+	return g_pRandom->RandomBool();
+}
+
+//-----------------------------------------------------------------------------
+// Character types
+// Returned as integer character codes.
+//-----------------------------------------------------------------------------
+
+static int ScriptNRandomChar(int lower, int upper)
+{
+	return static_cast<unsigned char>(
+		g_pRandom->RandomChar(
+			static_cast<char>(lower),
+			static_cast<char>(upper)));
+}
+
+static int ScriptNRandomSChar(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomSChar(
+			static_cast<signed char>(lower),
+			static_cast<signed char>(upper)));
+}
+
+static int ScriptNRandomUChar(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUChar(
+			static_cast<unsigned char>(lower),
+			static_cast<unsigned char>(upper)));
+}
+
+static int ScriptNRandomWChar(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomWChar(
+			static_cast<wchar_t>(lower),
+			static_cast<wchar_t>(upper)));
+}
+
+//-----------------------------------------------------------------------------
+// Standard integer types
+//-----------------------------------------------------------------------------
+
+static int ScriptNRandomShort(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomShort(
+			static_cast<short>(lower),
+			static_cast<short>(upper)));
+}
+
+static int ScriptNRandomUShort(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUShort(
+			static_cast<unsigned short>(lower),
+			static_cast<unsigned short>(upper)));
+}
+
+static int ScriptNRandomUInt(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUInt(
+			static_cast<unsigned int>(lower),
+			static_cast<unsigned int>(upper)));
+}
+
+static int ScriptNRandomLong(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomLong(
+			static_cast<long>(lower),
+			static_cast<long>(upper)));
+}
+
+static int ScriptNRandomULong(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomULong(
+			static_cast<unsigned long>(lower),
+			static_cast<unsigned long>(upper)));
+}
+
+static int ScriptNRandomLongLong(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomLongLong(
+			static_cast<long long>(lower),
+			static_cast<long long>(upper)));
+}
+
+static int ScriptNRandomULongLong(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomULongLong(
+			static_cast<unsigned long long>(lower),
+			static_cast<unsigned long long>(upper)));
+}
+
+//-----------------------------------------------------------------------------
+// Fixed-width integer types
+//-----------------------------------------------------------------------------
+
+static int ScriptNRandomInt8(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomInt8(
+			static_cast<int8_t>(lower),
+			static_cast<int8_t>(upper)));
+}
+
+static int ScriptNRandomUInt8(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUInt8(
+			static_cast<uint8_t>(lower),
+			static_cast<uint8_t>(upper)));
+}
+
+static int ScriptNRandomInt16(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomInt16(
+			static_cast<int16_t>(lower),
+			static_cast<int16_t>(upper)));
+}
+
+static int ScriptNRandomUInt16(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUInt16(
+			static_cast<uint16_t>(lower),
+			static_cast<uint16_t>(upper)));
+}
+
+static int ScriptNRandomInt32(int lower, int upper)
+{
+	return static_cast<int32_t>(
+		g_pRandom->RandomInt32(
+			static_cast<int32_t>(lower),
+			static_cast<int32_t>(upper)));
+}
+
+static int ScriptNRandomUInt32(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUInt32(
+			static_cast<uint32_t>(lower),
+			static_cast<uint32_t>(upper)));
+}
+
+static int ScriptNRandomInt64(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomInt64(
+			static_cast<int64_t>(lower),
+			static_cast<int64_t>(upper)));
+}
+
+static int ScriptNRandomUInt64(int lower, int upper)
+{
+	return static_cast<int>(
+		g_pRandom->RandomUInt64(
+			static_cast<uint64_t>(lower),
+			static_cast<uint64_t>(upper)));
+}
+
 static void RegisterClientScriptFunctions()
 {
 	if (!g_pScriptVM)
@@ -2411,25 +2850,77 @@ static void RegisterClientScriptFunctions()
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_IntervalPerTick, "IntervalPerTick", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_CurTime, "CurTime", "");
 
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Sin, "Sin", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Cos, "Cos", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Tan, "Tan", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Sqrt, "Sqrt", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Abs, "Abs", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Floor, "Floor", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Ceil, "Ceil", "");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathAdd, "Returns the sum of two numbers.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathSubtract, "Returns the difference between two numbers.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathMultiply, "Returns the product of two numbers.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathDivide, "Returns the quotient of two numbers.");
 
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Min, "Min", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Max, "Max", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Clamp, "Clamp", "");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathSquare, "Returns a number squared.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathCube, "Returns a number cubed.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathPower, "Raises a number to a power.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathSquareRoot, "Sqrt", "Returns the square root of a number.");
 
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Deg2Rad, "Deg2Rad", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Rad2Deg, "Rad2Deg", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathAbsolute, "Abs", "Returns the absolute value of a number.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathMinimum, "Min", "Returns the smaller of two numbers.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathMaximum, "Max", "Returns the larger of two numbers.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathClamp, "Clamp", "Restricts a number to a range.");
 
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomInt, "RandomInt", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomFloat, "RandomFloat", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomFloatExp, "RandomFloatExp", "");
-	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomGaussianFloat, "RandomGaussianFloat", "");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathFloor, "Floor", "Rounds a number down.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathCeiling, "Ceil", "Rounds a number up.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathRound, "Rounds a number to the nearest integer.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathSin, "Sin", "Returns the sine of a radian angle.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathCos, "Cos", "Returns the cosine of a radian angle.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathTan, "Tan", "Returns the tangent of a radian angle.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathDegreesToRadians, "Deg2Rad", "Converts degrees to radians.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathRadiansToDegrees, "Rad2Deg", "Converts radians to degrees.");
+
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathLog, "Returns the natural logarithm.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathLog10, "Returns the base-10 logarithm.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathExp, "Returns Euler's number raised to a power.");
+
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathGetPi, "Returns pi.");
+	ScriptRegisterFunction(g_pScriptVM, ScriptNMathGetEulersNumber, "Returns Euler's number.");
+
+	// Uniform distributions
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt, "RandomInt", "Returns a random integer in the specified inclusive range.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomFloat, "RandomFloat", "Returns a random float in the specified range.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomDouble, "RandomDouble", "Returns a random double converted to a VScript float.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomLongDouble, "RandomLongDouble", "Returns a random long double converted to a VScript float.");
+
+	// Normal distributions
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomGaussianFloat, "RandomGaussianFloat", "Returns a normally distributed random float.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomGaussianDouble, "RandomGaussianDouble", "Returns a normally distributed random double converted to a float.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomGaussianLongDouble, "RandomGaussianLongDouble", "Returns a normally distributed random long double converted to a float.");
+
+	// Boolean
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomBool, "RandomBool", "Returns a random boolean.");
+
+	// Character types
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomChar, "RandomChar", "Returns a random char as an integer character code.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomSChar, "RandomSChar", "Returns a random signed char as an integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUChar, "RandomUChar", "Returns a random unsigned char as an integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomWChar, "RandomWChar", "Returns a random wide character as an integer code.");
+
+	// Standard integer types
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomShort, "RandomShort", "Returns a random short integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUShort, "RandomUShort", "Returns a random unsigned short integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt, "RandomUInt", "Returns a random unsigned integer within VScript's integer range.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomLong, "RandomLong", "Returns a random long integer within VScript's integer range.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomULong, "RandomULong", "Returns a random unsigned long within VScript's integer range.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomLongLong, "RandomLongLong", "Returns a random long long converted to a VScript integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomULongLong, "RandomULongLong", "Returns a random unsigned long long converted to a VScript integer.");
+
+	// Fixed-width integer types
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt8, "RandomInt8", "Returns a random signed 8-bit integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt8, "RandomUInt8", "Returns a random unsigned 8-bit integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt16, "RandomInt16", "Returns a random signed 16-bit integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt16, "RandomUInt16", "Returns a random unsigned 16-bit integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt32, "RandomInt32", "Returns a random signed 32-bit integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt32, "RandomUInt32", "Returns a random unsigned 32-bit integer within VScript's signed range.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt64, "RandomInt64", "Returns a random signed 64-bit integer converted to a VScript integer.");
+	ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt64, "RandomUInt64", "Returns a random unsigned 64-bit integer converted to a VScript integer.");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomSeed, "RandomSeed", "");
 
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_GetGameDirectory, "GetGameDirectory", "");

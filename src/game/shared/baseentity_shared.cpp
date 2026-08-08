@@ -1836,7 +1836,6 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 		if (info.m_iAmmoType == -1)
 		{
 			DevMsg("ERROR: Undefined ammo type!\n");
-			return;
 		}
 
 		Vector vecTracerDest = tr.endpos;

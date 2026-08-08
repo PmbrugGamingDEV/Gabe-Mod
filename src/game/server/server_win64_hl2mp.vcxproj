@@ -149,7 +149,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <PreLinkEvent />
     <Link>
       <AdditionalOptions> /ignore:4221</AdditionalOptions>
-      <AdditionalDependencies>;shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)\server.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -329,7 +329,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <PreLinkEvent />
     <Link>
       <AdditionalOptions> /ignore:4221</AdditionalOptions>
-      <AdditionalDependencies>;shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)\server.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -489,6 +489,7 @@ exit 1
     <Library Include="..\..\lib\public\x64\vstdlib.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\public\imath.h" />
     <ClInclude Include="..\..\public\mathlib\amd3dx.h" />
     <ClInclude Include="..\..\public\mysticlight\IMysticLight.h" />
     <ClInclude Include="..\shared\ammodef.h" />
@@ -543,6 +544,7 @@ exit 1
     <ClInclude Include="..\shared\env_detail_controller.h" />
     <ClInclude Include="episodic\grenade_hopwire.h" />
     <ClInclude Include="episodic\npc_hunter.h" />
+    <ClInclude Include="episodic\vehicle_jeep_episodic.h" />
     <ClInclude Include="episodic\weapon_striderbuster.h" />
     <ClInclude Include="EventLog.h" />
     <ClInclude Include="..\shared\expressionsample.h" />
@@ -601,7 +603,9 @@ exit 1
     <ClInclude Include="hl1\hl1_weapon_rpg.h" />
     <ClInclude Include="hl1\HL1_WEAPON_SATCHEL.H" />
     <ClInclude Include="hl1_dmgaccumulator.h" />
+    <ClInclude Include="hl2\grenade_brickbat.h" />
     <ClInclude Include="hl2\vehicle_jeep.h" />
+    <ClInclude Include="hl2\weapon_brickbat.h" />
     <ClInclude Include="ilagcompensationmanager.h" />
     <ClInclude Include="..\..\public\vgui\ILocalize.h" />
     <ClInclude Include="..\..\public\materialsystem\imaterial.h" />
@@ -1185,6 +1189,7 @@ exit 1
     <ClCompile Include="episodic\npc_hunter.cpp" />
     <ClCompile Include="episodic\npc_magnusson.cpp" />
     <ClCompile Include="episodic\npc_puppet.cpp" />
+    <ClCompile Include="episodic\vehicle_jeep_episodic.cpp" />
     <ClCompile Include="episodic\weapon_hopwire.cpp" />
     <ClCompile Include="episodic\weapon_striderbuster.cpp" />
     <ClCompile Include="fartcmd.cpp" />
@@ -1485,8 +1490,10 @@ exit 1
     <ClCompile Include="globalstate.cpp" />
     <ClCompile Include="grenadethrown.cpp" />
     <ClCompile Include="guntarget.cpp" />
+    <ClCompile Include="hl2\grenade_brickbat.cpp" />
     <ClCompile Include="hl2\vehicle_jeep.cpp" />
     <ClCompile Include="hl2\weapon_alyxgun.cpp" />
+    <ClCompile Include="hl2\weapon_brickbat.cpp" />
     <ClCompile Include="h_ai.cpp" />
     <ClCompile Include="h_cycler.cpp" />
     <ClCompile Include="h_export.cpp">
@@ -1676,6 +1683,7 @@ exit 1
     </ClCompile>
     <ClCompile Include="scripted.cpp" />
     <ClCompile Include="scriptedtarget.cpp" />
+    <ClCompile Include="sebeverywhere.cpp" />
     <ClCompile Include="sendproxy.cpp" />
     <ClCompile Include="..\shared\sequence_Transitioner.cpp" />
     <ClCompile Include="..\..\public\server_class.cpp">
@@ -1782,6 +1790,7 @@ exit 1
     <ClCompile Include="..\shared\weapon_proficiency.cpp" />
     <ClCompile Include="weapon_camera.cpp" />
     <ClCompile Include="weapon_eattach.cpp" />
+    <ClCompile Include="weapon_fuelcan.cpp" />
     <ClCompile Include="weapon_hax.cpp" />
     <ClCompile Include="weapon_lasergun.cpp" />
     <ClCompile Include="weapon_multitool.cpp" />

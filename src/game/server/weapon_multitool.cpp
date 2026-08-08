@@ -31,7 +31,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "memdbgon.h"
 
-using GabeMod::HudText;
+using GabeMod::CGabeScriptFuncs;
 
 extern IEffects* g_pEffects;
 
@@ -548,7 +548,7 @@ void CWeaponMultitool::SecondaryAttack()
 
 	if (pEnt->IsWorld())
 	{
-		HudText(pPlayer, "Nothing to copy.", 255, 100, 100);
+		CGabeScriptFuncs::HudText(pPlayer, "Nothing to copy.", 255, 100, 100);
 		return;
 	}
 
@@ -646,7 +646,7 @@ void CWeaponMultitool::SecondaryAttack()
 	// -----------------------------------------
 	// Success feedback
 	// -----------------------------------------
-	HudText(
+	CGabeScriptFuncs::HudText(
 		pPlayer,
 		UTIL_VarArgs(
 			"Copied: %s",
@@ -850,7 +850,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		// Don’t dissolve players
 		if (pEnt->IsPlayer())
 		{
-			HudText(pPlayer, "No players.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "No players.", 255, 100, 100);
 			break;
 		}
 
@@ -1025,7 +1025,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		}
 		}
 
-		HudText(
+		CGabeScriptFuncs::HudText(
 			pPlayer,
 			UTIL_VarArgs("RenderFX: %s", entry.name),
 			200, 255, 200
@@ -1038,14 +1038,14 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 	{
 		if (!pEnt->IsNPC())
 		{
-			HudText(pPlayer, "Not an NPC.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "Not an NPC.", 255, 100, 100);
 			break;
 		}
 
 		CBaseFlex* pFlex = dynamic_cast<CBaseFlex*>(pEnt);
 		if (!pFlex)
 		{
-			HudText(pPlayer, "NPC has no facial flexes.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "NPC has no facial flexes.", 255, 100, 100);
 			break;
 		}
 
@@ -1075,7 +1075,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 			);
 		}
 
-		HudText(
+		CGabeScriptFuncs::HudText(
 			pPlayer,
 			UTIL_VarArgs("Applied: %s", preset.name),
 			150, 255, 150
@@ -1089,11 +1089,11 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		{
 			m_hConstraintTarget1 = pEnt;
 			m_hConstraintTarget2 = NULL; // Reset second just in case
-			HudText(pPlayer, "First point selected.", 200, 255, 255);
+			CGabeScriptFuncs::HudText(pPlayer, "First point selected.", 200, 255, 255);
 		}
 		else if (m_hConstraintTarget1 == pEnt)
 		{
-			HudText(pPlayer, "Cannot constrain an entity to itself.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "Cannot constrain an entity to itself.", 255, 100, 100);
 			m_hConstraintTarget1 = NULL;
 		}
 		else
@@ -1112,7 +1112,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 			if (!pPhys1 || !pPhys2)
 			{
-				HudText(pPlayer, "Both objects must have physics!", 255, 100, 100);
+				CGabeScriptFuncs::HudText(pPlayer, "Both objects must have physics!", 255, 100, 100);
 				m_hConstraintTarget1 = NULL;
 				m_hConstraintTarget2 = NULL;
 				break;
@@ -1129,7 +1129,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 				if (pConstraint)
 				{
 					m_Constraints.AddToTail(pConstraint);
-					HudText(pPlayer, "BallSocket constraint created.", 100, 255, 100);
+					CGabeScriptFuncs::HudText(pPlayer, "BallSocket constraint created.", 100, 255, 100);
 				}
 
 				break;
@@ -1143,7 +1143,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 				if (pConstraint)
 				{
 					m_Constraints.AddToTail(pConstraint);
-					HudText(pPlayer, "Weld constraint created.", 100, 255, 100);
+					CGabeScriptFuncs::HudText(pPlayer, "Weld constraint created.", 100, 255, 100);
 				}
 				break;
 			}
@@ -1167,7 +1167,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 					m_vecConstraintPos1 = tr.endpos;
 
-					HudText(pPlayer, "First rope point set.", 200, 255, 255);
+					CGabeScriptFuncs::HudText(pPlayer, "First rope point set.", 200, 255, 255);
 					break;
 				}
 
@@ -1213,7 +1213,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 						DispatchSpawn(pStart);
 						DispatchSpawn(pEnd);
 
-						HudText(pPlayer, "Vector rope created!", 100, 255, 100);
+						CGabeScriptFuncs::HudText(pPlayer, "Vector rope created!", 100, 255, 100);
 					}
 				}
 				else
@@ -1223,7 +1223,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 					// ----------------------------------------
 					if (!pEnt1 || !pEnt2 || pEnt1 == pEnt2)
 					{
-						HudText(pPlayer, "Invalid rope targets!", 255, 100, 100);
+						CGabeScriptFuncs::HudText(pPlayer, "Invalid rope targets!", 255, 100, 100);
 						m_hConstraintTarget1 = NULL;
 						break;
 					}
@@ -1233,7 +1233,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 					if (!pPhys1 || !pPhys2)
 					{
-						HudText(pPlayer, "Both objects need physics!", 255, 100, 100);
+						CGabeScriptFuncs::HudText(pPlayer, "Both objects need physics!", 255, 100, 100);
 						m_hConstraintTarget1 = NULL;
 						break;
 					}
@@ -1287,7 +1287,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 					if (pConstraint)
 					{
 						m_Constraints.AddToTail(pConstraint);
-						HudText(pPlayer, "Entity rope created!", 100, 255, 100);
+						CGabeScriptFuncs::HudText(pPlayer, "Entity rope created!", 100, 255, 100);
 					}
 				}
 
@@ -1309,7 +1309,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 	{
 		if (pEnt->IsWorld())
 		{
-			HudText(pPlayer, "Cannot ignite the world.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "Cannot ignite the world.", 255, 100, 100);
 			break;
 		}
 
@@ -1336,7 +1336,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		{
 			// Extinguish = remove flame entity
 			UTIL_Remove(pFlame);
-			HudText(pPlayer, "Fire extinguished.", 150, 200, 255);
+			CGabeScriptFuncs::HudText(pPlayer, "Fire extinguished.", 150, 200, 255);
 		}
 		else
 		{
@@ -1345,7 +1345,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 			if (pNewFlame)
 			{
 				pNewFlame->SetLifetime(10.0f); // seconds
-				HudText(pPlayer, "Entity ignited.", 255, 150, 50);
+				CGabeScriptFuncs::HudText(pPlayer, "Entity ignited.", 255, 150, 50);
 			}
 		}
 
@@ -1355,7 +1355,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 	{
 		if (!m_DupeData.valid)
 		{
-			HudText(pPlayer, "No copied object.", 255, 150, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "No copied object.", 255, 150, 100);
 			break;
 		}
 
@@ -1377,7 +1377,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 		if (tr.fraction == 1.0f)
 		{
-			HudText(pPlayer, "Aim at a surface to place.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "Aim at a surface to place.", 255, 100, 100);
 			break;
 		}
 
@@ -1395,7 +1395,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 			if (!pNew)
 			{
-				HudText(pPlayer, "Ragdoll spawn failed.", 255, 100, 100);
+				CGabeScriptFuncs::HudText(pPlayer, "Ragdoll spawn failed.", 255, 100, 100);
 				break;
 			}
 
@@ -1450,7 +1450,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 		if (!pNew)
 		{
-			HudText(pPlayer, "Spawn failed.", 255, 100, 100);
+			CGabeScriptFuncs::HudText(pPlayer, "Spawn failed.", 255, 100, 100);
 			break;
 		}
 
@@ -1532,7 +1532,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 	case MODE_LIGHT_WATERMELON:
 	{
 		ThrowLightWatermelon();
-		HudText(pPlayer, "Light watermelon thrown.", 200, 255, 200);
+		CGabeScriptFuncs::HudText(pPlayer, "Light watermelon thrown.", 200, 255, 200);
 		break;
 	}
 
@@ -1545,7 +1545,7 @@ void CWeaponMultitool::ShowDistance(CBaseEntity* pEnt)
 	if (!pPlayer) return;
 
 	float flDist = (pEnt->GetAbsOrigin() - pPlayer->EyePosition()).Length();
-	HudText(pPlayer, UTIL_VarArgs("Distance: %.1f units", flDist), 200, 255, 200);
+	CGabeScriptFuncs::HudText(pPlayer, UTIL_VarArgs("Distance: %.1f units", flDist), 200, 255, 200);
 }
 
 void CWeaponMultitool::ItemPostFrame()
@@ -1569,14 +1569,14 @@ void CWeaponMultitool::ItemPostFrame()
 			{
 				m_nColorIndex = (m_nColorIndex + 1) % g_ColorPresets_COUNT;
 				const char* name = g_ColorPresets[m_nColorIndex].name;
-				HudText(pPlayer, UTIL_VarArgs("Color Mode: %s", name), 255, 255, 255);
+				CGabeScriptFuncs::HudText(pPlayer, UTIL_VarArgs("Color Mode: %s", name), 255, 255, 255);
 				SendHudUpdate();
 			}
 			else if (m_nMultitoolMode == MODE_DECAL)
 			{
 				m_nDecalIndex = (m_nDecalIndex + 1) % DECAL_COUNT;
 				const char* name = g_DecalNames[m_nDecalIndex];
-				HudText(pPlayer, UTIL_VarArgs("Decal: %s", name), 255, 255, 255);
+				CGabeScriptFuncs::HudText(pPlayer, UTIL_VarArgs("Decal: %s", name), 255, 255, 255);
 				SendHudUpdate();
 			}
 		}
@@ -1588,7 +1588,7 @@ void CWeaponMultitool::ItemPostFrame()
 		{
 			m_nMaterialIndex = (m_nMaterialIndex + 1) % RENDERFX_COUNT;
 
-			HudText(
+			CGabeScriptFuncs::HudText(
 				pPlayer,
 				UTIL_VarArgs(
 					"RenderFX: %s",
@@ -1607,7 +1607,7 @@ void CWeaponMultitool::ItemPostFrame()
 		{
 			m_nFaceIndex = (m_nFaceIndex + 1) % FACE_COUNT;
 
-			HudText(
+			CGabeScriptFuncs::HudText(
 				pPlayer,
 				UTIL_VarArgs("Face: %s", g_FacePresets[m_nFaceIndex].name),
 				255, 255, 255
@@ -1623,7 +1623,7 @@ void CWeaponMultitool::ItemPostFrame()
 		if ((pPlayer->m_nButtons & IN_RELOAD) && (pPlayer->m_afButtonPressed & IN_RELOAD))
 		{
 			m_nConstraintType = (m_nConstraintType + 1) % g_szConstraintTypes_COUNT;
-			HudText(pPlayer, UTIL_VarArgs("Constraint Type: %s", g_szConstraintTypes[m_nConstraintType]), 255, 255, 255);
+			CGabeScriptFuncs::HudText(pPlayer, UTIL_VarArgs("Constraint Type: %s", g_szConstraintTypes[m_nConstraintType]), 255, 255, 255);
 
 			SendHudUpdate();
 		}
@@ -1654,7 +1654,7 @@ void CWeaponMultitool::ItemPostFrame()
 
 			m_CreatedRopes.RemoveAll();
 
-			HudText(pPlayer,
+			CGabeScriptFuncs::HudText(pPlayer,
 				UTIL_VarArgs("Removed %d constraints.", removed),
 				255, 100, 100);
 		}
@@ -1667,7 +1667,7 @@ void CWeaponMultitool::ItemPostFrame()
 			m_nLightWatermelonColor =
 				(m_nLightWatermelonColor + 1) % g_ColorPresets_COUNT;
 
-			HudText(
+			CGabeScriptFuncs::HudText(
 				pPlayer,
 				UTIL_VarArgs(
 					"Watermelon Light Color: %s",

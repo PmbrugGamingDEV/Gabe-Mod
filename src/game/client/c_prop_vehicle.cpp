@@ -14,6 +14,7 @@
 #include "view.h"
 #include "engine/ivdebugoverlay.h"
 #include "movevars_shared.h"
+#include "vgui_all.h"
 #include "iviewrender.h"
 #include "vgui/ISurface.h"
 #include "client_virtualreality.h"
@@ -25,6 +26,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+using namespace vgui;
+
 int ScreenTransform( const Vector& point, Vector& screen );
 
 extern ConVar default_fov;
@@ -34,6 +37,7 @@ extern ConVar joy_response_move_vehicle;
 IMPLEMENT_CLIENTCLASS_DT(C_PropVehicleDriveable, DT_PropVehicleDriveable, CPropVehicleDriveable)
 	RecvPropEHandle( RECVINFO(m_hPlayer) ),
 	RecvPropInt( RECVINFO( m_nSpeed ) ),
+	RecvPropFloat(RECVINFO(m_flFuel)),
 	RecvPropInt( RECVINFO( m_nRPM ) ),
 	RecvPropFloat( RECVINFO( m_flThrottle ) ),
 	RecvPropInt( RECVINFO( m_nBoostTimeLeft ) ),
@@ -420,3 +424,1050 @@ void C_PropVehicleDriveable::OnExitedVehicle( C_BaseCombatCharacter *pPassenger 
 #endif
 }
 
+DECLARE_HUDELEMENT(CHudVehicleStats);
+
+
+//-----------------------------------------------------------------------------
+// Constructor
+//-----------------------------------------------------------------------------
+CHudVehicleStats::CHudVehicleStats(const char* pElementName)
+	: CHudElement(pElementName),
+	BaseClass(NULL, "HudVehicleStats")
+{
+	SetParent(g_pClientMode->GetViewport());
+
+	SetHiddenBits(HIDEHUD_PLAYERDEAD);
+
+	m_pVehicle = NULL;
+	m_pOwner = NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+// Init
+//-----------------------------------------------------------------------------
+void CHudVehicleStats::Init()
+{
+	m_pVehicle = NULL;
+	m_pOwner = NULL;
+}
+
+
+//-----------------------------------------------------------------------------
+// VidInit
+//-----------------------------------------------------------------------------
+void CHudVehicleStats::VidInit()
+{
+	m_pVehicle = NULL;
+	m_pOwner = NULL;
+
+	hFont = vgui::scheme()->GetIScheme(
+		vgui::scheme()->GetDefaultScheme()
+	)->GetFont("Default", true);
+}
+
+
+//-----------------------------------------------------------------------------
+// ShouldDraw
+//-----------------------------------------------------------------------------
+bool CHudVehicleStats::ShouldDraw()
+{
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+
+	if (!pPlayer)
+		return false;
+
+	if (!pPlayer->IsInAVehicle())
+		return false;
+
+	C_PropVehicleDriveable* pVehicle =
+		dynamic_cast<C_PropVehicleDriveable*>(pPlayer->GetVehicle());
+
+	if (!pVehicle)
+		return false;
+
+	return CHudElement::ShouldDraw();
+}
+
+
+//-----------------------------------------------------------------------------
+// OnThink
+//-----------------------------------------------------------------------------
+void CHudVehicleStats::OnThink()
+{
+	m_pVehicle = NULL;
+	m_pOwner = NULL;
+
+	C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+
+	if (!pPlayer)
+		return;
+
+	if (!pPlayer->IsInAVehicle())
+		return;
+
+	m_pVehicle =
+		dynamic_cast<C_PropVehicleDriveable*>(pPlayer->GetVehicle());
+
+	if (!m_pVehicle)
+		return;
+
+	m_pOwner = pPlayer;
+}
+
+
+//-----------------------------------------------------------------------------
+// Paint
+//-----------------------------------------------------------------------------
+void CHudVehicleStats::Paint()
+{
+	if (!m_pVehicle)
+		return;
+
+	// ---------------------------------------------------------
+	// VEHICLE VALUES
+	// ---------------------------------------------------------
+
+	float flFuel = m_pVehicle->GetFuelAmt();
+	int nSpeed = m_pVehicle->GetSpeed();
+
+	float flFuelFraction = clamp(flFuel / 100.0f, 0.0f, 1.0f);
+
+
+	// ---------------------------------------------------------
+	// PANEL BACKGROUND
+	// ---------------------------------------------------------
+
+	int wide, tall;
+	GetSize(wide, tall);
+
+	surface()->DrawSetColor(0, 0, 0, 180);
+	surface()->DrawFilledRect(
+		0,
+		0,
+		wide,
+		tall
+	);
+
+
+	// ---------------------------------------------------------
+	// BORDER
+	// ---------------------------------------------------------
+
+	surface()->DrawSetColor(255, 255, 255, 180);
+	surface()->DrawOutlinedRect(
+		0,
+		0,
+		wide,
+		tall
+	);
+
+
+	// ---------------------------------------------------------
+	// FONT
+	// ---------------------------------------------------------
+
+	if (hFont == INVALID_FONT)
+		return;
+
+
+	// ---------------------------------------------------------
+	// SPEED
+	// ---------------------------------------------------------
+
+	wchar_t wszSpeed[64];
+
+	V_snwprintf(
+		wszSpeed,
+		ARRAYSIZE(wszSpeed),
+		L"Speed: %d MPH",
+		nSpeed
+	);
+
+	surface()->DrawSetTextFont(hFont);
+	surface()->DrawSetTextColor(255, 255, 255, 255);
+	surface()->DrawSetTextPos(10, 10);
+
+	surface()->DrawPrintText(
+		wszSpeed,
+		V_wcslen(wszSpeed)
+	);
+
+
+	// ---------------------------------------------------------
+	// FUEL LABEL
+	// ---------------------------------------------------------
+
+	wchar_t wszFuel[64];
+
+	V_snwprintf(
+		wszFuel,
+		ARRAYSIZE(wszFuel),
+		L"Fuel: %.0f%%",
+		flFuel
+	);
+
+	surface()->DrawSetTextFont(hFont);
+	surface()->DrawSetTextColor(255, 255, 255, 255);
+	surface()->DrawSetTextPos(10, 40);
+
+	surface()->DrawPrintText(
+		wszFuel,
+		V_wcslen(wszFuel)
+	);
+
+
+	// ---------------------------------------------------------
+	// FUEL BAR
+	// ---------------------------------------------------------
+
+	int fuelX = 10;
+	int fuelY = 65;
+
+	int fuelBarWide = wide - 20;
+	int fuelBarTall = 12;
+
+	// Background
+	surface()->DrawSetColor(40, 40, 40, 255);
+
+	surface()->DrawFilledRect(
+		fuelX,
+		fuelY,
+		fuelX + fuelBarWide,
+		fuelY + fuelBarTall
+	);
+
+	// Filled portion
+	int fuelFillWide =
+		(int)(fuelBarWide * flFuelFraction);
+
+	surface()->DrawSetColor(255, 255, 255, 255);
+
+	surface()->DrawFilledRect(
+		fuelX,
+		fuelY,
+		fuelX + fuelFillWide,
+		fuelY + fuelBarTall
+	);
+
+	// Border
+	surface()->DrawSetColor(255, 255, 255, 255);
+
+	surface()->DrawOutlinedRect(
+		fuelX,
+		fuelY,
+		fuelX + fuelBarWide,
+		fuelY + fuelBarTall
+	);
+}
+
+//=============================================================================================
+// VEHICLE VIEW SMOOTHING. See iclientvehicle.h for details.
+//=============================================================================================
+
+//-----------------------------------------------------------------------------
+// Purpose: For a given degree of freedom, blends between the raw and clamped
+//			view depending on this vehicle's preferences. When vehicles wreck
+//			catastrophically, it's often better to lock the view for a little
+//			while until things settle down than to keep trying to clamp/flatten
+//			the view artificially because we can never really catch up with
+//			the chaotic flipping.
+//-----------------------------------------------------------------------------
+extern float ApplyViewLocking(float flAngleRaw, float flAngleClamped, ViewLockData_t& lockData, RemapAngleRange_CurvePart_t eCurvePart);
+
+extern float RemapAngleRange(float startInterval, float endInterval, float value);
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : pData - 
+//			vehicleEyeAngles - 
+//-----------------------------------------------------------------------------
+extern void RemapViewAngles(ViewSmoothingData_t* pData, QAngle& vehicleEyeAngles);
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+// Input  : *pAbsOrigin - 
+//			*pAbsAngles - 
+//			bEnterAnimOn - 
+//			bExitAnimOn - 
+//			*vecEyeExitEndpoint - 
+//			*pData - 
+//-----------------------------------------------------------------------------
+void VehicleViewSmoothing(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData,
+	float* pFOV)
+{
+	int eyeAttachmentIndex = pData->pVehicle->LookupAttachment("vehicle_driver_eyes");
+	matrix3x4_t vehicleEyePosToWorld;
+	Vector vehicleEyeOrigin;
+	QAngle vehicleEyeAngles;
+	pData->pVehicle->GetAttachment(eyeAttachmentIndex, vehicleEyeOrigin, vehicleEyeAngles);
+	AngleMatrix(vehicleEyeAngles, vehicleEyePosToWorld);
+
+	// Dampen the eye positional change as we drive around.
+	*pAbsAngles = pPlayer->EyeAngles();
+	if (r_VehicleViewDampen.GetInt() && pData->bDampenEyePosition)
+	{
+		C_PropVehicleDriveable* pDriveable = assert_cast<C_PropVehicleDriveable*>(pData->pVehicle);
+		pDriveable->DampenEyePosition(vehicleEyeOrigin, vehicleEyeAngles);
+	}
+
+	// Started running an entry or exit anim?
+	bool bRunningAnim = (bEnterAnimOn || bExitAnimOn);
+	if (bRunningAnim && !pData->bWasRunningAnim)
+	{
+		pData->bRunningEnterExit = true;
+		pData->flAnimTimeElapsed = 0.01;
+		pData->flEnterExitDuration = pData->pVehicle->SequenceDuration(pData->pVehicle->GetSequence());
+
+		pData->vecAnglesSaved = PrevMainViewAngles();
+		pData->vecOriginSaved = PrevMainViewOrigin();
+
+		// Save our initial angular error, which we will blend out over the length of the animation.
+		pData->vecAngleDiffSaved.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.y = AngleDiff(vehicleEyeAngles.y, pData->vecAnglesSaved.y);
+		pData->vecAngleDiffSaved.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		pData->vecAngleDiffMin = pData->vecAngleDiffSaved;
+	}
+
+	pData->bWasRunningAnim = bRunningAnim;
+
+	float frac = 0;
+	float flFracFOV = 0;
+
+	// If we're in an enter/exit animation, blend the player's eye angles to the attachment's
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		*pAbsAngles = vehicleEyeAngles;
+
+		// Forward integrate to determine the elapsed time in this entry/exit anim.
+		frac = pData->flAnimTimeElapsed / pData->flEnterExitDuration;
+		frac = clamp(frac, 0.0f, 1.0f);
+
+		flFracFOV = pData->flAnimTimeElapsed / (pData->flEnterExitDuration * 0.85f);
+		flFracFOV = clamp(flFracFOV, 0.0f, 1.0f);
+
+		//Msg("Frac: %f\n", frac );
+
+		if (frac < 1.0)
+		{
+			// Blend to the desired vehicle eye origin
+			//Vector vecToView = (vehicleEyeOrigin - PrevMainViewOrigin());
+			//vehicleEyeOrigin = PrevMainViewOrigin() + (vecToView * SimpleSpline(frac));
+			//debugoverlay->AddBoxOverlay( vehicleEyeOrigin, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 0,255,255, 64, 10 );
+		}
+		else
+		{
+			pData->bRunningEnterExit = false;
+
+			// Enter animation has finished, align view with the eye attachment point
+			// so they can start mouselooking around.
+			if (!bExitAnimOn)
+			{
+				Vector localEyeOrigin;
+				QAngle localEyeAngles;
+
+				pData->pVehicle->GetAttachmentLocal(eyeAttachmentIndex, localEyeOrigin, localEyeAngles);
+				engine->SetViewAngles(localEyeAngles);
+			}
+		}
+
+		pData->flAnimTimeElapsed += gpGlobals->frametime;
+	}
+
+	// Compute the relative rotation between the unperturbed eye attachment + the eye angles
+	matrix3x4_t cameraToWorld;
+	AngleMatrix(*pAbsAngles, cameraToWorld);
+
+	matrix3x4_t worldToEyePos;
+	MatrixInvert(vehicleEyePosToWorld, worldToEyePos);
+
+	matrix3x4_t vehicleCameraToEyePos;
+	ConcatTransforms(worldToEyePos, cameraToWorld, vehicleCameraToEyePos);
+
+	// Damp out some of the vehicle motion (neck/head would do this)
+	if (pData->bClampEyeAngles)
+	{
+		RemapViewAngles(pData, vehicleEyeAngles);
+	}
+
+	AngleMatrix(vehicleEyeAngles, vehicleEyeOrigin, vehicleEyePosToWorld);
+
+	// Now treat the relative eye angles as being relative to this new, perturbed view position...
+	matrix3x4_t newCameraToWorld;
+	ConcatTransforms(vehicleEyePosToWorld, vehicleCameraToEyePos, newCameraToWorld);
+
+	// output new view abs angles
+	MatrixAngles(newCameraToWorld, *pAbsAngles);
+
+	// UNDONE: *pOrigin would already be correct in single player if the HandleView() on the server ran after vphysics
+	MatrixGetColumn(newCameraToWorld, 3, *pAbsOrigin);
+
+	// If we're playing an extry or exit animation...
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		float flSplineFrac = clamp(SimpleSpline(frac), 0, 1);
+
+		// Blend out the error between the player's initial eye angles and the animation's initial
+		// eye angles over the duration of the animation. 
+		QAngle vecAngleDiffBlend = ((1 - flSplineFrac) * pData->vecAngleDiffSaved);
+
+		// If our current error is less than the error amount that we're blending 
+		// out, use that. This lets the angles converge as quickly as possible.
+		QAngle vecAngleDiffCur;
+		vecAngleDiffCur.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		vecAngleDiffCur.y = AngleDiff(vehicleEyeAngles.y, pData->vecAnglesSaved.y);
+		vecAngleDiffCur.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		// In either case, never increase the error, so track the minimum error and clamp to that.
+		for (int i = 0; i < 3; i++)
+		{
+			if (fabs(vecAngleDiffCur[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffCur[i];
+			}
+
+			if (fabs(vecAngleDiffBlend[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffBlend[i];
+			}
+		}
+
+		// Add the error to the animation's eye angles.
+		*pAbsAngles -= pData->vecAngleDiffMin;
+
+		// Use this as the basis for the next error calculation.
+		pData->vecAnglesSaved = *pAbsAngles;
+
+		//if ( gpGlobals->frametime )
+		//{
+		//	Msg("Angle : %.2f %.2f %.2f\n", target.x, target.y, target.z );
+		//}
+		//Msg("Prev: %.2f %.2f %.2f\n", pData->vecAnglesSaved.x, pData->vecAnglesSaved.y, pData->vecAnglesSaved.z );
+
+		Vector vecAbsOrigin = *pAbsOrigin;
+
+		// If we're exiting, our desired position is the server-sent exit position
+		if (bExitAnimOn)
+		{
+			//debugoverlay->AddBoxOverlay( vecEyeExitEndpoint, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 255,255,255, 64, 10 );
+
+			// Blend to the exit position
+			*pAbsOrigin = Lerp(flSplineFrac, vecAbsOrigin, *vecEyeExitEndpoint);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, pData->flFOV, default_fov.GetFloat());
+			}
+		}
+		else
+		{
+			// Blend from our starting position to the desired origin
+			*pAbsOrigin = Lerp(flSplineFrac, pData->vecOriginSaved, vecAbsOrigin);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, default_fov.GetFloat(), pData->flFOV);
+			}
+		}
+	}
+	else if (pFOV)
+	{
+		// Not running an entry/exit anim. Just use the vehicle's FOV.
+		*pFOV = pData->flFOV;
+	}
+}
+//TheQuartz
+
+void VehicleViewSmoothingAPC(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData,
+	float* pFOV)
+{
+	int eyeAttachmentIndex = pData->pVehicle->LookupAttachment("cannon_muzzle");
+	matrix3x4_t vehicleEyePosToWorld;
+	Vector vehicleEyeOrigin;
+	QAngle vehicleEyeAngles;
+	pData->pVehicle->GetAttachment(eyeAttachmentIndex, vehicleEyeOrigin, vehicleEyeAngles);
+	Vector up, forward;
+	pData->pVehicle->GetVectors(NULL, &forward, &up);
+	vehicleEyeOrigin += (forward * 37) + (up * 35);
+	AngleMatrix(vehicleEyeAngles, vehicleEyePosToWorld);
+
+	// Dampen the eye positional change as we drive around.
+	*pAbsAngles = pPlayer->EyeAngles();
+	if (r_VehicleViewDampen.GetInt() && pData->bDampenEyePosition)
+	{
+		C_PropVehicleDriveable* pDriveable = assert_cast<C_PropVehicleDriveable*>(pData->pVehicle);
+		pDriveable->DampenEyePosition(vehicleEyeOrigin, vehicleEyeAngles);
+	}
+
+	// Started running an entry or exit anim?
+	bool bRunningAnim = pData->bBlendAnglesAPC;
+	//bool bRunningAnim = false;
+
+	if (bRunningAnim && !pData->bWasRunningAnim)
+	{
+
+		pData->flAPCTimeToStart = gpGlobals->curtime + 2.0f; // Le daremos dos segundos para que piense
+
+		pData->bRunningEnterExit = true;
+		pData->flAnimTimeElapsed = 0.01;
+		pData->flEnterExitDuration = 2.0f;
+
+		pData->vecAnglesSaved = PrevMainViewAngles();
+		pData->vecOriginSaved = PrevMainViewOrigin();
+
+		// Save our initial angular error, which we will blend out over the length of the animation.
+		pData->vecAngleDiffSaved.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.y = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		pData->vecAngleDiffMin = pData->vecAngleDiffSaved;
+	}
+
+	pData->bWasRunningAnim = bRunningAnim;
+
+	float frac = 0;
+	float flFracFOV = 0;
+
+	// If we're in an enter/exit animation, blend the player's eye angles to the attachment's
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		*pAbsAngles = vehicleEyeAngles;
+
+		// Forward integrate to determine the elapsed time in this entry/exit anim.
+		frac = pData->flAnimTimeElapsed / pData->flEnterExitDuration;
+		frac = clamp(frac, 0.0f, 1.0f);
+
+		flFracFOV = pData->flAnimTimeElapsed / (pData->flEnterExitDuration * 0.85f);
+		flFracFOV = clamp(flFracFOV, 0.0f, 1.0f);
+
+		//Msg("Frac: %f\n", frac );
+
+		if (frac < 1.0)
+		{
+			// Blend to the desired vehicle eye origin
+			//Vector vecToView = (vehicleEyeOrigin - PrevMainViewOrigin());
+			//vehicleEyeOrigin = PrevMainViewOrigin() + (vecToView * SimpleSpline(frac));
+			//debugoverlay->AddBoxOverlay( vehicleEyeOrigin, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 0,255,255, 64, 10 );
+		}
+		else
+		{
+			pData->bRunningEnterExit = false;
+
+			// Enter animation has finished, align view with the eye attachment point
+			// so they can start mouselooking around.
+			if (!bExitAnimOn)
+			{
+				Vector localEyeOrigin;
+				QAngle localEyeAngles;
+
+				pData->pVehicle->GetAttachmentLocal(eyeAttachmentIndex, localEyeOrigin, localEyeAngles);
+				//localEyeAngles.z=0;
+				engine->SetViewAngles(localEyeAngles);
+			}
+		}
+
+		pData->flAnimTimeElapsed += gpGlobals->frametime;
+		if (pData->flAPCTimeToStart <= gpGlobals->curtime) {
+			pData->bBlendAnglesAPC = false; // Funciona a las mil maravillas
+		}
+	}
+
+	// Compute the relative rotation between the unperturbed eye attachment + the eye angles
+	matrix3x4_t cameraToWorld;
+	AngleMatrix(*pAbsAngles, cameraToWorld);
+
+	matrix3x4_t worldToEyePos;
+	MatrixInvert(vehicleEyePosToWorld, worldToEyePos);
+
+	matrix3x4_t vehicleCameraToEyePos;
+	ConcatTransforms(worldToEyePos, cameraToWorld, vehicleCameraToEyePos);
+
+	// Damp out some of the vehicle motion (neck/head would do this)
+	if (pData->bClampEyeAngles)
+	{
+		RemapViewAngles(pData, vehicleEyeAngles);
+	}
+
+	AngleMatrix(vehicleEyeAngles, vehicleEyeOrigin, vehicleEyePosToWorld);
+
+	// Now treat the relative eye angles as being relative to this new, perturbed view position...
+	matrix3x4_t newCameraToWorld;
+	ConcatTransforms(vehicleEyePosToWorld, vehicleCameraToEyePos, newCameraToWorld);
+
+	// output new view abs angles
+	MatrixAngles(newCameraToWorld, *pAbsAngles);
+
+	// UNDONE: *pOrigin would already be correct in single player if the HandleView() on the server ran after vphysics
+	MatrixGetColumn(newCameraToWorld, 3, *pAbsOrigin);
+
+	// If we're playing an extry or exit animation...
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		float flSplineFrac = clamp(SimpleSpline(frac), 0, 1);
+
+		// Blend out the error between the player's initial eye angles and the animation's initial
+		// eye angles over the duration of the animation. 
+		QAngle vecAngleDiffBlend = ((1 - flSplineFrac) * pData->vecAngleDiffSaved);
+
+		// If our current error is less than the error amount that we're blending 
+		// out, use that. This lets the angles converge as quickly as possible.
+		QAngle vecAngleDiffCur;
+		vecAngleDiffCur.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		vecAngleDiffCur.y = AngleDiff(vehicleEyeAngles.y, pData->vecAnglesSaved.y);
+		vecAngleDiffCur.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		// In either case, never increase the error, so track the minimum error and clamp to that.
+		for (int i = 0; i < 3; i++)
+		{
+			if (fabs(vecAngleDiffCur[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffCur[i];
+			}
+
+			if (fabs(vecAngleDiffBlend[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffBlend[i];
+			}
+		}
+
+		// Add the error to the animation's eye angles.
+		*pAbsAngles -= pData->vecAngleDiffMin;
+
+		// Use this as the basis for the next error calculation.
+		pData->vecAnglesSaved = *pAbsAngles;
+
+		//if ( gpGlobals->frametime )
+		//{
+		//	Msg("Angle : %.2f %.2f %.2f\n", target.x, target.y, target.z );
+		//}
+		//Msg("Prev: %.2f %.2f %.2f\n", pData->vecAnglesSaved.x, pData->vecAnglesSaved.y, pData->vecAnglesSaved.z );
+
+		Vector vecAbsOrigin = *pAbsOrigin;
+
+		// If we're exiting, our desired position is the server-sent exit position
+		if (bExitAnimOn)
+		{
+			//debugoverlay->AddBoxOverlay( vecEyeExitEndpoint, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 255,255,255, 64, 10 );
+
+			// Blend to the exit position
+			*pAbsOrigin = Lerp(flSplineFrac, vecAbsOrigin, *vecEyeExitEndpoint);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, pData->flFOV, default_fov.GetFloat());
+			}
+		}
+		else
+		{
+			// Blend from our starting position to the desired origin
+			*pAbsOrigin = Lerp(flSplineFrac, pData->vecOriginSaved, vecAbsOrigin);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, default_fov.GetFloat(), pData->flFOV);
+			}
+		}
+
+	}
+	else if (pFOV)
+	{
+		// Not running an entry/exit anim. Just use the vehicle's FOV.
+		*pFOV = pData->flFOV;
+	}
+}
+
+void VehicleViewSmoothingSTR(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData,
+	float* pFOV)
+{
+	int eyeAttachmentIndex = pData->pVehicle->LookupAttachment("vehicle_driver_eyes");
+	matrix3x4_t vehicleEyePosToWorld;
+	Vector vehicleEyeOrigin;
+	QAngle no;
+	QAngle vehicleEyeAngles;
+	//vehicleEyeOrigin=pData->pVehicle->GetAbsOrigin();
+	pData->pVehicle->GetAttachment(eyeAttachmentIndex, vehicleEyeOrigin, no);
+	Vector up, forward, right;
+	pData->pVehicle->GetVectors(&forward, &right, &up);
+	vehicleEyeOrigin += (forward * 120) + (up * -10);
+	vehicleEyeAngles = pData->pVehicle->GetAbsAngles();
+	AngleMatrix(vehicleEyeAngles, vehicleEyePosToWorld);
+	pData->pVehicle->InvalidateBoneCache(); // PARA QUE NO TIEMBLE TODO
+	// Dampen the eye positional change as we drive around.
+	*pAbsAngles = pPlayer->EyeAngles();
+	if (r_VehicleViewDampen.GetInt() && pData->bDampenEyePosition)
+	{
+		C_PropVehicleDriveable* pDriveable = assert_cast<C_PropVehicleDriveable*>(pData->pVehicle);
+		pDriveable->DampenEyePosition(vehicleEyeOrigin, vehicleEyeAngles);
+	}
+
+	// Started running an entry or exit anim?
+	bool bRunningAnim = pData->bBlendAnglesAPC;
+	//bool bRunningAnim = false;
+
+	if (bRunningAnim && !pData->bWasRunningAnim)
+	{
+
+		pData->flAPCTimeToStart = gpGlobals->curtime + 2.0f; // Le daremos dos segundos para que piense
+
+		pData->bRunningEnterExit = true;
+		pData->flAnimTimeElapsed = 0.01;
+		pData->flEnterExitDuration = 2.0f;
+
+		pData->vecAnglesSaved = PrevMainViewAngles();
+		pData->vecOriginSaved = PrevMainViewOrigin();
+
+		// Save our initial angular error, which we will blend out over the length of the animation.
+		pData->vecAngleDiffSaved.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.y = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		pData->vecAngleDiffMin = pData->vecAngleDiffSaved;
+	}
+
+	pData->bWasRunningAnim = bRunningAnim;
+
+	float frac = 0;
+	float flFracFOV = 0;
+
+	// If we're in an enter/exit animation, blend the player's eye angles to the attachment's
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		*pAbsAngles = vehicleEyeAngles;
+
+		// Forward integrate to determine the elapsed time in this entry/exit anim.
+		frac = pData->flAnimTimeElapsed / pData->flEnterExitDuration;
+		frac = clamp(frac, 0.0f, 1.0f);
+
+		flFracFOV = pData->flAnimTimeElapsed / (pData->flEnterExitDuration * 0.85f);
+		flFracFOV = clamp(flFracFOV, 0.0f, 1.0f);
+
+		//Msg("Frac: %f\n", frac );
+
+		if (frac < 1.0)
+		{
+			// Blend to the desired vehicle eye origin
+			//Vector vecToView = (vehicleEyeOrigin - PrevMainViewOrigin());
+			//vehicleEyeOrigin = PrevMainViewOrigin() + (vecToView * SimpleSpline(frac));
+			//debugoverlay->AddBoxOverlay( vehicleEyeOrigin, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 0,255,255, 64, 10 );
+		}
+		else
+		{
+			pData->bRunningEnterExit = false;
+
+			// Enter animation has finished, align view with the eye attachment point
+			// so they can start mouselooking around.
+			if (!bExitAnimOn)
+			{
+				Vector localEyeOrigin;
+				QAngle localEyeAngles;
+				QAngle no;
+				pData->pVehicle->GetAttachmentLocal(eyeAttachmentIndex, localEyeOrigin, no);
+				//localEyeAngles.z=0;
+				localEyeAngles = pData->pVehicle->GetAbsAngles();
+				engine->SetViewAngles(localEyeAngles);
+			}
+		}
+
+		pData->flAnimTimeElapsed += gpGlobals->frametime;
+		if (pData->flAPCTimeToStart <= gpGlobals->curtime) {
+			pData->bBlendAnglesAPC = false; // Funciona a las mil maravillas
+		}
+	}
+
+	// Compute the relative rotation between the unperturbed eye attachment + the eye angles
+	matrix3x4_t cameraToWorld;
+	AngleMatrix(*pAbsAngles, cameraToWorld);
+
+	matrix3x4_t worldToEyePos;
+	MatrixInvert(vehicleEyePosToWorld, worldToEyePos);
+
+	matrix3x4_t vehicleCameraToEyePos;
+	ConcatTransforms(worldToEyePos, cameraToWorld, vehicleCameraToEyePos);
+
+	// Damp out some of the vehicle motion (neck/head would do this)
+	if (pData->bClampEyeAngles)
+	{
+		RemapViewAngles(pData, vehicleEyeAngles);
+	}
+
+	AngleMatrix(vehicleEyeAngles, vehicleEyeOrigin, vehicleEyePosToWorld);
+
+	// Now treat the relative eye angles as being relative to this new, perturbed view position...
+	matrix3x4_t newCameraToWorld;
+	ConcatTransforms(vehicleEyePosToWorld, vehicleCameraToEyePos, newCameraToWorld);
+
+	// output new view abs angles
+	MatrixAngles(newCameraToWorld, *pAbsAngles);
+
+	// UNDONE: *pOrigin would already be correct in single player if the HandleView() on the server ran after vphysics
+	MatrixGetColumn(newCameraToWorld, 3, *pAbsOrigin);
+
+	// If we're playing an extry or exit animation...
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		float flSplineFrac = clamp(SimpleSpline(frac), 0, 1);
+
+		// Blend out the error between the player's initial eye angles and the animation's initial
+		// eye angles over the duration of the animation. 
+		QAngle vecAngleDiffBlend = ((1 - flSplineFrac) * pData->vecAngleDiffSaved);
+
+		// If our current error is less than the error amount that we're blending 
+		// out, use that. This lets the angles converge as quickly as possible.
+		QAngle vecAngleDiffCur;
+		vecAngleDiffCur.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		vecAngleDiffCur.y = AngleDiff(vehicleEyeAngles.y, pData->vecAnglesSaved.y);
+		vecAngleDiffCur.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		// In either case, never increase the error, so track the minimum error and clamp to that.
+		for (int i = 0; i < 3; i++)
+		{
+			if (fabs(vecAngleDiffCur[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffCur[i];
+			}
+
+			if (fabs(vecAngleDiffBlend[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffBlend[i];
+			}
+		}
+
+		// Add the error to the animation's eye angles.
+		*pAbsAngles -= pData->vecAngleDiffMin;
+
+		// Use this as the basis for the next error calculation.
+		pData->vecAnglesSaved = *pAbsAngles;
+
+		//if ( gpGlobals->frametime )
+		//{
+		//	Msg("Angle : %.2f %.2f %.2f\n", target.x, target.y, target.z );
+		//}
+		//Msg("Prev: %.2f %.2f %.2f\n", pData->vecAnglesSaved.x, pData->vecAnglesSaved.y, pData->vecAnglesSaved.z );
+
+		Vector vecAbsOrigin = *pAbsOrigin;
+
+		// If we're exiting, our desired position is the server-sent exit position
+		if (bExitAnimOn)
+		{
+			//debugoverlay->AddBoxOverlay( vecEyeExitEndpoint, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 255,255,255, 64, 10 );
+
+			// Blend to the exit position
+			*pAbsOrigin = Lerp(flSplineFrac, vecAbsOrigin, *vecEyeExitEndpoint);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, pData->flFOV, default_fov.GetFloat());
+			}
+		}
+		else
+		{
+			// Blend from our starting position to the desired origin
+			*pAbsOrigin = Lerp(flSplineFrac, pData->vecOriginSaved, vecAbsOrigin);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, default_fov.GetFloat(), pData->flFOV);
+			}
+		}
+
+	}
+	else if (pFOV)
+	{
+		// Not running an entry/exit anim. Just use the vehicle's FOV.
+		*pFOV = pData->flFOV;
+	}
+}
+
+void VehicleViewSmoothingHLC(CBasePlayer* pPlayer, Vector* pAbsOrigin, QAngle* pAbsAngles, bool bEnterAnimOn, bool bExitAnimOn, Vector* vecEyeExitEndpoint, ViewSmoothingData_t* pData,
+	float* pFOV)
+{
+	int eyeAttachmentIndex = pData->pVehicle->LookupAttachment("Bomb");
+	matrix3x4_t vehicleEyePosToWorld;
+	Vector vehicleEyeOrigin;
+	QAngle no;
+	QAngle vehicleEyeAngles;
+	pData->pVehicle->GetAttachment(eyeAttachmentIndex, vehicleEyeOrigin, no);
+	Vector up, forward, right;
+	pData->pVehicle->GetVectors(&forward, &right, &up);
+	vehicleEyeOrigin += (forward * 215) + (up * 10);
+	vehicleEyeAngles = pData->pVehicle->GetAbsAngles();
+	AngleMatrix(vehicleEyeAngles, vehicleEyePosToWorld);
+
+	// Dampen the eye positional change as we drive around.
+	*pAbsAngles = pPlayer->EyeAngles();
+	if (r_VehicleViewDampen.GetInt() && pData->bDampenEyePosition)
+	{
+		C_PropVehicleDriveable* pDriveable = assert_cast<C_PropVehicleDriveable*>(pData->pVehicle);
+		pDriveable->DampenEyePosition(vehicleEyeOrigin, vehicleEyeAngles);
+	}
+
+	// Started running an entry or exit anim?
+	bool bRunningAnim = pData->bBlendAnglesAPC;
+	//bool bRunningAnim = false;
+
+	if (bRunningAnim && !pData->bWasRunningAnim)
+	{
+
+		pData->flAPCTimeToStart = gpGlobals->curtime + 2.0f; // Le daremos dos segundos para que piense
+
+		pData->bRunningEnterExit = true;
+		pData->flAnimTimeElapsed = 0.01;
+		pData->flEnterExitDuration = 2.0f;
+
+		pData->vecAnglesSaved = PrevMainViewAngles();
+		pData->vecOriginSaved = PrevMainViewOrigin();
+
+		// Save our initial angular error, which we will blend out over the length of the animation.
+		pData->vecAngleDiffSaved.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.y = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		pData->vecAngleDiffSaved.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		pData->vecAngleDiffMin = pData->vecAngleDiffSaved;
+	}
+
+	pData->bWasRunningAnim = bRunningAnim;
+
+	float frac = 0;
+	float flFracFOV = 0;
+
+	// If we're in an enter/exit animation, blend the player's eye angles to the attachment's
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		*pAbsAngles = vehicleEyeAngles;
+
+		// Forward integrate to determine the elapsed time in this entry/exit anim.
+		frac = pData->flAnimTimeElapsed / pData->flEnterExitDuration;
+		frac = clamp(frac, 0.0f, 1.0f);
+
+		flFracFOV = pData->flAnimTimeElapsed / (pData->flEnterExitDuration * 0.85f);
+		flFracFOV = clamp(flFracFOV, 0.0f, 1.0f);
+
+		//Msg("Frac: %f\n", frac );
+
+		if (frac < 1.0)
+		{
+			// Blend to the desired vehicle eye origin
+			//Vector vecToView = (vehicleEyeOrigin - PrevMainViewOrigin());
+			//vehicleEyeOrigin = PrevMainViewOrigin() + (vecToView * SimpleSpline(frac));
+			//debugoverlay->AddBoxOverlay( vehicleEyeOrigin, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 0,255,255, 64, 10 );
+		}
+		else
+		{
+			pData->bRunningEnterExit = false;
+
+			// Enter animation has finished, align view with the eye attachment point
+			// so they can start mouselooking around.
+			if (!bExitAnimOn)
+			{
+				Vector localEyeOrigin;
+				QAngle localEyeAngles;
+				QAngle no;
+				pData->pVehicle->GetAttachmentLocal(eyeAttachmentIndex, localEyeOrigin, no);
+				//localEyeAngles.z=0;
+				localEyeAngles = pData->pVehicle->GetAbsAngles();
+				engine->SetViewAngles(localEyeAngles);
+			}
+		}
+
+		pData->flAnimTimeElapsed += gpGlobals->frametime;
+		if (pData->flAPCTimeToStart <= gpGlobals->curtime) {
+			pData->bBlendAnglesAPC = false; // Funciona a las mil maravillas
+		}
+	}
+
+	// Compute the relative rotation between the unperturbed eye attachment + the eye angles
+	matrix3x4_t cameraToWorld;
+	AngleMatrix(*pAbsAngles, cameraToWorld);
+
+	matrix3x4_t worldToEyePos;
+	MatrixInvert(vehicleEyePosToWorld, worldToEyePos);
+
+	matrix3x4_t vehicleCameraToEyePos;
+	ConcatTransforms(worldToEyePos, cameraToWorld, vehicleCameraToEyePos);
+
+	// Damp out some of the vehicle motion (neck/head would do this)
+	if (pData->bClampEyeAngles)
+	{
+		RemapViewAngles(pData, vehicleEyeAngles);
+	}
+
+	AngleMatrix(vehicleEyeAngles, vehicleEyeOrigin, vehicleEyePosToWorld);
+
+	// Now treat the relative eye angles as being relative to this new, perturbed view position...
+	matrix3x4_t newCameraToWorld;
+	ConcatTransforms(vehicleEyePosToWorld, vehicleCameraToEyePos, newCameraToWorld);
+
+	// output new view abs angles
+	MatrixAngles(newCameraToWorld, *pAbsAngles);
+
+	// UNDONE: *pOrigin would already be correct in single player if the HandleView() on the server ran after vphysics
+	MatrixGetColumn(newCameraToWorld, 3, *pAbsOrigin);
+
+	// If we're playing an extry or exit animation...
+	if (bRunningAnim || pData->bRunningEnterExit)
+	{
+		float flSplineFrac = clamp(SimpleSpline(frac), 0, 1);
+
+		// Blend out the error between the player's initial eye angles and the animation's initial
+		// eye angles over the duration of the animation. 
+		QAngle vecAngleDiffBlend = ((1 - flSplineFrac) * pData->vecAngleDiffSaved);
+
+		// If our current error is less than the error amount that we're blending 
+		// out, use that. This lets the angles converge as quickly as possible.
+		QAngle vecAngleDiffCur;
+		vecAngleDiffCur.x = AngleDiff(vehicleEyeAngles.x, pData->vecAnglesSaved.x);
+		vecAngleDiffCur.y = AngleDiff(vehicleEyeAngles.y, pData->vecAnglesSaved.y);
+		vecAngleDiffCur.z = AngleDiff(vehicleEyeAngles.z, pData->vecAnglesSaved.z);
+
+		// In either case, never increase the error, so track the minimum error and clamp to that.
+		for (int i = 0; i < 3; i++)
+		{
+			if (fabs(vecAngleDiffCur[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffCur[i];
+			}
+
+			if (fabs(vecAngleDiffBlend[i]) < fabs(pData->vecAngleDiffMin[i]))
+			{
+				pData->vecAngleDiffMin[i] = vecAngleDiffBlend[i];
+			}
+		}
+
+		// Add the error to the animation's eye angles.
+		*pAbsAngles -= pData->vecAngleDiffMin;
+
+		// Use this as the basis for the next error calculation.
+		pData->vecAnglesSaved = *pAbsAngles;
+
+		//if ( gpGlobals->frametime )
+		//{
+		//	Msg("Angle : %.2f %.2f %.2f\n", target.x, target.y, target.z );
+		//}
+		//Msg("Prev: %.2f %.2f %.2f\n", pData->vecAnglesSaved.x, pData->vecAnglesSaved.y, pData->vecAnglesSaved.z );
+
+		Vector vecAbsOrigin = *pAbsOrigin;
+
+		// If we're exiting, our desired position is the server-sent exit position
+		if (bExitAnimOn)
+		{
+			//debugoverlay->AddBoxOverlay( vecEyeExitEndpoint, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 255,255,255, 64, 10 );
+
+			// Blend to the exit position
+			*pAbsOrigin = Lerp(flSplineFrac, vecAbsOrigin, *vecEyeExitEndpoint);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, pData->flFOV, default_fov.GetFloat());
+			}
+		}
+		else
+		{
+			// Blend from our starting position to the desired origin
+			*pAbsOrigin = Lerp(flSplineFrac, pData->vecOriginSaved, vecAbsOrigin);
+			if ((pData->flFOV != 0.0f) && pFOV)
+			{
+				*pFOV = Lerp(flFracFOV, default_fov.GetFloat(), pData->flFOV);
+			}
+		}
+
+	}
+	else if (pFOV)
+	{
+		// Not running an entry/exit anim. Just use the vehicle's FOV.
+		*pFOV = pData->flFOV;
+	}
+}
