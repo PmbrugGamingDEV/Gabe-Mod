@@ -3,6 +3,8 @@ C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\ser
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\server\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\achievements_hl2.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\tf_weapon_fists.obj
+C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vscript_in_buttons.obj
+C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vscript_think.obj
 C:\GabeMod\src\game\server\bemod\weapon_bmcamera.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_bmcamera.obj
 C:\GabeMod\src\game\server\bemod\weapon_duplicator.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_duplicator.obj
 C:\GabeMod\src\game\server\bemod\weld_commands.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weld_commands.obj

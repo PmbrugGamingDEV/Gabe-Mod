@@ -94,6 +94,9 @@
     <Filter Include="Source Files\Gabe Mod Files\BEMod">
       <UniqueIdentifier>{a291a85d-f1b3-4b34-a96d-97beadfd70f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Lua">
+      <UniqueIdentifier>{b78aa191-18ce-4826-a296-f5137fafbb48}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\choreoobjects.lib">
@@ -2172,6 +2175,12 @@
       <Filter>Source Files\Gabe Mod Files\Weapons</Filter>
     </ClInclude>
     <ClInclude Include="episodic\vehicle_jeep_episodic.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\vscript_in_buttons.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\vscript_think.h">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -4355,6 +4364,12 @@
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
     <ClCompile Include="sebeverywhere.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\vscript_in_buttons.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\vscript_think.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>

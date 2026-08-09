@@ -499,6 +499,8 @@ exit 1
     <ClInclude Include="..\shared\hl1\hl1_baseweapon_shared.h" />
     <ClInclude Include="..\shared\hl2mp\weapon_physgun.h" />
     <ClInclude Include="..\shared\tf\tf_weapon_fists.h" />
+    <ClInclude Include="..\shared\vscript_in_buttons.h" />
+    <ClInclude Include="..\shared\vscript_think.h" />
     <ClInclude Include="base_transmit_proxy.h" />
     <ClInclude Include="..\..\public\basehandle.h" />
     <ClInclude Include="basetempentity.h" />
@@ -1176,6 +1178,8 @@ exit 1
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
+    <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
+    <ClCompile Include="..\shared\vscript_think.cpp" />
     <ClCompile Include="bemod\weapon_bmcamera.cpp" />
     <ClCompile Include="bemod\weapon_duplicator.cpp" />
     <ClCompile Include="bemod\weld_commands.cpp" />

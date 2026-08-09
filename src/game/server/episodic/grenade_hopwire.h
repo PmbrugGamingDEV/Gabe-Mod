@@ -1,8 +1,8 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright � 1996-2005, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
-//=============================================================================//
+//=============================================================================
 
 #ifndef GRENADE_HOPWIRE_H
 #define GRENADE_HOPWIRE_H
@@ -11,36 +11,79 @@
 #endif
 
 #include "basegrenade_shared.h"
-#include "Sprite.h"
+#include "sprite.h"
 
-extern ConVar hopwire_trap;
+// VXP
+#include "rope.h"
+#include "rope_shared.h"
+#include "beam_shared.h"
 
-class CGravityVortexController;
+#define MAX_HOOKS 8
+#define TETHERHOOK_MODEL	"models/Weapons/w_hopwire.mdl"
 
-class CGrenadeHopwire : public CBaseGrenade
+class CGrenadeHopWire;
+
+//-----------------------------------------------------------------------------
+// Tether hook
+//-----------------------------------------------------------------------------
+
+class CTetherHook : public CBaseAnimating
 {
-	DECLARE_CLASS( CGrenadeHopwire, CBaseGrenade );
+	DECLARE_CLASS(CTetherHook, CBaseAnimating);
+public:
+	typedef CBaseAnimating BaseClass;
+
+	bool	CreateVPhysics(void);
+	void	Spawn(void);
+
+	void	SetVelocity(const Vector& velocity, const AngularImpulse& angVelocity);
+	void	StartTouch(CBaseEntity* pOther);
+
+	static CTetherHook* Create(const Vector& origin, const QAngle& angles, CGrenadeHopWire* pOwner);
+
+	void	CreateRope(void);
+	void	HookThink(void);
+
+	void	KillHook(void);
+	void	Detonate(void);
+
 	DECLARE_DATADESC();
-	DECLARE_SERVERCLASS();
+
+private:
+	CHandle<CGrenadeHopWire>	m_hTetheredOwner;
+	IPhysicsSpring* m_pSpring;
+	CRopeKeyframe* m_pRope;
+	CSprite* m_pGlow;
+	CBeam* m_pBeam;
+	bool						m_bAttached;
+};
+
+class CGrenadeHopWire : public CBaseGrenade
+{
+	DECLARE_CLASS(CGrenadeHopWire, CBaseGrenade);
+	DECLARE_DATADESC();
 
 public:
-	void	Spawn( void );
-	void	Precache( void );
-	bool	CreateVPhysics( void );
-	void	SetTimer( float timer );
-	void	SetVelocity( const Vector &velocity, const AngularImpulse &angVelocity );
-	void	Detonate( void );
-	
-	void	EndThink( void );		// Last think before going away
-	void	CombatThink( void );	// Makes the main explosion go off
+	void	Spawn(void);
+	void	Precache(void);
+	bool	CreateVPhysics(void);
+	void	SetTimer(float timer);
+	void	SetVelocity(const Vector& velocity, const AngularImpulse& angVelocity);
+	void	Detonate(void);
+
+	void	CombatThink(void);
+	void	TetherThink(void);
+
+	void	Event_Killed(const CTakeDamageInfo& info); // VXP
 
 protected:
 
-	void	KillStriders( void );
+	int			m_nHooksShot;
+	CSprite* m_pGlow;
 
-	CHandle<CGravityVortexController>	m_hVortexController;
+	CUtlVector<CTetherHook*> m_hooksList;
 };
 
-extern CBaseGrenade *HopWire_Create( const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner, float timer );
+extern CBaseGrenade* HopWire_Create(const Vector& position, const QAngle& angles, const Vector& velocity, const AngularImpulse& angVelocity, CBaseEntity* pOwner, float timer);
 
 #endif // GRENADE_HOPWIRE_H

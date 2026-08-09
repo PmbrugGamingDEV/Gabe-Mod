@@ -28,7 +28,9 @@ inline bool VScriptRunScript( const char *pszScriptName, bool bWarnMissing = fal
 #define BEGIN_ENT_SCRIPTDESC_NAMED( className, baseClass, scriptName, description )	_IMPLEMENT_ENT_SCRIPTDESC_ACCESSOR( className ); BEGIN_SCRIPTDESC_NAMED( className, baseClass, scriptName, description )
 #define BEGIN_ENT_SCRIPTDESC_ROOT_NAMED( className, scriptName, description )		_IMPLEMENT_ENT_SCRIPTDESC_ACCESSOR( className ); BEGIN_SCRIPTDESC_ROOT_NAMED( className, scriptName, description )
 
-#define _IMPLEMENT_ENT_SCRIPTDESC_ACCESSOR( className )					template <> ScriptClassDesc_t * GetScriptDesc<className>( className * ); ScriptClassDesc_t *className::GetScriptDesc()  { return ::GetScriptDesc( this ); }		
+#define _IMPLEMENT_ENT_SCRIPTDESC_ACCESSOR( className )					template <> ScriptClassDesc_t * GetScriptDesc<className>( className * ); ScriptClassDesc_t *className::GetScriptDesc()  { return ::GetScriptDesc( this ); }	
+#define VSCRIPT_CONST(name) \
+	g_pScriptVM->SetValue(#name, name)
 
 // Only allow scripts to create entities during map initialization
 bool IsEntityCreationAllowedInScripts( void );
@@ -153,5 +155,86 @@ inline CScriptAutoRef & CScriptAutoRef::operator=( const HSCRIPT &other )
 	Set( other );
 	return *this;
 }
+
+static void MoveFunctionToScriptTable(
+	const char* table,
+	const char* function)
+{
+	char code[512];
+
+	V_snprintf(
+		code,
+		sizeof(code),
+		"%s.%s <- %s; delete %s;",
+		table,
+		function,
+		function,
+		function
+	);
+
+	g_pScriptVM->Run(code, true);
+}
+
+// Create a table/class for functions
+static HSCRIPT CreateScriptTable(const char* pszName)
+{
+	ScriptVariant_t table;
+	g_pScriptVM->CreateTable(table);
+
+	HSCRIPT hTable = (HSCRIPT)table;
+
+	if (!hTable)
+	{
+		Warning("CreateScriptTable: CreateTable failed for %s\n", pszName);
+		return NULL;
+	}
+
+	if (!g_pScriptVM->SetValue(NULL, pszName, table))
+	{
+		Warning("CreateScriptTable: SetValue failed for %s\n", pszName);
+		return NULL;
+	}
+
+	Msg("Created VScript table: %s\n", pszName);
+
+	return hTable;
+}
+
+#define TABLE_FUNC(table, name) \
+	MoveFunctionToScriptTable(#table, #name)
+
+static void MoveFunctionToScriptTableNamed(
+	const char* table,
+	const char* globalFunction,
+	const char* tableFunction)
+{
+	char code[512];
+
+	V_snprintf(
+		code,
+		sizeof(code),
+		"%s.%s <- %s; delete %s;",
+		table,
+		tableFunction,
+		globalFunction,
+		globalFunction
+	);
+
+	g_pScriptVM->Run(code, true);
+}
+
+#define TABLE_FUNC_NAMED(table, globalName, tableName) \
+	MoveFunctionToScriptTableNamed( \
+		#table, \
+		#globalName, \
+		#tableName \
+	)
+
+#define DECLARE_TABLE(name) \
+	g_pScriptVM->Run( \
+		"if (!(\"" #name "\" in getroottable())) " \
+		#name " <- {};", \
+		true \
+	)
 
 #endif // VSCRIPT_SHARED_H

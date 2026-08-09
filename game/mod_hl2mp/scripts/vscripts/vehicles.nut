@@ -1,6 +1,6 @@
 printl("=== VEHICLE TEST START ===");
 
-local player = GetListenServerHost();
+local player = SV_Engine.GetListenServerHost();
 
 if (player == null)
 {
@@ -15,7 +15,7 @@ printl("Player found.");
 // Create a normal jeep
 // ------------------------------------------------------------
 
-local jeep = CreateJeep(
+local jeep = SV_Vehicle.CreateJeep(
 	player.GetOrigin() + Vector(200, 0, 64),
 	QAngle(0, 0, 0)
 );

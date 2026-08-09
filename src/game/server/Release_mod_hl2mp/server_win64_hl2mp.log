@@ -1,30 +1,12 @@
-﻿  weapon_pistol.cpp
-  language.cpp
-  randoverride.cpp
-  steamid.cpp
-  ScratchPadUtils.cpp
-  bone_setup.cpp
-  collisionutils.cpp
-  dt_send.cpp
-  dt_utlvector_common.cpp
-  dt_utlvector_send.cpp
-  editor_sendcommand.cpp
-  filesystem_helpers.cpp
-  interpolatortypes.cpp
-  keyframe.cpp
-  map_utils.cpp
-  registry.cpp
-  rope_physics.cpp
-  scratchpad3d.cpp
-  server_class.cpp
-  simple_physics.cpp
-  stringregistry.cpp
-  studio.cpp
-  interval.cpp
-  sheetsimulator.cpp
-  GameStats_BasicStatsFunctions.cpp
-  h_export.cpp
+﻿  weapon_crossbow.cpp
+  grenade_hopwire.cpp
+  weapon_hopwire.cpp
+  NMath.lib(NMath.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
      Creating library .\Release_mod_hl2mp\server.lib and object .\Release_mod_hl2mp\server.exp
+  Generating code
+  Finished generating code
+NMath.lib(NMath.obj) : warning LNK4099: PDB 'NMath.pdb' was not found with 'NMath.lib(NMath.obj)' or at 'C:\GabeMod\src\game\server\Release_mod_hl2mp\NMath.pdb'; linking object as if no debug info
+NMath.lib(pch.obj) : warning LNK4099: PDB 'NMath.pdb' was not found with 'NMath.lib(pch.obj)' or at 'C:\GabeMod\src\game\server\Release_mod_hl2mp\NMath.pdb'; linking object as if no debug info
   server_win64_hl2mp.vcxproj -> C:\GabeMod\src\game\server\Release_mod_hl2mp\server.dll
   Publishing to ..\..\..\game\mod_hl2mp\bin\x64
           1 file(s) copied.

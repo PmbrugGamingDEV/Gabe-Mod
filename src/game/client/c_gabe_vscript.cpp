@@ -28,6 +28,14 @@
 #include <vgui_controls/HTML.h>
 #include <vgui_controls/richtext.h>
 #include <vgui_controls/menu.h>
+
+/* EXTERNAL ADDITIONS */
+#include "gabe.h"
+#include "gabe_spawnmenu.h"
+#include "gabe_newgame.h"
+#include "vscript_in_buttons.h"
+#include "vscript_think.h"
+
 #include "con_nprint.h"
 #include <vgui_controls/menubutton.h>
 #include <vgui_controls/menubar.h>
@@ -78,6 +86,17 @@ static CreateInterfaceFn s_AppSystemFactory = NULL;
 IScriptVM* g_pScriptVM = NULL;
 
 using vgui::VPANEL;
+
+class CGabeClientVScriptSystem : public CAutoGameSystemPerFrame
+{
+public:
+	virtual void Update(float frametime)
+	{
+		GabeVScriptThink();
+	}
+};
+
+static CGabeClientVScriptSystem g_GabeClientVScriptSystem;
 
 //-----------------------------------------------------------------------------
 // Factory setter
@@ -2339,455 +2358,23 @@ static const char* Script_GetMapListString()
 	return out;
 }
 
-//-----------------------------------------------------------------------------
-// Basic arithmetic
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathAdd(float a, float b)
-{
-	return g_pMath->Add(a, b);
-}
-
-static float ScriptNMathSubtract(float a, float b)
-{
-	return g_pMath->Subtract(a, b);
-}
-
-static float ScriptNMathMultiply(float a, float b)
-{
-	return g_pMath->Multiply(a, b);
-}
-
-static float ScriptNMathDivide(float a, float b)
-{
-	if (b == 0.0f)
-	{
-		Warning("NMath.Divide: division by zero.\n");
-		return 0.0f;
-	}
-
-	return g_pMath->Divide(a, b);
-}
-
-//-----------------------------------------------------------------------------
-// Powers and roots
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathSquare(float value)
-{
-	return g_pMath->Square(value);
-}
-
-static float ScriptNMathCube(float value)
-{
-	return g_pMath->Cube(value);
-}
-
-static float ScriptNMathPower(float base, float exponent)
-{
-	return g_pMath->Power(base, exponent);
-}
-
-static float ScriptNMathSquareRoot(float value)
-{
-	if (value < 0.0f)
-	{
-		Warning("NMath.SquareRoot: negative input.\n");
-		return 0.0f;
-	}
-
-	return g_pMath->SquareRoot(value);
-}
-
-//-----------------------------------------------------------------------------
-// Utility
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathAbsolute(float value)
-{
-	return g_pMath->Absolute(value);
-}
-
-static float ScriptNMathMinimum(float a, float b)
-{
-	return g_pMath->Minimum(a, b);
-}
-
-static float ScriptNMathMaximum(float a, float b)
-{
-	return g_pMath->Maximum(a, b);
-}
-
-static float ScriptNMathClamp(
-	float value,
-	float minimum,
-	float maximum)
-{
-	if (minimum > maximum)
-	{
-		Warning(
-			"NMath.Clamp: minimum is greater than maximum.\n");
-
-		return value;
-	}
-
-	return g_pMath->Clamp(value, minimum, maximum);
-}
-
-//-----------------------------------------------------------------------------
-// Rounding
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathFloor(float value)
-{
-	return static_cast<float>(
-		g_pMath->Floor(static_cast<double>(value)));
-}
-
-static float ScriptNMathCeiling(float value)
-{
-	return static_cast<float>(
-		g_pMath->Ceiling(static_cast<double>(value)));
-}
-
-static float ScriptNMathRound(float value)
-{
-	return static_cast<float>(
-		g_pMath->Round(static_cast<double>(value)));
-}
-
-//-----------------------------------------------------------------------------
-// Trigonometry
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathSin(float radians)
-{
-	return static_cast<float>(
-		g_pMath->Sin(static_cast<double>(radians)));
-}
-
-static float ScriptNMathCos(float radians)
-{
-	return static_cast<float>(
-		g_pMath->Cos(static_cast<double>(radians)));
-}
-
-static float ScriptNMathTan(float radians)
-{
-	return static_cast<float>(
-		g_pMath->Tan(static_cast<double>(radians)));
-}
-
-//-----------------------------------------------------------------------------
-// Angle conversion
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathDegreesToRadians(float degrees)
-{
-	return static_cast<float>(
-		g_pMath->DegreesToRadians(
-			static_cast<double>(degrees)));
-}
-
-static float ScriptNMathRadiansToDegrees(float radians)
-{
-	return static_cast<float>(
-		g_pMath->RadiansToDegrees(
-			static_cast<double>(radians)));
-}
-
-//-----------------------------------------------------------------------------
-// Logarithms and exponentials
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathLog(float value)
-{
-	if (value <= 0.0f)
-	{
-		Warning(
-			"NMath.Log: input must be greater than zero.\n");
-
-		return 0.0f;
-	}
-
-	return static_cast<float>(
-		g_pMath->Log(static_cast<double>(value)));
-}
-
-static float ScriptNMathLog10(float value)
-{
-	if (value <= 0.0f)
-	{
-		Warning(
-			"NMath.Log10: input must be greater than zero.\n");
-
-		return 0.0f;
-	}
-
-	return static_cast<float>(
-		g_pMath->Log10(static_cast<double>(value)));
-}
-
-static float ScriptNMathExp(float value)
-{
-	return static_cast<float>(
-		g_pMath->Exp(static_cast<double>(value)));
-}
-
-//-----------------------------------------------------------------------------
-// Constants
-//-----------------------------------------------------------------------------
-
-static float ScriptNMathGetPi()
-{
-	return static_cast<float>(g_pMath->GetPi());
-}
-
-static float ScriptNMathGetEulersNumber()
-{
-	return static_cast<float>(
-		g_pMath->GetEulersNumber());
-}
-
-//-----------------------------------------------------------------------------
-// Uniform distributions
-//-----------------------------------------------------------------------------
-
-static int ScriptNRandomInt(int lower, int upper)
-{
-	return g_pRandom->RandomInt(lower, upper);
-}
-
-static float ScriptNRandomFloat(float lower, float upper)
-{
-	return g_pRandom->RandomFloat(lower, upper);
-}
-
-static float ScriptNRandomDouble(float lower, float upper)
-{
-	return static_cast<float>(
-		g_pRandom->RandomDouble(
-			static_cast<double>(lower),
-			static_cast<double>(upper)));
-}
-
-static float ScriptNRandomLongDouble(float lower, float upper)
-{
-	return static_cast<float>(
-		g_pRandom->RandomLongDouble(
-			static_cast<long double>(lower),
-			static_cast<long double>(upper)));
-}
-
-//-----------------------------------------------------------------------------
-// Normal distributions
-//-----------------------------------------------------------------------------
-
-static float ScriptNRandomGaussianFloat(float mean, float stddev)
-{
-	return g_pRandom->RandomGaussianFloat(mean, stddev);
-}
-
-static float ScriptNRandomGaussianDouble(float mean, float stddev)
-{
-	return static_cast<float>(
-		g_pRandom->RandomGaussianDouble(
-			static_cast<double>(mean),
-			static_cast<double>(stddev)));
-}
-
-static float ScriptNRandomGaussianLongDouble(float mean, float stddev)
-{
-	return static_cast<float>(
-		g_pRandom->RandomGaussianLongDouble(
-			static_cast<long double>(mean),
-			static_cast<long double>(stddev)));
-}
-
-//-----------------------------------------------------------------------------
-// Boolean
-//-----------------------------------------------------------------------------
-
-static bool ScriptNRandomBool()
-{
-	return g_pRandom->RandomBool();
-}
-
-//-----------------------------------------------------------------------------
-// Character types
-// Returned as integer character codes.
-//-----------------------------------------------------------------------------
-
-static int ScriptNRandomChar(int lower, int upper)
-{
-	return static_cast<unsigned char>(
-		g_pRandom->RandomChar(
-			static_cast<char>(lower),
-			static_cast<char>(upper)));
-}
-
-static int ScriptNRandomSChar(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomSChar(
-			static_cast<signed char>(lower),
-			static_cast<signed char>(upper)));
-}
-
-static int ScriptNRandomUChar(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUChar(
-			static_cast<unsigned char>(lower),
-			static_cast<unsigned char>(upper)));
-}
-
-static int ScriptNRandomWChar(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomWChar(
-			static_cast<wchar_t>(lower),
-			static_cast<wchar_t>(upper)));
-}
-
-//-----------------------------------------------------------------------------
-// Standard integer types
-//-----------------------------------------------------------------------------
-
-static int ScriptNRandomShort(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomShort(
-			static_cast<short>(lower),
-			static_cast<short>(upper)));
-}
-
-static int ScriptNRandomUShort(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUShort(
-			static_cast<unsigned short>(lower),
-			static_cast<unsigned short>(upper)));
-}
-
-static int ScriptNRandomUInt(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUInt(
-			static_cast<unsigned int>(lower),
-			static_cast<unsigned int>(upper)));
-}
-
-static int ScriptNRandomLong(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomLong(
-			static_cast<long>(lower),
-			static_cast<long>(upper)));
-}
-
-static int ScriptNRandomULong(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomULong(
-			static_cast<unsigned long>(lower),
-			static_cast<unsigned long>(upper)));
-}
-
-static int ScriptNRandomLongLong(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomLongLong(
-			static_cast<long long>(lower),
-			static_cast<long long>(upper)));
-}
-
-static int ScriptNRandomULongLong(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomULongLong(
-			static_cast<unsigned long long>(lower),
-			static_cast<unsigned long long>(upper)));
-}
-
-//-----------------------------------------------------------------------------
-// Fixed-width integer types
-//-----------------------------------------------------------------------------
-
-static int ScriptNRandomInt8(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomInt8(
-			static_cast<int8_t>(lower),
-			static_cast<int8_t>(upper)));
-}
-
-static int ScriptNRandomUInt8(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUInt8(
-			static_cast<uint8_t>(lower),
-			static_cast<uint8_t>(upper)));
-}
-
-static int ScriptNRandomInt16(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomInt16(
-			static_cast<int16_t>(lower),
-			static_cast<int16_t>(upper)));
-}
-
-static int ScriptNRandomUInt16(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUInt16(
-			static_cast<uint16_t>(lower),
-			static_cast<uint16_t>(upper)));
-}
-
-static int ScriptNRandomInt32(int lower, int upper)
-{
-	return static_cast<int32_t>(
-		g_pRandom->RandomInt32(
-			static_cast<int32_t>(lower),
-			static_cast<int32_t>(upper)));
-}
-
-static int ScriptNRandomUInt32(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUInt32(
-			static_cast<uint32_t>(lower),
-			static_cast<uint32_t>(upper)));
-}
-
-static int ScriptNRandomInt64(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomInt64(
-			static_cast<int64_t>(lower),
-			static_cast<int64_t>(upper)));
-}
-
-static int ScriptNRandomUInt64(int lower, int upper)
-{
-	return static_cast<int>(
-		g_pRandom->RandomUInt64(
-			static_cast<uint64_t>(lower),
-			static_cast<uint64_t>(upper)));
-}
 
 static void RegisterClientScriptFunctions()
 {
 	if (!g_pScriptVM)
 		return;
 
+	RegisterGabeVScriptThink();
+	RegisterGabeModClientVScript(); // Register functions for Gabe Mod as a whole
+	RegisterSpawnMenuScriptFuncs(); // Register functions for the Spawn Menu
+	RegisterNewGameScriptFuncs(); // Register the getters for the New Game Dialog
+	Register_In_Buttons(); // Registers button presses
+
 	ScriptRegisterFunctionNamed(
 		g_pScriptVM,
 		Script_MessageBox,
 		"MessageBox",
-		"Shows a message box"
+		"Shows a generic message box"
 	);
 
 	ScriptRegisterFunctionNamed(
@@ -2796,6 +2383,23 @@ static void RegisterClientScriptFunctions()
 		"Time",
 		"Returns client curtime"
 	);
+
+	g_pScriptVM->Run(
+		"CL_Engine <- {};\n"
+		"CL_Console <- {};\n"
+		"CL_ConVar <- {};\n"
+		"CL_Input <- {};\n"
+		"CL_FileSystem <- {};\n"
+		"CL_Clipboard <- {};\n"
+		"CL_Screenshot <- {};\n"
+		"CL_View <- {};\n"
+		"CL_Demo <- {};\n"
+		"CL_Player <- {};\n"
+		"CL_VGUI <- {};\n"
+		"CL_HUD <- {};\n"
+		"CL_Surface <- {};\n"
+		"CL_NMath <- {};\n"
+		"CL_NRandom <- {};\n");
 
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Msg, "Msg", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Script_Warning, "Warning", "");
@@ -3105,6 +2709,415 @@ static void RegisterClientScriptFunctions()
 	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetResolutionKey, "Surface_GetResolutionKey", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetFontName, "Surface_GetFontName", "");
 	ScriptRegisterFunctionNamed(g_pScriptVM, Surface_GetFontFamilyName, "Surface_GetFontFamilyName", "");
+
+	// ============================================================
+	// CL_Console
+	// ============================================================
+
+	TABLE_FUNC(CL_Console, Msg);
+	TABLE_FUNC(CL_Console, Warning);
+	TABLE_FUNC(CL_Console, Log);
+	TABLE_FUNC(CL_Console, EngineError);
+
+	TABLE_FUNC(CL_Console, DMsg);
+	TABLE_FUNC(CL_Console, DWarning);
+	TABLE_FUNC(CL_Console, DLog);
+
+	TABLE_FUNC(CL_Console, DevMsg);
+	TABLE_FUNC(CL_Console, DevWarning);
+	TABLE_FUNC(CL_Console, DevLog);
+
+	TABLE_FUNC(CL_Console, ConMsg);
+	TABLE_FUNC(CL_Console, ConWarning);
+	TABLE_FUNC(CL_Console, ConLog);
+	TABLE_FUNC(CL_Console, ConColorMsg);
+
+	TABLE_FUNC(CL_Console, ConDMsg);
+	TABLE_FUNC(CL_Console, ConDWarning);
+	TABLE_FUNC(CL_Console, ConDLog);
+	TABLE_FUNC(CL_Console, ConDColorMsg);
+
+	TABLE_FUNC(CL_Console, NetMsg);
+	TABLE_FUNC(CL_Console, NetWarning);
+	TABLE_FUNC(CL_Console, NetLog);
+
+	TABLE_FUNC(CL_Console, Assert);
+	TABLE_FUNC(CL_Console, AssertMsg);
+	TABLE_FUNC(CL_Console, AssertMsgOnce);
+	TABLE_FUNC(CL_Console, AssertFatalMsg);
+
+	TABLE_FUNC(CL_Console, Verify);
+	TABLE_FUNC(CL_Console, ErrorIfNot);
+	TABLE_FUNC(CL_Console, DebuggerBreakIfDebugging);
+
+	TABLE_FUNC_NAMED(CL_Console, IsConsoleVisible, IsVisible);
+	TABLE_FUNC_NAMED(CL_Console, ClearConsole, Clear);
+	TABLE_FUNC_NAMED(CL_Console, ToggleConsole, Toggle);
+
+	TABLE_FUNC_NAMED(CL_Console, Con_NPrintf, NPrintf);
+	TABLE_FUNC_NAMED(CL_Console, Con_NXPrintf, NXPrintf);
+
+
+	// ============================================================
+	// CL_Engine
+	// ============================================================
+
+	TABLE_FUNC(CL_Engine, GetMapName);
+	TABLE_FUNC(CL_Engine, GetLocalPlayerIndex);
+	TABLE_FUNC(CL_Engine, IsInGame);
+	TABLE_FUNC(CL_Engine, IsConnected);
+
+	TABLE_FUNC(CL_Engine, GetScreenWidth);
+	TABLE_FUNC(CL_Engine, GetScreenHeight);
+
+	TABLE_FUNC(CL_Engine, ClientCommand);
+	TABLE_FUNC(CL_Engine, ConCommand);
+
+	TABLE_FUNC(CL_Engine, FrameTime);
+	TABLE_FUNC(CL_Engine, MaxClients);
+	TABLE_FUNC(CL_Engine, RealTime);
+	TABLE_FUNC(CL_Engine, FrameCount);
+	TABLE_FUNC(CL_Engine, TickCount);
+	TABLE_FUNC(CL_Engine, IntervalPerTick);
+	TABLE_FUNC(CL_Engine, CurTime);
+
+	TABLE_FUNC_NAMED(CL_Engine, Time, Time);
+
+	TABLE_FUNC(CL_Engine, GetGameDirectory);
+	TABLE_FUNC(CL_Engine, GetAppID);
+	TABLE_FUNC(CL_Engine, IsDrawingLoadingImage);
+	TABLE_FUNC(CL_Engine, TimeScale);
+
+	TABLE_FUNC(CL_Engine, GetBuildNumber);
+	TABLE_FUNC(CL_Engine, GetLanguage);
+
+	TABLE_FUNC(CL_Engine, Disconnect);
+	TABLE_FUNC(CL_Engine, Quit);
+
+	TABLE_FUNC(CL_Engine, EngineTime);
+	TABLE_FUNC(CL_Engine, GetLastTimeStamp);
+
+	TABLE_FUNC(CL_Engine, GetLevelName);
+	TABLE_FUNC(CL_Engine, GetLevelVersion);
+	TABLE_FUNC(CL_Engine, LevelLeafCount);
+	TABLE_FUNC(CL_Engine, IsPaused);
+	TABLE_FUNC(CL_Engine, IsHLTV);
+
+	TABLE_FUNC(CL_Engine, IsLevelMainMenuBackground);
+	TABLE_FUNC(CL_Engine, GetMainMenuBackgroundName);
+	TABLE_FUNC(CL_Engine, GetScreenAspectRatio);
+
+	TABLE_FUNC(CL_Engine, GetEngineBuildNumber);
+	TABLE_FUNC(CL_Engine, GetProductVersionString);
+	TABLE_FUNC(CL_Engine, GetDXSupportLevel);
+	TABLE_FUNC(CL_Engine, SupportsHDR);
+	TABLE_FUNC(CL_Engine, MapHasHDRLighting);
+
+	TABLE_FUNC(CL_Engine, IsHammerRunning);
+	TABLE_FUNC(CL_Engine, IsWindowedMode);
+	TABLE_FUNC(CL_Engine, IsActiveApp);
+	TABLE_FUNC(CL_Engine, GetClientVersion);
+	TABLE_FUNC(CL_Engine, GetInstancesRunningCount);
+
+	TABLE_FUNC(CL_Engine, ExecuteClientCmd);
+	TABLE_FUNC(CL_Engine, ServerCmd);
+	TABLE_FUNC(CL_Engine, ClientCmd);
+	TABLE_FUNC(CL_Engine, ClientCmdUnrestricted);
+
+	TABLE_FUNC(CL_Engine, CheckPoint);
+	TABLE_FUNC(CL_Engine, DrawPortals);
+	TABLE_FUNC(CL_Engine, FlashWindow);
+
+	TABLE_FUNC(CL_Engine, GetMapListString);
+
+
+	// ============================================================
+	// CL_ConVar
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_ConVar, GetConVarString, GetString);
+	TABLE_FUNC_NAMED(CL_ConVar, GetConVarFloat, GetFloat);
+	TABLE_FUNC_NAMED(CL_ConVar, GetConVarInt, GetInt);
+	TABLE_FUNC_NAMED(CL_ConVar, GetConVarBool, GetBool);
+
+	TABLE_FUNC_NAMED(CL_ConVar, SetConVarString, SetString);
+	TABLE_FUNC_NAMED(CL_ConVar, SetConVarFloat, SetFloat);
+	TABLE_FUNC_NAMED(CL_ConVar, SetConVarInt, SetInt);
+
+
+	// ============================================================
+	// CL_Input
+	// ============================================================
+
+	TABLE_FUNC(CL_Input, IsKeyDown);
+
+	TABLE_FUNC(CL_Input, ButtonCodeToStringExists);
+	TABLE_FUNC(CL_Input, ButtonCodeToString);
+	TABLE_FUNC(CL_Input, StringToButtonCode);
+
+	TABLE_FUNC(CL_Input, SetMousePosition);
+	TABLE_FUNC(CL_Input, ShowCursor);
+
+	TABLE_FUNC(CL_Input, KeyLookupBinding);
+	TABLE_FUNC(CL_Input, KeyLookupBindingExact);
+
+
+	// ============================================================
+	// CL_FileSystem
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_FileSystem, FileExists, Exists);
+	TABLE_FUNC_NAMED(CL_FileSystem, ReadTextFile, ReadText);
+	TABLE_FUNC_NAMED(CL_FileSystem, WriteTextFile, WriteText);
+
+	TABLE_FUNC_NAMED(CL_FileSystem, FS_FindFirst, FindFirst);
+	TABLE_FUNC_NAMED(CL_FileSystem, FS_FindNext, FindNext);
+	TABLE_FUNC_NAMED(CL_FileSystem, FS_FindClose, FindClose);
+	TABLE_FUNC_NAMED(CL_FileSystem, FS_IsDirectory, IsDirectory);
+
+
+	// ============================================================
+	// CL_Clipboard
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_Clipboard, GetClipboardText, GetText);
+	TABLE_FUNC_NAMED(CL_Clipboard, SetClipboardText, SetText);
+
+
+	// ============================================================
+	// CL_Screenshot
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_Screenshot, IsTakingScreenshot, IsTaking);
+	TABLE_FUNC_NAMED(CL_Screenshot, TakeScreenshot, Take);
+	TABLE_FUNC_NAMED(CL_Screenshot, TakeNamedScreenshot, TakeNamed);
+
+
+	// ============================================================
+	// CL_View
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_View, GetViewPitch, GetPitch);
+	TABLE_FUNC_NAMED(CL_View, GetViewYaw, GetYaw);
+	TABLE_FUNC_NAMED(CL_View, GetViewRoll, GetRoll);
+	TABLE_FUNC_NAMED(CL_View, SetViewAngles, SetAngles);
+
+
+	// ============================================================
+	// CL_NMath
+	// ============================================================
+
+	// Arithmetic
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathAdd, Add);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathSubtract, Subtract);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathMultiply, Multiply);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathDivide, Divide);
+
+	// Powers
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathSquare, Square);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathCube, Cube);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathPower, Power);
+	TABLE_FUNC_NAMED(CL_NMath, Sqrt, Sqrt);
+
+	// General math
+	TABLE_FUNC_NAMED(CL_NMath, Abs, Abs);
+	TABLE_FUNC_NAMED(CL_NMath, Min, Min);
+	TABLE_FUNC_NAMED(CL_NMath, Max, Max);
+	TABLE_FUNC_NAMED(CL_NMath, Clamp, Clamp);
+
+	TABLE_FUNC_NAMED(CL_NMath, Floor, Floor);
+	TABLE_FUNC_NAMED(CL_NMath, Ceil, Ceil);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathRound, Round);
+
+	// Trigonometry
+	TABLE_FUNC(CL_NMath, Sin);
+	TABLE_FUNC(CL_NMath, Cos);
+	TABLE_FUNC(CL_NMath, Tan);
+
+	TABLE_FUNC(CL_NMath, Deg2Rad);
+	TABLE_FUNC(CL_NMath, Rad2Deg);
+
+	// Logs
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathLog, Log);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathLog10, Log10);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathExp, Exp);
+
+	// Constants
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathGetPi, GetPi);
+	TABLE_FUNC_NAMED(CL_NMath, ScriptNMathGetEulersNumber, GetEulersNumber);
+
+	// Vector / interpolation math
+	TABLE_FUNC(CL_NMath, VectorLength);
+	TABLE_FUNC(CL_NMath, VectorDistance);
+	TABLE_FUNC(CL_NMath, DotProduct3D);
+
+	TABLE_FUNC(CL_NMath, AngleNormalize);
+	TABLE_FUNC(CL_NMath, Approach);
+	TABLE_FUNC(CL_NMath, ApproachAngle);
+
+
+	// ============================================================
+	// CL_NRandom
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomInt, Int);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomFloat, Float);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomDouble, Double);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomLongDouble, LongDouble);
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomGaussianFloat, GaussianFloat);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomGaussianDouble, GaussianDouble);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomGaussianLongDouble, GaussianLongDouble);
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomBool, Bool);
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomChar, Char);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomSChar, SChar);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUChar, UChar);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomWChar, WChar);
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomShort, Short);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUShort, UShort);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUInt, UInt);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomLong, Long);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomULong, ULong);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomLongLong, LongLong);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomULongLong, ULongLong);
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomInt8, Int8);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUInt8, UInt8);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomInt16, Int16);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUInt16, UInt16);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomInt32, Int32);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUInt32, UInt32);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomInt64, Int64);
+	TABLE_FUNC_NAMED(CL_NRandom, RandomUInt64, UInt64);
+
+	TABLE_FUNC_NAMED(CL_NRandom, RandomSeed, Seed);
+
+
+	// ============================================================
+	// CL_Demo
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_Demo, IsPlayingDemo, IsPlaying);
+	TABLE_FUNC_NAMED(CL_Demo, IsRecordingDemo, IsRecording);
+	TABLE_FUNC(CL_Demo, IsPlayingTimeDemo);
+
+	TABLE_FUNC_NAMED(CL_Demo, GetDemoRecordingTick, GetRecordingTick);
+	TABLE_FUNC_NAMED(CL_Demo, GetDemoPlaybackTick, GetPlaybackTick);
+	TABLE_FUNC_NAMED(CL_Demo, GetDemoPlaybackStartTick, GetPlaybackStartTick);
+	TABLE_FUNC_NAMED(CL_Demo, GetDemoPlaybackTimeScale, GetPlaybackTimeScale);
+	TABLE_FUNC_NAMED(CL_Demo, GetDemoPlaybackTotalTicks, GetPlaybackTotalTicks);
+
+	TABLE_FUNC_NAMED(CL_Demo, StartDemoRecording, StartRecording);
+	TABLE_FUNC_NAMED(CL_Demo, StopDemoRecording, StopRecording);
+
+
+	// ============================================================
+	// CL_Player
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_Player, GetPlayerForUserID, GetForUserID);
+	TABLE_FUNC_NAMED(CL_Player, GetPlayerName, GetName);
+	TABLE_FUNC_NAMED(CL_Player, GetPlayerUserID, GetUserID);
+	TABLE_FUNC_NAMED(CL_Player, IsPlayerFake, IsFake);
+	TABLE_FUNC_NAMED(CL_Player, IsPlayerHLTV, IsHLTV);
+
+
+	// ============================================================
+	// CL_VGUI
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_VGUI, MessageBox, MessageBox);
+	TABLE_FUNC_NAMED(CL_VGUI, VGUI_CreateFrame, CreateFrame);
+
+
+	// ============================================================
+	// CL_HUD
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_HUD, HUD_CreateElement, CreateElement);
+	TABLE_FUNC_NAMED(CL_HUD, HUD_ClearAll, ClearAll);
+
+
+	// ============================================================
+	// CL_Surface
+	// ============================================================
+
+	// Drawing
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetDrawColor, SetDrawColor);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawFilledRect, DrawFilledRect);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawOutlinedRect, DrawOutlinedRect);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawLine, DrawLine);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawOutlinedCircle, DrawOutlinedCircle);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawFilledRectFade, DrawFilledRectFade);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawFilledRectFastFade, DrawFilledRectFastFade);
+
+	// Fonts / text
+	TABLE_FUNC_NAMED(CL_Surface, Surface_CreateFont, CreateFont);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetFontGlyphSet, SetFontGlyphSet);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetTextFont, SetTextFont);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetTextColor, SetTextColor);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetTextPos, SetTextPos);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_PrintText, PrintText);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawUnicodeChar, DrawUnicodeChar);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawFlushText, DrawFlushText);
+
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetFontTall, GetFontTall);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetCharacterWidth, GetCharacterWidth);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetTextWide, GetTextWide);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetTextTall, GetTextTall);
+
+	// Textures
+	TABLE_FUNC_NAMED(CL_Surface, Surface_CreateTextureID, CreateTextureID);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_IsTextureIDValid, IsTextureIDValid);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetTexture, SetTexture);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetTextureFile, SetTextureFile);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DrawTexturedRect, DrawTexturedRect);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DeleteTextureByID, DeleteTextureByID);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_DestroyTextureID, DestroyTextureID);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetTextureWide, GetTextureWide);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetTextureTall, GetTextureTall);
+
+	// Screen / cursor
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetScreenWide, GetScreenWide);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetScreenTall, GetScreenTall);
+
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetCursorAlwaysVisible, SetCursorAlwaysVisible);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_IsCursorVisible, IsCursorVisible);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_LockCursor, LockCursor);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_UnlockCursor, UnlockCursor);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_IsCursorLocked, IsCursorLocked);
+
+	TABLE_FUNC_NAMED(CL_Surface, Surface_HasFocus, HasFocus);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_IsWithin, IsWithin);
+
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetCursorX, GetCursorX);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetCursorY, GetCursorY);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetCursorPos, SetCursorPos);
+
+	// Misc
+	TABLE_FUNC_NAMED(CL_Surface, Surface_PlaySound, PlaySound);
+
+	TABLE_FUNC_NAMED(CL_Surface, Surface_SetAlphaMultiplier, SetAlphaMultiplier);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetAlphaMultiplier, GetAlphaMultiplier);
+
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetResolutionKey, GetResolutionKey);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetFontName, GetFontName);
+	TABLE_FUNC_NAMED(CL_Surface, Surface_GetFontFamilyName, GetFontFamilyName);
+
+	g_pScriptVM->Run(
+		"print <- function(text) "
+		"{ "
+		"	CL_Console.Msg(text.tostring()); "
+		"}; "
+		"printl <- function(text) "
+		"{ "
+		"	CL_Console.Msg(text.tostring() + \"\\n\"); "
+		"};",
+		true
+	);
 }
 
 //-----------------------------------------------------------------------------
@@ -3147,8 +3160,13 @@ bool VScriptClientRunScript(const char* pszScriptName)
 
 bool VScriptClientInit()
 {
+	Msg("VScriptClientInit entered, VM = %p\n", g_pScriptVM);
+
 	if (g_pScriptVM)
+	{
+		Msg("VScriptClientInit: already initialized\n");
 		return true;
+	}
 
 	if (!s_AppSystemFactory)
 	{
@@ -3208,6 +3226,8 @@ CON_COMMAND_F(cl_script_execute, "Run a client-side VScript file", FCVAR_NONE)
 
 CON_COMMAND(cl_script, "Run the text as a script")
 {
+	Msg("cl_script HANDLER called\n");
+
 	if (!*args[1])
 	{
 		Log_Warning(LOG_VScript, "No function name specified\n");
@@ -3222,7 +3242,7 @@ CON_COMMAND(cl_script, "Run the text as a script")
 
 	const char* pszScript = args.GetCommandString();
 
-	pszScript += 13;
+	pszScript += V_strlen("cl_script");
 
 	while (*pszScript == ' ')
 	{
@@ -3236,6 +3256,7 @@ CON_COMMAND(cl_script, "Run the text as a script")
 
 	if (*pszScript != '\"')
 	{
+		Msg("cl_script RUN: [%s]\n", pszScript);
 		g_pScriptVM->Run(pszScript);
 	}
 	else
@@ -3251,6 +3272,7 @@ CON_COMMAND(cl_script, "Run the text as a script")
 			return;
 		}
 		*((char*)pszEndQuote) = 0;
+		Msg("cl_script RUN: [%s]\n", pszScript);
 		g_pScriptVM->Run(pszScript);
 		*((char*)pszEndQuote) = '\"';
 	}
@@ -3876,4 +3898,22 @@ CON_COMMAND_F(cl_script_find, "Find a key in the VM ", FCVAR_CHEAT)
 		return;
 	g_pScriptVM->Call(hFunction, NULL, true, NULL, args[1]);
 	g_pScriptVM->ReleaseFunction(hFunction);
+}
+
+
+CON_COMMAND(cl_script_help, "Output help for script functions, optionally with a search string")
+{
+
+	if (!g_pScriptVM)
+	{
+		Log_Warning(LOG_VScript, "Scripting disabled or no server running\n");
+		return;
+	}
+	const char* pszArg1 = "*";
+	if (*args[1])
+	{
+		pszArg1 = args[1];
+	}
+
+	g_pScriptVM->Run(CFmtStr("PrintHelp( \"%s\" );", pszArg1));
 }

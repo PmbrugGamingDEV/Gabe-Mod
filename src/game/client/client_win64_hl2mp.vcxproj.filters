@@ -79,6 +79,9 @@
     <Filter Include="Source Files\Gabe Mod Files\BEMod">
       <UniqueIdentifier>{29559b0c-a066-421a-95ca-2a82ba7d14e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Lua">
+      <UniqueIdentifier>{6c4b5fa7-765c-4117-801d-0ed78b803fcd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\bitmap.lib">
@@ -2036,6 +2039,18 @@
     <ClInclude Include="hl2\hud_radar.h">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClInclude>
+    <ClInclude Include="gabe_spawnmenu.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gabe_newgame.h">
+      <Filter>Source Files\Gabe Mod Files\VGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\vscript_in_buttons.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\vscript_think.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3743,6 +3758,12 @@
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
     <ClCompile Include="hl2\hud_radar.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\vscript_in_buttons.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\vscript_think.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>

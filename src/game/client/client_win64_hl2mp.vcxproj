@@ -623,6 +623,8 @@ exit 1
     <ClInclude Include="..\shared\voice_gamemgr.h" />
     <ClInclude Include="..\shared\voice_status.h" />
     <ClInclude Include="..\shared\vphysics_sound.h" />
+    <ClInclude Include="..\shared\vscript_in_buttons.h" />
+    <ClInclude Include="..\shared\vscript_think.h" />
     <ClInclude Include="..\shared\weapon_ifmsteadycam.h" />
     <ClInclude Include="..\shared\weapon_parse.h" />
     <ClInclude Include="..\shared\weapon_proficiency.h" />
@@ -631,6 +633,8 @@ exit 1
     <ClInclude Include="episodic\episodic_screenspaceeffects.h" />
     <ClInclude Include="gabe_client.h" />
     <ClInclude Include="gabe_events.h" />
+    <ClInclude Include="gabe_newgame.h" />
+    <ClInclude Include="gabe_spawnmenu.h" />
     <ClInclude Include="game_controls\baseviewport.h" />
     <ClInclude Include="game_controls\clientscoreboarddialog.h" />
     <ClInclude Include="game_controls\commandmenu.h" />
@@ -1154,6 +1158,8 @@ exit 1
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
     <ClCompile Include="..\shared\hl2\survival_gamerules.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
+    <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
+    <ClCompile Include="..\shared\vscript_think.cpp" />
     <ClCompile Include="cl_camerablur.cpp" />
     <ClCompile Include="c_bemod_physgun.cpp" />
     <ClCompile Include="c_gabe_vscript.cpp" />

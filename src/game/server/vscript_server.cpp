@@ -25,6 +25,12 @@
 #include "engine/IEngineSound.h"
 #include "vscript_utils.h"
 #include "netpropmanager.h"
+
+/*EXTERNAL ADDITIONS*/
+#include "gabe.h"
+#include "vscript_in_buttons.h"
+#include "vscript_think.h"
+
 #include "client.h"
 #include "tier0/vcrmode.h"
 #include "in_buttons.h"
@@ -2734,6 +2740,12 @@ bool VScriptServerInit()
 {
 	VMPROF_START
 
+	if (g_pScriptVM)
+	{
+		Warning("VScriptServerInit called while VM already exists!\n");
+		return true;
+	}
+
 	if( scriptmanager != NULL )
 	{
 		ScriptLanguage_t scriptLanguage = SL_DEFAULT;
@@ -2762,8 +2774,7 @@ bool VScriptServerInit()
 		}
 		if( scriptLanguage != SL_NONE )
 		{
-			if ( g_pScriptVM == NULL )
-				g_pScriptVM = scriptmanager->CreateVM( scriptLanguage );
+			g_pScriptVM = scriptmanager->CreateVM(scriptLanguage);
 
 			if ( ( script_attach_debugger_at_startup.GetBool() || CommandLine()->CheckParm( "-vscriptdebug" ) ) && g_pScriptVM )
 			{
@@ -2772,8 +2783,39 @@ bool VScriptServerInit()
 
 			if( g_pScriptVM )
 			{
-				Log_Msg( LOG_VScript, "VSCRIPT: Started VScript virtual machine using script language '%s'\n", g_pScriptVM->GetLanguageName() );
+				Color clr(164,125,171, 255);
+
+				ConColorMsg(clr, "VSCRIPT: Started VScript virtual machine using script language '%s'\n", g_pScriptVM->GetLanguageName());
+
 				g_pScriptVM->SetErrorCallback( &VScriptServerScriptErrorFunc );
+
+				// ============================================================
+				// Server VScript tables
+				// ============================================================
+
+				g_pScriptVM->Run(
+					"SV_Console <- {};\n"
+					"SV_Engine <- {};\n"
+					"SV_NMath <- {};\n"
+					"SV_NRandom <- {};\n"
+					"SV_FileSystem <- {};\n"
+					"SV_ConVar <- {};\n"
+					"SV_Entity <- {};\n"
+					"SV_Player <- {};\n"
+					"SV_Vehicle <- {};\n"
+					"SV_Sound <- {};\n"
+					"SV_Trace <- {};\n"
+					"SV_DebugOverlay <- {};\n"
+					"SV_Event <- {};\n"
+					"SV_Script <- {};\n"
+					"SV_Precache <- {};\n"
+					"SV_Screen <- {};\n"
+					"SV_Particle <- {};\n"
+					"SV_Scene <- {};\n",
+					true
+				);
+
+				Register_In_Buttons(); // Registers button presses
 
 				/* TEXT */
 
@@ -2879,6 +2921,10 @@ bool VScriptServerInit()
 				ScriptRegisterFunctionNamed(g_pScriptVM, Script_Approach, "Approach", "");
 				ScriptRegisterFunctionNamed(g_pScriptVM, Script_ApproachAngle, "ApproachAngle", "");
 
+				/*GabeMod*/
+				RegisterGabeVScriptThink();
+				RegisterGabeModVScript();
+
 				/* REST OF THE STUFF */
 				ScriptRegisterFunctionNamed(
 					g_pScriptVM,
@@ -2973,6 +3019,79 @@ bool VScriptServerInit()
 				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::DrawTickMarkedLine, "DebugOverlay_TickMarkedLine", "Draw tick marked line");
 				ScriptRegisterFunctionNamed(g_pScriptVM, NDebugOverlay::DrawGroundCrossHairOverlay, "DebugOverlay_DrawGroundCrossHairOverlay", "Draw ground crosshair overlay");
 
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathAdd, "Returns the sum of two numbers.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathSubtract, "Returns the difference between two numbers.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathMultiply, "Returns the product of two numbers.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathDivide, "Returns the quotient of two numbers.");
+
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathSquare, "Returns a number squared.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathCube, "Returns a number cubed.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathPower, "Raises a number to a power.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathSquareRoot, "Sqrt", "Returns the square root of a number.");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathAbsolute, "Abs", "Returns the absolute value of a number.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathMinimum, "Min", "Returns the smaller of two numbers.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathMaximum, "Max", "Returns the larger of two numbers.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathClamp, "Clamp", "Restricts a number to a range.");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathFloor, "Floor", "Rounds a number down.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathCeiling, "Ceil", "Rounds a number up.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathRound, "Rounds a number to the nearest integer.");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathSin, "Sin", "Returns the sine of a radian angle.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathCos, "Cos", "Returns the cosine of a radian angle.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathTan, "Tan", "Returns the tangent of a radian angle.");
+
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathDegreesToRadians, "Deg2Rad", "Converts degrees to radians.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNMathRadiansToDegrees, "Rad2Deg", "Converts radians to degrees.");
+
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathLog, "Returns the natural logarithm.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathLog10, "Returns the base-10 logarithm.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathExp, "Returns Euler's number raised to a power.");
+
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathGetPi, "Returns pi.");
+				ScriptRegisterFunction(g_pScriptVM, ScriptNMathGetEulersNumber, "Returns Euler's number.");
+
+				// Uniform distributions
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt, "RandomInt", "Returns a random integer in the specified inclusive range.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomFloat, "RandomFloat", "Returns a random float in the specified range.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomDouble, "RandomDouble", "Returns a random double converted to a VScript float.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomLongDouble, "RandomLongDouble", "Returns a random long double converted to a VScript float.");
+
+				// Normal distributions
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomGaussianFloat, "RandomGaussianFloat", "Returns a normally distributed random float.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomGaussianDouble, "RandomGaussianDouble", "Returns a normally distributed random double converted to a float.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomGaussianLongDouble, "RandomGaussianLongDouble", "Returns a normally distributed random long double converted to a float.");
+
+				// Boolean
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomBool, "RandomBool", "Returns a random boolean.");
+
+				// Character types
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomChar, "RandomChar", "Returns a random char as an integer character code.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomSChar, "RandomSChar", "Returns a random signed char as an integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUChar, "RandomUChar", "Returns a random unsigned char as an integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomWChar, "RandomWChar", "Returns a random wide character as an integer code.");
+
+				// Standard integer types
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomShort, "RandomShort", "Returns a random short integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUShort, "RandomUShort", "Returns a random unsigned short integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt, "RandomUInt", "Returns a random unsigned integer within VScript's integer range.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomLong, "RandomLong", "Returns a random long integer within VScript's integer range.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomULong, "RandomULong", "Returns a random unsigned long within VScript's integer range.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomLongLong, "RandomLongLong", "Returns a random long long converted to a VScript integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomULongLong, "RandomULongLong", "Returns a random unsigned long long converted to a VScript integer.");
+
+				// Fixed-width integer types
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt8, "RandomInt8", "Returns a random signed 8-bit integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt8, "RandomUInt8", "Returns a random unsigned 8-bit integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt16, "RandomInt16", "Returns a random signed 16-bit integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt16, "RandomUInt16", "Returns a random unsigned 16-bit integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt32, "RandomInt32", "Returns a random signed 32-bit integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt32, "RandomUInt32", "Returns a random unsigned 32-bit integer within VScript's signed range.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomInt64, "RandomInt64", "Returns a random signed 64-bit integer converted to a VScript integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, ScriptNRandomUInt64, "RandomUInt64", "Returns a random unsigned 64-bit integer converted to a VScript integer.");
+				ScriptRegisterFunctionNamed(g_pScriptVM, Script_RandomSeed, "RandomSeed", "");
+
 				// Existing wrappers you already have
 				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayCircle, "DebugOverlay_Circle", "Draw circle");
 				ScriptRegisterFunctionNamed(g_pScriptVM, Script_OverlayLine_vCol, "DebugOverlay_Line_vCol", "Draw line using color vector");
@@ -3057,7 +3176,420 @@ bool VScriptServerInit()
 #endif	// PORTAL2_PUZZLEMAKER
 #endif
 
+				// ============================================================
+				// SV_Console
+				// ============================================================
+
+				TABLE_FUNC(SV_Console, Msg);
+				TABLE_FUNC(SV_Console, Warning);
+				TABLE_FUNC(SV_Console, Log);
+				TABLE_FUNC(SV_Console, EngineError);
+
+				TABLE_FUNC(SV_Console, DMsg);
+				TABLE_FUNC(SV_Console, DWarning);
+				TABLE_FUNC(SV_Console, DLog);
+
+				TABLE_FUNC(SV_Console, DevMsg);
+				TABLE_FUNC(SV_Console, DevWarning);
+				TABLE_FUNC(SV_Console, DevLog);
+
+				TABLE_FUNC(SV_Console, ConMsg);
+				TABLE_FUNC(SV_Console, ConWarning);
+				TABLE_FUNC(SV_Console, ConLog);
+				TABLE_FUNC(SV_Console, ConColorMsg);
+
+				TABLE_FUNC(SV_Console, ConDMsg);
+				TABLE_FUNC(SV_Console, ConDWarning);
+				TABLE_FUNC(SV_Console, ConDLog);
+				TABLE_FUNC(SV_Console, ConDColorMsg);
+
+				TABLE_FUNC(SV_Console, NetMsg);
+				TABLE_FUNC(SV_Console, NetWarning);
+				TABLE_FUNC(SV_Console, NetLog);
+
+				TABLE_FUNC(SV_Console, Assert);
+				TABLE_FUNC(SV_Console, AssertMsg);
+				TABLE_FUNC(SV_Console, AssertMsgOnce);
+				TABLE_FUNC(SV_Console, AssertFatalMsg);
+
+				TABLE_FUNC(SV_Console, Verify);
+				TABLE_FUNC(SV_Console, ErrorIfNot);
+				TABLE_FUNC(SV_Console, DebuggerBreakIfDebugging);
+
+				TABLE_FUNC_NAMED(SV_Console, Con_NPrintf, NPrintf);
+
+				TABLE_FUNC(SV_Console, SendToConsole);
+				TABLE_FUNC_NAMED(SV_Console, SendToServerConsole, SendToServerConsole);
+				TABLE_FUNC_NAMED(SV_Console, SendToConsoleServer, SendToConsoleServer);
+
+				// ============================================================
+				// SV_Engine
+				// ============================================================
+
+				TABLE_FUNC(SV_Engine, FrameTime);
+				TABLE_FUNC(SV_Engine, MaxClients);
+
+				TABLE_FUNC(SV_Engine, RealTime);
+				TABLE_FUNC(SV_Engine, FrameCount);
+				TABLE_FUNC(SV_Engine, TickCount);
+				TABLE_FUNC(SV_Engine, IntervalPerTick);
+				TABLE_FUNC(SV_Engine, CurTime);
+
+				TABLE_FUNC(SV_Engine, Time);
+
+				TABLE_FUNC_NAMED(SV_Engine, GetFrameCount, GetFrameCount);
+
+				TABLE_FUNC(SV_Engine, GetMapName);
+				TABLE_FUNC(SV_Engine, GetDeveloperLevel);
+
+				TABLE_FUNC_NAMED(SV_Engine, IsDedicatedServer, IsDedicatedServer);
+				TABLE_FUNC_NAMED(SV_Engine, GetListenServerHost, GetListenServerHost);
+
+				TABLE_FUNC_NAMED(SV_Engine, LocalTime, LocalTime);
+
+				TABLE_FUNC_NAMED(SV_Engine, SetSkyboxTexture, SetSkyboxTexture);
+
+				// ============================================================
+				// SV_NMath
+				// ============================================================
+
+				// Basic Source math
+				TABLE_FUNC(SV_NMath, Sin);
+				TABLE_FUNC(SV_NMath, Cos);
+				TABLE_FUNC(SV_NMath, Tan);
+				TABLE_FUNC(SV_NMath, Sqrt);
+				TABLE_FUNC(SV_NMath, Abs);
+				TABLE_FUNC(SV_NMath, Floor);
+				TABLE_FUNC(SV_NMath, Ceil);
+				TABLE_FUNC(SV_NMath, Min);
+				TABLE_FUNC(SV_NMath, Max);
+				TABLE_FUNC(SV_NMath, Clamp);
+				TABLE_FUNC(SV_NMath, Deg2Rad);
+				TABLE_FUNC(SV_NMath, Rad2Deg);
+
+				// Vector / angle helpers
+				TABLE_FUNC(SV_NMath, VectorLength);
+				TABLE_FUNC(SV_NMath, VectorDistance);
+				TABLE_FUNC(SV_NMath, DotProduct3D);
+				TABLE_FUNC(SV_NMath, AngleNormalize);
+				TABLE_FUNC(SV_NMath, Approach);
+				TABLE_FUNC(SV_NMath, ApproachAngle);
+
+				TABLE_FUNC(SV_NMath, RotatePosition);
+				TABLE_FUNC(SV_NMath, RotateOrientation);
+
+				// Extended NMath
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathAdd, Add);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathSubtract, Subtract);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathMultiply, Multiply);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathDivide, Divide);
+
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathSquare, Square);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathCube, Cube);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathPower, Power);
+
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathRound, Round);
+
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathLog, Log);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathLog10, Log10);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathExp, Exp);
+
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathGetPi, GetPi);
+				TABLE_FUNC_NAMED(SV_NMath, ScriptNMathGetEulersNumber, GetEulersNumber);
+
+				// ============================================================
+				// SV_NRandom
+				// ============================================================
+
+				// Source random
+				TABLE_FUNC_NAMED(SV_NRandom, RandomInt, Int);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomFloat, Float);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomFloatExp, FloatExp);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomGaussianFloat, GaussianFloat);
+
+				// Extended random
+				TABLE_FUNC_NAMED(SV_NRandom, RandomDouble, Double);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomLongDouble, LongDouble);
+
+				TABLE_FUNC_NAMED(SV_NRandom, RandomGaussianDouble, GaussianDouble);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomGaussianLongDouble, GaussianLongDouble);
+
+				TABLE_FUNC_NAMED(SV_NRandom, RandomBool, Bool);
+
+				TABLE_FUNC_NAMED(SV_NRandom, RandomChar, Char);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomSChar, SChar);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUChar, UChar);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomWChar, WChar);
+
+				TABLE_FUNC_NAMED(SV_NRandom, RandomShort, Short);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUShort, UShort);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUInt, UInt);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomLong, Long);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomULong, ULong);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomLongLong, LongLong);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomULongLong, ULongLong);
+
+				TABLE_FUNC_NAMED(SV_NRandom, RandomInt8, Int8);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUInt8, UInt8);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomInt16, Int16);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUInt16, UInt16);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomInt32, Int32);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUInt32, UInt32);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomInt64, Int64);
+				TABLE_FUNC_NAMED(SV_NRandom, RandomUInt64, UInt64);
+
+				TABLE_FUNC_NAMED(SV_NRandom, RandomSeed, Seed);
+
+				// ============================================================
+				// SV_FileSystem
+				// ============================================================
+
+				TABLE_FUNC_NAMED(SV_FileSystem, FileExists, Exists);
+				TABLE_FUNC_NAMED(SV_FileSystem, ReadTextFile, ReadText);
+				TABLE_FUNC_NAMED(SV_FileSystem, WriteTextFile, WriteText);
+
+				TABLE_FUNC_NAMED(SV_FileSystem, FS_FindFirst, FindFirst);
+				TABLE_FUNC_NAMED(SV_FileSystem, FS_FindNext, FindNext);
+				TABLE_FUNC_NAMED(SV_FileSystem, FS_FindClose, FindClose);
+				TABLE_FUNC_NAMED(SV_FileSystem, FS_IsDirectory, IsDirectory);
+
+				TABLE_FUNC_NAMED(SV_FileSystem, StringToFile, StringToFile);
+				TABLE_FUNC_NAMED(SV_FileSystem, FileToString, FileToString);
+
+
+				// ============================================================
+				// SV_ConVar
+				// ============================================================
+
+				TABLE_FUNC_NAMED(SV_ConVar, GetConVarString, GetString);
+				TABLE_FUNC_NAMED(SV_ConVar, GetConVarFloat, GetFloat);
+				TABLE_FUNC_NAMED(SV_ConVar, GetConVarInt, GetInt);
+				TABLE_FUNC_NAMED(SV_ConVar, GetConVarBool, GetBool);
+
+				TABLE_FUNC_NAMED(SV_ConVar, SetConVarString, SetString);
+				TABLE_FUNC_NAMED(SV_ConVar, SetConVarFloat, SetFloat);
+				TABLE_FUNC_NAMED(SV_ConVar, SetConVarInt, SetInt);
+
+				TABLE_FUNC(SV_ConVar, SetFakeClientConVarValue);
+
+				// ============================================================
+				// SV_Entity
+				// ============================================================
+
+				TABLE_FUNC_NAMED(
+					SV_Entity,
+					DoEntFire,
+					EntFire
+				);
+				TABLE_FUNC_NAMED(SV_Entity, EntFireByHandle, EntFireByHandle);
+
+				TABLE_FUNC(SV_Entity, EntIndexToHScript);
+
+				TABLE_FUNC(SV_Entity, SpawnEntityFromTable);
+				TABLE_FUNC(SV_Entity, SpawnEntityGroupFromTable);
+
+				TABLE_FUNC(SV_Entity, CreateProp);
+
+				TABLE_FUNC(SV_Entity, GetPhysVelocity);
+				TABLE_FUNC(SV_Entity, GetPhysAngularVelocity);
+				TABLE_FUNC(SV_Entity, GetFriction);
+
+				TABLE_FUNC(SV_Entity, AddThinkToEnt);
+
+				TABLE_FUNC(SV_Entity, PickupObject);
+
+				// ============================================================
+				// SV_Player
+				// ============================================================
+
+				TABLE_FUNC(SV_Player, PlayerInstanceFromIndex);
+
+				TABLE_FUNC_NAMED(SV_Player, GetPlayerFromUserID, GetFromUserID);
+				TABLE_FUNC_NAMED(SV_Player, IsPlayerABot, IsBot);
+
+				TABLE_FUNC(SV_Player, Say);
+
+				TABLE_FUNC_NAMED(SV_Player, ShowMessage, ShowMessage);
+				TABLE_FUNC_NAMED(SV_Player, ClientPrint, ClientPrint);
+
+				// ============================================================
+				// SV_Vehicle
+				// ============================================================
+
+				TABLE_FUNC_NAMED(SV_Vehicle, CreateVehicle, Create);
+				TABLE_FUNC_NAMED(SV_Vehicle, CreateJeep, CreateJeep);
+				TABLE_FUNC_NAMED(SV_Vehicle, CreateAirboat, CreateAirboat);
+				TABLE_FUNC_NAMED(SV_Vehicle, CreateCustomCar, CreateCustomCar);
+				TABLE_FUNC_NAMED(SV_Vehicle, CreateJeepForPlayer, CreateJeepForPlayer);
+
+
+				// ============================================================
+				// SV_Sound
+				// ============================================================
+
+				TABLE_FUNC(SV_Sound, EmitAmbientSound);
+
+				TABLE_FUNC(SV_Sound, EmitSoundOn);
+				TABLE_FUNC(SV_Sound, EmitSoundOnClient);
+				TABLE_FUNC(SV_Sound, EmitSoundEx);
+				TABLE_FUNC(SV_Sound, StopSoundOn);
+
+				TABLE_FUNC(SV_Sound, EmitAmbientSoundOn);
+				TABLE_FUNC(SV_Sound, StopAmbientSoundOn);
+
+				TABLE_FUNC(SV_Sound, GetSoundDuration);
+
+				// ============================================================
+				// SV_Trace
+				// ============================================================
+
+				TABLE_FUNC(SV_Trace, TraceLine);
+				TABLE_FUNC(SV_Trace, TraceLinePlayersIncluded);
+
+				TABLE_FUNC(SV_Trace, TraceLineEx);
+				TABLE_FUNC(SV_Trace, TraceHull);
+
+
+				// ============================================================
+				// SV_Screen
+				// ============================================================
+
+				TABLE_FUNC(SV_Screen, ScreenShake);
+				TABLE_FUNC(SV_Screen, ScreenFade);
+
+				// ============================================================
+				// SV_Precache
+				// ============================================================
+
+				TABLE_FUNC_NAMED(
+					SV_Precache,
+					PrecacheEntityFromTable,
+					EntityFromTable
+				);
+
+				TABLE_FUNC(SV_Precache, PrecacheModel);
+				TABLE_FUNC(SV_Precache, PrecacheSound);
+				TABLE_FUNC(SV_Precache, PrecacheScriptSound);
+
+				TABLE_FUNC(SV_Precache, IsModelPrecached);
+				TABLE_FUNC(SV_Precache, GetModelIndex);
+				TABLE_FUNC(SV_Precache, IsSoundPrecached);
+
+				// ============================================================
+				// SV_Event
+				// ============================================================
+
+				TABLE_FUNC_NAMED(
+					SV_Event,
+					RegisterScriptGameEventListener,
+					RegisterGameEventListener
+				);
+
+				TABLE_FUNC_NAMED(
+					SV_Event,
+					RegisterScriptHookListener,
+					RegisterHookListener
+				);
+
+				TABLE_FUNC(SV_Event, FireGameEvent);
+				TABLE_FUNC(SV_Event, FireScriptHook);
+				TABLE_FUNC(SV_Event, SendGlobalGameEvent);
+
+				TABLE_FUNC(SV_Event, ScriptHooksEnabled);
+
+
+				// ============================================================
+				// SV_Script
+				// ============================================================
+
+				TABLE_FUNC_NAMED(SV_Script, DoUniqueString, UniqueString);
+
+				TABLE_FUNC_NAMED(
+					SV_Script,
+					DoIncludeScript,
+					IncludeScript
+				);
+
+				// ============================================================
+				// SV_DebugOverlay
+				// ============================================================
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_ScreenText, ScreenText);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_ScreenTextLine, ScreenTextLine);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Text, Text);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Box, Box);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Line, Line);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Triangle, Triangle);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Grid, Grid);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_HorzArrow, HorzArrow);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_VertArrow, VertArrow);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_YawArrow, YawArrow);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Axis, Axis);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_TickMarkedLine, TickMarkedLine);
+
+				TABLE_FUNC_NAMED(
+					SV_DebugOverlay,
+					DebugOverlay_DrawGroundCrossHairOverlay,
+					DrawGroundCrossHairOverlay
+				);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Circle, Circle);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Line_vCol, Line_vCol);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_BoxDirection, BoxDirection);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_BoxAngles, BoxAngles);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Clear, Clear);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Cross3D, Cross3D);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Cross3D_Bounds, Cross3D_Bounds);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Cross3DOriented, Cross3DOriented);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_Sphere, Sphere);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_SphereAngles, SphereAngles);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_CircleSimple, CircleSimple);
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_CircleAngles, CircleAngles);
+
+				TABLE_FUNC_NAMED(SV_DebugOverlay, DebugOverlay_SweptBox, SweptBox);
+
+				// ============================================================
+				// SV_Particle
+				// ============================================================
+
+				TABLE_FUNC_NAMED(
+					SV_Particle,
+					DispatchParticleEffect,
+					Dispatch
+				);
+
+
+				// ============================================================
+				// SV_Scene
+				// ============================================================
+
+				TABLE_FUNC_NAMED(
+					SV_Scene,
+					CreateSceneEntity,
+					Create
+				);
+
 				g_pScriptVM->RegisterAllClasses();
+
+				g_pScriptVM->Run(
+					"print <- function(text) "
+					"{ "
+					"	SV_Console.Msg(text.tostring()); "
+					"}; "
+					"printl <- function(text) "
+					"{ "
+					"	SV_Console.Msg(text.tostring() + \"\\n\"); "
+					"};",
+					true
+				);
 				
 				if ( GameRules() )
 				{
@@ -3951,8 +4483,6 @@ REGISTER_SCRIPT_CONST_TABLE( Server )
 				}
 				g_VScriptGameEventListener.Init();
 
-				VScriptRunScript( "mapspawn", false );
-
 				if ( script_connect_debugger_on_mapspawn.GetBool() )
 				{
 					g_pScriptVM->ConnectDebugger();
@@ -4428,6 +4958,11 @@ public:
 	{
 		ClearScriptGameEventListeners();
 		VScriptServerTerm();
+	}
+
+	virtual void Update(float frametime)
+	{
+		GabeVScriptThink();
 	}
 
 	virtual void FrameUpdatePostEntityThink() 

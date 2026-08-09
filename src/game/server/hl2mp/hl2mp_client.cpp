@@ -21,6 +21,7 @@
 #include "entitylist.h"
 #include "physics.h"
 #include "game.h"
+#include "vscript_shared.h"
 #include "player_resource.h"
 #include "engine/IEngineSound.h"
 #include "team.h"
@@ -90,6 +91,11 @@ void ClientPutInServer( edict_t *pEdict, const char *playername )
 	// Allocate a CBaseTFPlayer for pev, and call spawn
 	CHL2MP_Player *pPlayer = CHL2MP_Player::CreatePlayer( "player", pEdict );
 	pPlayer->SetPlayerName( playername );
+
+	if (pPlayer && g_pScriptVM)
+	{
+		VScriptRunScript("mapspawn", false);
+	}
 }
 
 

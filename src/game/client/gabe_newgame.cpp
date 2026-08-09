@@ -21,6 +21,10 @@
 #include <vgui_controls/HTML.h>
 #include <time.h>
 
+#include "vscript_shared.h"
+
+#include "gabe_newgame.h"
+
 #include "filesystem.h"
 #include "ienginevgui.h"
 #include "vgui/IInput.h"
@@ -955,6 +959,155 @@ public:
 		kv->deleteThis();
 	}
 
+	// ============================================================
+	// VScript
+	// ============================================================
+
+	bool IsDialogVisible()
+	{
+		return IsVisible();
+	}
+
+	const char* GetSelectedMap() const
+	{
+		if (!m_pMapTab)
+			return "";
+
+		return m_pMapTab->GetSelectedMap();
+	}
+
+	bool IsSingleplayer() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->IsSingleplayer();
+	}
+
+	int GetMaxPlayers() const
+	{
+		return m_pSettingsTab ? m_pSettingsTab->GetMaxPlayers() : 0;
+	}
+
+	int GetTimeLimit() const
+	{
+		return m_pSettingsTab ? m_pSettingsTab->GetTimeLimit() : 0;
+	}
+
+	int GetFragLimit() const
+	{
+		return m_pSettingsTab ? m_pSettingsTab->GetFragLimit() : 0;
+	}
+
+	bool GetTeamplay() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetTeamplay();
+	}
+
+	bool GetFriendlyFire() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetFriendlyFire();
+	}
+
+	bool GetCheats() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetCheats();
+	}
+
+	bool GetChangelogAtSpawn() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetChangelogAtSpawn();
+	}
+
+	bool GetDeathmatchMode() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetDeathmatchMode();
+	}
+
+	bool GetSandboxMode() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetSandboxMode();
+	}
+
+	bool GetHL1Mode() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetHL1Mode();
+	}
+
+	bool GetJBModMode() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetJBModMode();
+	}
+
+	bool GetHL2Mode() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetHL2Mode();
+	}
+
+	bool GetBEModMode() const
+	{
+		return m_pSettingsTab && m_pSettingsTab->GetBEModMode();
+	}
+
+	const char* GetServerName() const
+	{
+		static char name[128];
+
+		name[0] = '\0';
+
+		if (m_pServerInfoTab)
+			m_pServerInfoTab->GetServerName(name, sizeof(name));
+
+		return name;
+	}
+
+	const char* GetPassword() const
+	{
+		static char password[128];
+
+		password[0] = '\0';
+
+		if (m_pServerInfoTab)
+			m_pServerInfoTab->GetPassword(password, sizeof(password));
+
+		return password;
+	}
+
+	bool IsLANOnly() const
+	{
+		return m_pServerInfoTab && m_pServerInfoTab->IsLANOnly();
+	}
+
+	bool IsPublicServer() const
+	{
+		return m_pServerInfoTab && m_pServerInfoTab->IsPublic();
+	}
+
+	int GetDialogWidth()
+	{
+		int w, h;
+		GetSize(w, h);
+		return w;
+	}
+
+	int GetDialogHeight()
+	{
+		int w, h;
+		GetSize(w, h);
+		return h;
+	}
+
+	int GetDialogX()
+	{
+		int x, y;
+		GetPos(x, y);
+		return x;
+	}
+
+	int GetDialogY()
+	{
+		int x, y;
+		GetPos(x, y);
+		return y;
+	}
+
 private:
 	CGamepadUIServerInfoTab* m_pServerInfoTab;
 
@@ -1117,3 +1270,243 @@ static ConCommand gabeplus_newgame(
 	"Open GabeMod+ new game dialog",
 	FCVAR_CLIENTDLL
 );
+
+static bool Script_NewGameExists()
+{
+	return g_pNewServer != NULL;
+}
+
+static bool Script_NewGameIsVisible()
+{
+	return g_pNewServer && g_pNewServer->IsDialogVisible();
+}
+
+static const char* Script_NewGameGetSelectedMap()
+{
+	return g_pNewServer ? g_pNewServer->GetSelectedMap() : "";
+}
+
+static bool Script_NewGameIsSingleplayer()
+{
+	return g_pNewServer && g_pNewServer->IsSingleplayer();
+}
+
+static int Script_NewGameGetMaxPlayers()
+{
+	return g_pNewServer ? g_pNewServer->GetMaxPlayers() : 0;
+}
+
+static int Script_NewGameGetTimeLimit()
+{
+	return g_pNewServer ? g_pNewServer->GetTimeLimit() : 0;
+}
+
+static int Script_NewGameGetFragLimit()
+{
+	return g_pNewServer ? g_pNewServer->GetFragLimit() : 0;
+}
+
+static bool Script_NewGameGetTeamplay()
+{
+	return g_pNewServer && g_pNewServer->GetTeamplay();
+}
+
+static bool Script_NewGameGetFriendlyFire()
+{
+	return g_pNewServer && g_pNewServer->GetFriendlyFire();
+}
+
+static bool Script_NewGameGetCheats()
+{
+	return g_pNewServer && g_pNewServer->GetCheats();
+}
+
+static bool Script_NewGameGetChangelogAtSpawn()
+{
+	return g_pNewServer && g_pNewServer->GetChangelogAtSpawn();
+}
+
+static bool Script_NewGameGetDeathmatchMode()
+{
+	return g_pNewServer && g_pNewServer->GetDeathmatchMode();
+}
+
+static bool Script_NewGameGetSandboxMode()
+{
+	return g_pNewServer && g_pNewServer->GetSandboxMode();
+}
+
+static bool Script_NewGameGetHL1Mode()
+{
+	return g_pNewServer && g_pNewServer->GetHL1Mode();
+}
+
+static bool Script_NewGameGetJBModMode()
+{
+	return g_pNewServer && g_pNewServer->GetJBModMode();
+}
+
+static bool Script_NewGameGetHL2Mode()
+{
+	return g_pNewServer && g_pNewServer->GetHL2Mode();
+}
+
+static bool Script_NewGameGetBEModMode()
+{
+	return g_pNewServer && g_pNewServer->GetBEModMode();
+}
+
+static const char* Script_NewGameGetServerName()
+{
+	return g_pNewServer ? g_pNewServer->GetServerName() : "";
+}
+
+static const char* Script_NewGameGetPassword()
+{
+	return g_pNewServer ? g_pNewServer->GetPassword() : "";
+}
+
+static bool Script_NewGameIsLANOnly()
+{
+	return g_pNewServer && g_pNewServer->IsLANOnly();
+}
+
+static bool Script_NewGameIsPublic()
+{
+	return g_pNewServer && g_pNewServer->IsPublicServer();
+}
+
+static int Script_NewGameGetWidth()
+{
+	return g_pNewServer ? g_pNewServer->GetDialogWidth() : 0;
+}
+
+static int Script_NewGameGetHeight()
+{
+	return g_pNewServer ? g_pNewServer->GetDialogHeight() : 0;
+}
+
+static int Script_NewGameGetX()
+{
+	return g_pNewServer ? g_pNewServer->GetDialogX() : 0;
+}
+
+static int Script_NewGameGetY()
+{
+	return g_pNewServer ? g_pNewServer->GetDialogY() : 0;
+}
+
+void RegisterNewGameScriptFuncs()
+{
+	if (!g_pScriptVM)
+		return;
+
+	g_pScriptVM->Run("CL_NewGame <- {};\n");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameExists,
+		"NewGame_Exists", "Returns whether the New Game dialog exists.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameIsVisible,
+		"NewGame_IsVisible", "Returns whether the New Game dialog is visible.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetSelectedMap,
+		"NewGame_GetSelectedMap", "Returns the currently selected map.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameIsSingleplayer,
+		"NewGame_IsSingleplayer", "Returns whether singleplayer is selected.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetMaxPlayers,
+		"NewGame_GetMaxPlayers", "Returns the selected maximum player count.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetTimeLimit,
+		"NewGame_GetTimeLimit", "Returns the selected time limit.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetFragLimit,
+		"NewGame_GetFragLimit", "Returns the selected frag limit.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetTeamplay,
+		"NewGame_GetTeamplay", "Returns the teamplay setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetFriendlyFire,
+		"NewGame_GetFriendlyFire", "Returns the friendly-fire setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetCheats,
+		"NewGame_GetCheats", "Returns the cheats setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetChangelogAtSpawn,
+		"NewGame_GetChangelogAtSpawn", "Returns the changelog-at-spawn setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetDeathmatchMode,
+		"NewGame_GetDeathmatchMode", "Returns the deathmatch mode setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetSandboxMode,
+		"NewGame_GetSandboxMode", "Returns the sandbox mode setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetHL1Mode,
+		"NewGame_GetHL1Mode", "Returns the Half-Life 1 mode setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetJBModMode,
+		"NewGame_GetJBModMode", "Returns the JBMod mode setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetHL2Mode,
+		"NewGame_GetHL2Mode", "Returns the Half-Life 2 mode setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetBEModMode,
+		"NewGame_GetBEModMode", "Returns the BEMod mode setting.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetServerName,
+		"NewGame_GetServerName", "Returns the entered server name.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetPassword,
+		"NewGame_GetPassword", "Returns the entered server password.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameIsLANOnly,
+		"NewGame_IsLANOnly", "Returns whether LAN-only is enabled.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameIsPublic,
+		"NewGame_IsPublic", "Returns whether public server is enabled.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetWidth,
+		"NewGame_GetWidth", "Returns the dialog width.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetHeight,
+		"NewGame_GetHeight", "Returns the dialog height.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetX,
+		"NewGame_GetX", "Returns the dialog X position.");
+
+	ScriptRegisterFunctionNamed(g_pScriptVM, Script_NewGameGetY,
+		"NewGame_GetY", "Returns the dialog Y position.");
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_Exists, Exists);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_IsVisible, IsVisible);
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetSelectedMap, GetSelectedMap);
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_IsSingleplayer, IsSingleplayer);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetMaxPlayers, GetMaxPlayers);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetTimeLimit, GetTimeLimit);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetFragLimit, GetFragLimit);
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetTeamplay, GetTeamplay);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetFriendlyFire, GetFriendlyFire);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetCheats, GetCheats);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetChangelogAtSpawn, GetChangelogAtSpawn);
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetDeathmatchMode, GetDeathmatchMode);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetSandboxMode, GetSandboxMode);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetHL1Mode, GetHL1Mode);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetJBModMode, GetJBModMode);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetHL2Mode, GetHL2Mode);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetBEModMode, GetBEModMode);
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetServerName, GetServerName);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetPassword, GetPassword);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_IsLANOnly, IsLANOnly);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_IsPublic, IsPublic);
+
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetWidth, GetWidth);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetHeight, GetHeight);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetX, GetX);
+	TABLE_FUNC_NAMED(CL_NewGame, NewGame_GetY, GetY);
+}

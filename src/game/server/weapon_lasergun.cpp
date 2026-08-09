@@ -45,7 +45,7 @@ void CWeaponLaserGun::PrimaryAttack()
 
 void CWeaponLaserGun::FireLaser()
 {
-    CBasePlayer* pPlayer = GabeMod::CGabeScriptFuncs::GetPlayer();
+    CBasePlayer* pPlayer = GabeMod::CGabeServerFuncs::GetPlayer();
     if (!pPlayer)
         return;
 

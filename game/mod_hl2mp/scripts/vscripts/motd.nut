@@ -1,9 +1,9 @@
 local Author = "PmbrugGaming";
 local Version = "1.0.0";
 local DateMade = "2026-06-20";
-local Description = "Don't Touch!!!!!!!!!";
+local Description = "Don't Touch";
 
-local frame = VGUI_CreateFrame(
+local frame = CL_VGUI.CreateFrame(
     "Welcome to Gabe Mod",
     100,
     50,

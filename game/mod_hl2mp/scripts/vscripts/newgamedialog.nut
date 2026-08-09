@@ -101,7 +101,7 @@ function NG_Start()
 {
 	if (!NG_SafeMapName(::NG_SelectedMap))
 	{
-		MessageBox("New Game", "Select a valid map first.")
+		CL_VGUI.MessageBox("New Game", "Select a valid map first.")
 		return
 	}
 
@@ -123,27 +123,27 @@ function NG_Start()
 	local hostname = ::NG_Hostname.GetText()
 	local password = ::NG_Password.GetText()
 
-	ClientCmdUnrestricted("hostname \"" + hostname + "\"")
-	ClientCmdUnrestricted("sv_password \"" + password + "\"")
-	ClientCmdUnrestricted("sv_lan " + NG_Bool(::NG_LAN.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("hostname \"" + hostname + "\"")
+	CL_Engine.ClientCmdUnrestricted("sv_password \"" + password + "\"")
+	CL_Engine.ClientCmdUnrestricted("sv_lan " + NG_Bool(::NG_LAN.IsChecked()))
 
-	ClientCmdUnrestricted("sv_allowupload 1")
-	ClientCmdUnrestricted("sv_allowdownload 1")
+	CL_Engine.ClientCmdUnrestricted("sv_allowupload 1")
+	CL_Engine.ClientCmdUnrestricted("sv_allowdownload 1")
 
-	ClientCmdUnrestricted("maxplayers " + maxplayers)
-	ClientCmdUnrestricted("mp_timelimit " + timelimit)
-	ClientCmdUnrestricted("mp_fraglimit " + fraglimit)
+	CL_Engine.ClientCmdUnrestricted("maxplayers " + maxplayers)
+	CL_Engine.ClientCmdUnrestricted("mp_timelimit " + timelimit)
+	CL_Engine.ClientCmdUnrestricted("mp_fraglimit " + fraglimit)
 
-	ClientCmdUnrestricted("mp_teamplay " + NG_Bool(::NG_Teamplay.IsChecked()))
-	ClientCmdUnrestricted("mp_friendlyfire " + NG_Bool(::NG_FriendlyFire.IsChecked()))
-	ClientCmdUnrestricted("sv_cheats " + NG_Bool(::NG_Cheats.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("mp_teamplay " + NG_Bool(::NG_Teamplay.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("mp_friendlyfire " + NG_Bool(::NG_FriendlyFire.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("sv_cheats " + NG_Bool(::NG_Cheats.IsChecked()))
 
-	ClientCmdUnrestricted("gabeplus_deathmatch " + NG_Bool(::NG_Deathmatch.IsChecked()))
-	ClientCmdUnrestricted("gabeplus_hl1 " + NG_Bool(::NG_HL1.IsChecked()))
-	ClientCmdUnrestricted("gabeplus_sandbox " + NG_Bool(::NG_Sandbox.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("gabeplus_deathmatch " + NG_Bool(::NG_Deathmatch.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("gabeplus_hl1 " + NG_Bool(::NG_HL1.IsChecked()))
+	CL_Engine.ClientCmdUnrestricted("gabeplus_sandbox " + NG_Bool(::NG_Sandbox.IsChecked()))
 
-	ClientCmdUnrestricted("disconnect")
-	ClientCmdUnrestricted("map " + ::NG_SelectedMap)
+	CL_Engine.ClientCmdUnrestricted("disconnect")
+	CL_Engine.ClientCmdUnrestricted("map " + ::NG_SelectedMap)
 
 	NG_Close()
 }
@@ -188,7 +188,7 @@ function ShowNewGameDialog()
 
 	::NG_SelectedMap = ""
 
-	::NG_Frame = VGUI_CreateFrame("Start Single-Player Game", 160, 40, 760, 660)
+	::NG_Frame = CL_VGUI.CreateFrame("Start Single-Player Game", 160, 40, 760, 660)
 	::NG_Frame.SetSizeable(false)
 
 	::NG_Frame.CreateLabel("Maps", 15, 30, 200, 20)

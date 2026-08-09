@@ -12,12 +12,18 @@
 #include "filesystem.h"
 #include "ienginevgui.h"
 
+#include "vscript_shared.h"
+
+#include "gabe_spawnmenu.h"
+
 #ifdef CLIENT_DLL
 #include "cdll_client_int.h"
 extern IVEngineClient* engine;
 #endif
 
 using namespace vgui;
+
+static bool g_bSpawnMenuOpen = false;
 
 // ============================================================
 // Button data (SAFE STORAGE)
@@ -275,17 +281,374 @@ public:
 		SetPos((sw - w) / 2, (sh - h) / 2);
 	}
 
+	// ============================================================
+	// Script
+	// ============================================================
+
+	void Open()
+	{
+		SetVisible(true);
+		MakePopup();
+		MoveToFront();
+
+		SetMouseInputEnabled(true);
+		SetKeyBoardInputEnabled(true);
+
+		g_bSpawnMenuOpen = true;
+	}
+
+	void Close()
+	{
+		SetVisible(false);
+
+		SetMouseInputEnabled(false);
+		SetKeyBoardInputEnabled(false);
+
+		g_bSpawnMenuOpen = false;
+	}
+
+	void Toggle()
+	{
+		if (g_bSpawnMenuOpen)
+			Close();
+		else
+			Open();
+	}
+
+	bool IsOpen()
+	{
+		return g_bSpawnMenuOpen && IsVisible();
+	}
+
+	void Reload()
+	{
+		if (!m_pTabs)
+			return;
+
+		m_pTabs->RemoveAllPages();
+
+		LoadData();
+
+		InvalidateLayout(true);
+	}
+
+	void SetMenuTitle(const char* title)
+	{
+		if (!title)
+			return;
+
+		SetTitle(title, true);
+	}
+
+	void SetMenuSize(int wide, int tall)
+	{
+		SetSize(wide, tall);
+		InvalidateLayout(true);
+	}
+
+	void SetMenuPos(int x, int y)
+	{
+		SetPos(x, y);
+	}
+
+	int GetMenuWide()
+	{
+		int w, h;
+		GetSize(w, h);
+
+		return w;
+	}
+
+	int GetMenuTall()
+	{
+		int w, h;
+		GetSize(w, h);
+
+		return h;
+	}
+
+	int GetMenuX()
+	{
+		int x, y;
+		GetPos(x, y);
+
+		return x;
+	}
+
+	int GetMenuY()
+	{
+		int x, y;
+		GetPos(x, y);
+
+		return y;
+	}
+
+	void MakeFullscreen()
+	{
+		ResizeToScreen();
+	}
+
+	void Center()
+	{
+		CenterMenu();
+	}
+
+	void BringToFront()
+	{
+		MakePopup();
+		MoveToFront();
+	}
+
+	int GetTabCount()
+	{
+		if (!m_pTabs)
+			return 0;
+
+		return m_pTabs->GetNumPages();
+	}
+
+	void SetActiveTab(int index)
+	{
+		if (!m_pTabs)
+			return;
+
+		if (index < 0 || index >= m_pTabs->GetNumPages())
+			return;
+
+		m_pTabs->SetActivePage(m_pTabs->GetPage(index));
+	}
+
+	int GetActiveTab()
+	{
+		if (!m_pTabs)
+			return -1;
+
+		Panel* active = m_pTabs->GetActivePage();
+
+		if (!active)
+			return -1;
+
+		for (int i = 0; i < m_pTabs->GetNumPages(); i++)
+		{
+			if (m_pTabs->GetPage(i) == active)
+				return i;
+		}
+
+		return -1;
+	}
+
 private:
 	PropertySheet* m_pTabs;
 };
 
+static CGabeSpawnMenu* g_pSpawnMenu = NULL;
+
+// ============================================================
+// Spawn menu VScript wrappers
+// ============================================================
+
+static CGabeSpawnMenu* Script_GetSpawnMenu()
+{
+	return g_pSpawnMenu;
+}
+
+static void Script_SpawnMenuOpen()
+{
+	VPANEL root = enginevgui->GetPanel(PANEL_INGAMESCREENS);
+
+	if (!root)
+		return;
+
+	if (!g_pSpawnMenu)
+		g_pSpawnMenu = new CGabeSpawnMenu(root);
+
+	g_pSpawnMenu->Open();
+}
+
+static void Script_SpawnMenuClose()
+{
+	if (!g_pSpawnMenu)
+		return;
+
+	g_pSpawnMenu->Close();
+}
+
+static void Script_SpawnMenuToggle()
+{
+	if (!g_pSpawnMenu)
+	{
+		Script_SpawnMenuOpen();
+		return;
+	}
+
+	g_pSpawnMenu->Toggle();
+}
+
+static bool Script_SpawnMenuIsOpen()
+{
+	return g_pSpawnMenu && g_pSpawnMenu->IsOpen();
+}
+
+static bool Script_SpawnMenuExists()
+{
+	return g_pSpawnMenu != NULL;
+}
+
+static void Script_SpawnMenuReload()
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->Reload();
+}
+
+static void Script_SpawnMenuSetTitle(const char* title)
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->SetMenuTitle(title);
+}
+
+static void Script_SpawnMenuSetSize(int wide, int tall)
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->SetMenuSize(wide, tall);
+}
+
+static void Script_SpawnMenuSetPos(int x, int y)
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->SetMenuPos(x, y);
+}
+
+static int Script_SpawnMenuGetWide()
+{
+	if (!g_pSpawnMenu)
+		return 0;
+
+	return g_pSpawnMenu->GetMenuWide();
+}
+
+static int Script_SpawnMenuGetTall()
+{
+	if (!g_pSpawnMenu)
+		return 0;
+
+	return g_pSpawnMenu->GetMenuTall();
+}
+
+static int Script_SpawnMenuGetX()
+{
+	if (!g_pSpawnMenu)
+		return 0;
+
+	return g_pSpawnMenu->GetMenuX();
+}
+
+static int Script_SpawnMenuGetY()
+{
+	if (!g_pSpawnMenu)
+		return 0;
+
+	return g_pSpawnMenu->GetMenuY();
+}
+
+static void Script_SpawnMenuCenter()
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->Center();
+}
+
+static void Script_SpawnMenuFullscreen()
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->MakeFullscreen();
+}
+
+static void Script_SpawnMenuBringToFront()
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->BringToFront();
+}
+
+static int Script_SpawnMenuGetTabCount()
+{
+	if (!g_pSpawnMenu)
+		return 0;
+
+	return g_pSpawnMenu->GetTabCount();
+}
+
+static int Script_SpawnMenuGetActiveTab()
+{
+	if (!g_pSpawnMenu)
+		return -1;
+
+	return g_pSpawnMenu->GetActiveTab();
+}
+
+static void Script_SpawnMenuSetActiveTab(int index)
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->SetActiveTab(index);
+}
+
+static void Script_SpawnMenuSpawn(
+	const char* type,
+	const char* value)
+{
+	if (!type || !*type)
+		return;
+
+	if (!value || !*value)
+		return;
+
+	engine->ClientCmd_Unrestricted(
+		VarArgs(
+			"gabe_spawn %s \"%s\"\n",
+			type,
+			value
+		)
+	);
+}
+
+static void Script_SpawnMenuPlayClickSound()
+{
+	surface()->PlaySound(
+		"ui/buttonclickrelease.wav"
+	);
+}
+
+static void Script_SpawnMenuPlaySound(const char* sound)
+{
+	if (!sound || !*sound)
+		return;
+
+	surface()->PlaySound(sound);
+}
+
+static void Script_SpawnMenuEnableMouse(bool enabled)
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->SetMouseInputEnabled(enabled);
+}
+
+static void Script_SpawnMenuEnableKeyboard(bool enabled)
+{
+	if (g_pSpawnMenu)
+		g_pSpawnMenu->SetKeyBoardInputEnabled(enabled);
+}
+
+static bool Script_SpawnMenuHasFocus()
+{
+	if (!g_pSpawnMenu)
+		return false;
+
+	VPANEL focus = input()->GetFocus();
+
+	return focus == g_pSpawnMenu->GetVPanel();
+}
+
 // ============================================================
 // COMMAND
 // ============================================================
-
-static CGabeSpawnMenu* g_pSpawnMenu = NULL;
-
-static bool g_bSpawnMenuOpen = false;
 
 CON_COMMAND(gabe_spawnmenu, "Open spawn menu")
 {
@@ -317,4 +680,251 @@ CON_COMMAND(gabe_closespmenu, "Close spawn menu")
 		g_pSpawnMenu->SetVisible(false);
 		g_pSpawnMenu->SetMouseInputEnabled(false);
 	}
+}
+
+void RegisterSpawnMenuScriptFuncs()
+{
+	if (!g_pScriptVM)
+		return;
+
+	g_pScriptVM->Run("CL_SpawnMenu <- {};\n");
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuOpen,
+		"SpawnMenu_Open",
+		"Opens the spawn menu."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuClose,
+		"SpawnMenu_Close",
+		"Closes the spawn menu."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuToggle,
+		"SpawnMenu_Toggle",
+		"Toggles the spawn menu."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuIsOpen,
+		"SpawnMenu_IsOpen",
+		"Returns whether the spawn menu is open."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuExists,
+		"SpawnMenu_Exists",
+		"Returns whether the spawn menu has been created."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuReload,
+		"SpawnMenu_Reload",
+		"Reloads the spawn menu."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuSetTitle,
+		"SpawnMenu_SetTitle",
+		"Sets the spawn menu title."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuSetSize,
+		"SpawnMenu_SetSize",
+		"Sets the spawn menu size."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuSetPos,
+		"SpawnMenu_SetPos",
+		"Sets the spawn menu position."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuGetWide,
+		"SpawnMenu_GetWide",
+		"Returns the menu width."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuGetTall,
+		"SpawnMenu_GetTall",
+		"Returns the menu height."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuGetX,
+		"SpawnMenu_GetX",
+		"Returns the menu X position."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuGetY,
+		"SpawnMenu_GetY",
+		"Returns the menu Y position."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuCenter,
+		"SpawnMenu_Center",
+		"Centers the spawn menu."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuFullscreen,
+		"SpawnMenu_Fullscreen",
+		"Makes the spawn menu fullscreen."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuBringToFront,
+		"SpawnMenu_BringToFront",
+		"Brings the spawn menu to the front."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuGetTabCount,
+		"SpawnMenu_GetTabCount",
+		"Returns the number of tabs."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuGetActiveTab,
+		"SpawnMenu_GetActiveTab",
+		"Returns the active tab index."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuSetActiveTab,
+		"SpawnMenu_SetActiveTab",
+		"Sets the active tab index."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuSpawn,
+		"SpawnMenu_Spawn",
+		"Spawns an item using gabe_spawn."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuPlayClickSound,
+		"SpawnMenu_PlayClickSound",
+		"Plays the spawn menu click sound."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuPlaySound,
+		"SpawnMenu_PlaySound",
+		"Plays a VGUI sound."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuEnableMouse,
+		"SpawnMenu_EnableMouse",
+		"Enables or disables mouse input."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuEnableKeyboard,
+		"SpawnMenu_EnableKeyboard",
+		"Enables or disables keyboard input."
+	);
+
+	ScriptRegisterFunctionNamed(
+		g_pScriptVM,
+		Script_SpawnMenuHasFocus,
+		"SpawnMenu_HasFocus",
+		"Returns whether the spawn menu has focus."
+	);
+
+	// ============================================================
+	// CL_SpawnMenu
+	// ============================================================
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Open, Open);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Close, Close);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Toggle, Toggle);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_IsOpen, IsOpen);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Exists, Exists);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Reload, Reload);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetTitle, SetTitle);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetSize, SetSize);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetPos, SetPos);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetWide, GetWide);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTall, GetTall);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetX, GetX);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetY, GetY);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Center, Center);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Fullscreen, Fullscreen);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_BringToFront, BringToFront);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTabCount, GetTabCount);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetActiveTab, GetActiveTab);
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetActiveTab, SetActiveTab);
+
+	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Spawn, Spawn);
+
+	TABLE_FUNC_NAMED(
+		CL_SpawnMenu,
+		SpawnMenu_PlayClickSound,
+		PlayClickSound
+	);
+
+	TABLE_FUNC_NAMED(
+		CL_SpawnMenu,
+		SpawnMenu_PlaySound,
+		PlaySound
+	);
+
+	TABLE_FUNC_NAMED(
+		CL_SpawnMenu,
+		SpawnMenu_EnableMouse,
+		EnableMouse
+	);
+
+	TABLE_FUNC_NAMED(
+		CL_SpawnMenu,
+		SpawnMenu_EnableKeyboard,
+		EnableKeyboard
+	);
+
+	TABLE_FUNC_NAMED(
+		CL_SpawnMenu,
+		SpawnMenu_HasFocus,
+		HasFocus
+	);
 }

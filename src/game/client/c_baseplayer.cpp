@@ -2917,6 +2917,15 @@ bool C_BasePlayer::GetSteamID( CSteamID *pID )
 	return false;
 }
 
+void C_BasePlayer::SetScriptOverlayMaterial(const char* material)
+{
+	V_strncpy(
+		m_Local.m_szScriptOverlayMaterial.GetForModify(),
+		material ? material : "",
+		MAX_PATH
+	);
+}
+
 #if defined USES_ECON_ITEMS
 //-----------------------------------------------------------------------------
 // Purpose: Update the visibility of our worn items.
