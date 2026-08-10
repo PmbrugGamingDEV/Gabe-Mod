@@ -1,7 +1,13 @@
-C:\GabeMod\src\game\shared\GABE.CPP;C:\GabeMod\src\game\server\Release_mod_hl2mp\GABE.obj
+C:\GabeMod\src\game\shared\gabe_shared.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_shared.obj
 C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl1_baseweapon_shared.obj
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\server\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\achievements_hl2.obj
+C:\GabeMod\src\game\shared\luamanager.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\luamanager.obj
+C:\GabeMod\src\game\shared\sbaseentity.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\sbaseentity.obj
+C:\GabeMod\src\game\shared\scolor.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\scolor.obj
+C:\GabeMod\src\game\shared\scvar.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\scvar.obj
+C:\GabeMod\src\game\shared\sdbg.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\sdbg.obj
+C:\GabeMod\src\game\shared\svector.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\svector.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\tf_weapon_fists.obj
 C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vscript_in_buttons.obj
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vscript_think.obj
@@ -325,8 +331,10 @@ C:\GabeMod\src\game\shared\multiplay_gamerules.cpp;C:\GabeMod\src\game\server\Re
 C:\GabeMod\src\game\server\ndebugoverlay.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\ndebugoverlay.obj
 C:\GabeMod\src\game\server\netpropmanager.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\netpropmanager.obj
 C:\GabeMod\src\public\networkvar.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\networkvar.obj
+C:\GabeMod\src\game\server\npc_bombzombie.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_bombzombie.obj
 C:\GabeMod\src\game\server\npc_bullsquid.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_bullsquid.obj
 C:\GabeMod\src\game\server\npc_fastzombie.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_fastzombie.obj
+C:\GabeMod\src\game\server\npc_firezombie.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_firezombie.obj
 C:\GabeMod\src\game\server\npc_houndeye.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_houndeye.obj
 C:\GabeMod\src\game\server\npc_vehicledriver.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_vehicledriver.obj
 C:\GabeMod\src\game\shared\obstacle_pushaway.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\obstacle_pushaway.obj
@@ -727,3 +735,4 @@ C:\GabeMod\src\game\server\te_worlddecal.cpp;C:\GabeMod\src\game\server\Release_
 C:\GabeMod\src\game\shared\usermessages.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\usermessages.obj
 C:\GabeMod\src\game\server\entity_tools_server.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\entity_tools_server.obj
 C:\GabeMod\src\game\server\toolframework_server.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\toolframework_server.obj
+C:\GabeMod\src\game\server\zombie_ghost.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\zombie_ghost.obj

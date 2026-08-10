@@ -37,9 +37,6 @@ extern CBaseEntity				*g_pLastSpawn;
 
 ConVar hl2mp_spawn_frag_fallback_radius( "hl2mp_spawn_frag_fallback_radius", "48", FCVAR_NONE, "If no spawns are available, kill players with this radius to allow new players to spawn." );
 
-ConVar gabeplus_deathmatch("gabe_deathmatch", "0", FCVAR_ARCHIVE, "If set to 1, players wil spawn with the default HL2DM weapons.");
-ConVar gabeplus_hl1("gabe_hl1", "0", FCVAR_ARCHIVE, "If set to 1, players wil spawn with the weapons from Half-Life: Source.");
-
 
 #define HL2MP_COMMAND_MAX_RATE 0.3
 
@@ -94,6 +91,8 @@ IMPLEMENT_SERVERCLASS_ST(CHL2MP_Player, DT_HL2MP_Player)
 	SendPropEHandle( SENDINFO( m_hRagdoll ) ),
 	SendPropInt( SENDINFO( m_iSpawnInterpCounter), 4 ),
 	SendPropInt( SENDINFO( m_iPlayerSoundType), 3 ),
+
+	SendPropInt(SENDINFO(m_iPoints)),
 	
 	SendPropExclude( "DT_BaseAnimating", "m_flPoseParameter" ),
 	SendPropExclude( "DT_BaseFlex", "m_viewtarget" ),
@@ -160,6 +159,8 @@ CHL2MP_Player::CHL2MP_Player() : m_PlayerAnimState( this )
 	m_bReady = false;
 
 	BaseClass::ChangeTeam( 0 );
+
+	m_iPoints = 0;
 	
 	//UseClientSideAnimation();
 }
@@ -204,26 +205,6 @@ void CHL2MP_Player::Precache( void )
 	PrecacheScriptSound( "NPC_MetroPolice.Die" );
 	PrecacheScriptSound( "NPC_CombineS.Die" );
 	PrecacheScriptSound( "NPC_Citizen.die" );
-}
-
-void CHL2MP_Player::GiveJBModItems(void)
-{
-	EquipSuit();
-	GiveNamedItem("weapon_jbm_physgun");
-
-	if (GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER)
-	{
-		GiveNamedItem("weapon_stunstick");
-	}
-	else if (GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN)
-	{
-		GiveNamedItem("weapon_crowbar");
-	}
-}
-
-void CHL2MP_Player::GiveBEModItems(void)
-{
-	// Stub
 }
 
 void CHL2MP_Player::GiveAllItems(void)
@@ -277,73 +258,6 @@ void CHL2MP_Player::GiveAllItems(void)
 	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
 }
 
-void CHL2MP_Player::GiveHL2Items(void)
-{
-	EquipSuit();
-
-	CBasePlayer::GiveAmmo(999, "Pistol");
-	CBasePlayer::GiveAmmo(999, "AR2");
-	CBasePlayer::GiveAmmo(999, "AR2AltFire");
-	CBasePlayer::GiveAmmo(999, "SMG1");
-	CBasePlayer::GiveAmmo(999, "smg1_grenade");
-	CBasePlayer::GiveAmmo(999, "Buckshot");
-	CBasePlayer::GiveAmmo(999, "357");
-	CBasePlayer::GiveAmmo(999, "rpg_round");
-	CBasePlayer::GiveAmmo(5, "grenade");
-	CBasePlayer::GiveAmmo(999, "slam");
-
-	GiveNamedItem("weapon_crowbar");
-	GiveNamedItem("weapon_pistol");
-	GiveNamedItem("weapon_357");
-	GiveNamedItem("weapon_smg1");
-	GiveNamedItem("weapon_ar2");
-	GiveNamedItem("weapon_shotgun");
-	GiveNamedItem("weapon_frag");
-	GiveNamedItem("weapon_crossbow");
-	GiveNamedItem("weapon_bugbait");
-	GiveNamedItem("weapon_rpg");
-	GiveNamedItem("weapon_physcannon");
-
-	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
-
-	SuitPower_Charge(100);
-	SetHealth(100);
-}
-
-void CHL2MP_Player::GiveHL1Items(void)
-{
-	CBasePlayer::GiveAmmo(999, "Uranium");
-	CBasePlayer::GiveAmmo(999, "TripMine");
-	CBasePlayer::GiveAmmo(999, "Pistol");
-	CBasePlayer::GiveAmmo(999, "357");
-	CBasePlayer::GiveAmmo(999, "XBowBolt");
-	CBasePlayer::GiveAmmo(999, "MP5_Grenade");
-	CBasePlayer::GiveAmmo(999, "SMG1");
-	CBasePlayer::GiveAmmo(999, "BuckShot");
-	CBasePlayer::GiveAmmo(999, "rpg_round");
-	CBasePlayer::GiveAmmo(999, "Hornet");
-	CBasePlayer::GiveAmmo(999, "Snark");
-	CBasePlayer::GiveAmmo(999, "grenade");
-	CBasePlayer::GiveAmmo(999, "Satchel");
-
-	GiveNamedItem("weapon_glock");
-	GiveNamedItem("weapon_tripmine");
-	GiveNamedItem("weapon_crowbar_hl1");
-	GiveNamedItem("weapon_egon");
-	GiveNamedItem("weapon_hornetgun");
-	GiveNamedItem("weapon_hl1_gauss");
-	GiveNamedItem("weapon_hl1_357");
-	GiveNamedItem("weapon_snark");
-	GiveNamedItem("weapon_mp5");
-	GiveNamedItem("weapon_hl1_rpg");
-	GiveNamedItem("weapon_hl1_shotgun");
-	GiveNamedItem("weapon_hl1_crossbow");
-	GiveNamedItem("weapon_handgrenade");
-	GiveNamedItem("weapon_satchel");
-
-	engine->ClientCommand(this->edict(), "viewmodel_fov 90");
-}
-
 void CHL2MP_Player::GiveDefaultItems( void )
 {
 	EquipSuit();
@@ -382,29 +296,6 @@ void CHL2MP_Player::GiveDefaultItems( void )
 	}
 
 	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
-}
-
-void CHL2MP_Player::GiveNoItems()
-{
-	// nothing else
-}
-
-void CHL2MP_Player::GiveBemodItems()
-{
-	EquipSuit();
-	GiveNamedItem("weapon_bemod_physgun");
-	GiveNamedItem("weapon_duplicator");
-	GiveNamedItem("weapon_bmcamera");
-	GiveNamedItem("weapon_proplauncher");
-
-	if (GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER)
-	{
-		GiveNamedItem("weapon_stunstick");
-	}
-	else if (GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN)
-	{
-		GiveNamedItem("weapon_crowbar");
-	}
 }
 
 void CHL2MP_Player::PickDefaultSpawnTeam( void )
@@ -457,32 +348,6 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 	}
 }
 
-ConVar gabeplus_sandbox("gabe_sandbox", "1", FCVAR_ARCHIVE, "If set to 1, players will spawn with all weapons and infinite aux power.");
-ConVar gabeplus_hl2("gabe_hl2", "0", FCVAR_ARCHIVE, "If set to 1, players will spawn with all hl2 campaign weapons.");
-ConVar gabeplus_jbmod("gabe_jbmod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a jbmod experience, definetly the best game ever made");
-ConVar gabeplus_bemod("gabe_bemod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a buildemod experience");
-
-CON_COMMAND(gabe_createfakeclient, "Creates a fake client for testing purposes")
-{
-	if (args.ArgC() < 2)
-	{
-		Msg("Usage: gabe_createfakeclient <name>\n");
-		return;
-	}
-
-	const char* pszName = args[1];
-
-	edict_t* pBot = engine->CreateFakeClient(pszName);
-
-	if (!pBot)
-	{
-		Msg("Failed to create fake client!\n");
-		return;
-	}
-
-	Msg("Fake client '%s' created!\n", pszName);
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Sets HL2 specific defaults.
 //-----------------------------------------------------------------------------
@@ -494,11 +359,6 @@ void CHL2MP_Player::Spawn(void)
 	PickDefaultSpawnTeam();
 
 	BaseClass::Spawn();
-
-	char szMessage[256];
-	Q_snprintf(szMessage, sizeof(szMessage), "%s Connected!", GetPlayerName());
-
-	UTIL_ClientPrintAll(HUD_PRINTTALK, szMessage);
 	
 	if ( !IsObserver() )
 	{
@@ -506,49 +366,6 @@ void CHL2MP_Player::Spawn(void)
 		RemoveSolidFlags( FSOLID_NOT_SOLID );
 
 		RemoveEffects( EF_NODRAW );
-	}
-
-	edict_t* pEdict = this->edict();
-
-	if (gabeplus_deathmatch.GetBool())
-	{
-		GiveDefaultItems(); // Deathmatch
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 0");
-	}
-	else if (gabeplus_hl1.GetBool())
-	{
-		GiveHL1Items(); // Sandbox as well but hl1 weapons
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_sandbox.GetBool())
-	{
-		GiveAllItems(); // Sandbox
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_jbmod.GetBool())
-	{
-		GiveJBModItems(); // Sandbox as well but jbmod physgun
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_hl2.GetBool())
-	{
-		GiveHL2Items(); // Sandbox HL2 Campaign
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_bemod.GetBool())
-	{
-		GiveBemodItems(); // Sandbox Buildemod
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else
-	{
-		GiveNoItems(); // HL2 Campaign
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 0");
 	}
 
 	SetNumAnimOverlays( 3 );
@@ -1543,7 +1360,7 @@ void CHL2MP_Player::Event_Killed( const CTakeDamageInfo &info )
 			iScoreToAdd = -1;
 		}
 
-		//GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
+		GetGlobalTeam( pAttacker->GetTeamNumber() )->AddScore( iScoreToAdd );
 	}
 
 	FlashlightTurnOff();
@@ -1978,3 +1795,11 @@ bool CHL2MP_Player::IsThreatFiringAtMe( CBaseEntity* threat ) const
 
 	return false;
 }
+
+ConVar omfg_p("omfg_g", "0");
+CON_COMMAND(omfg_gp, "gives points et in omfg_p.", FCVAR_CHEAT)
+{
+	CHL2MP_Player* pPlayer = ToHL2MPPlayer(UTIL_GetCommandClient());
+	pPlayer->AddScore(omfg_p.GetInt());
+}
+

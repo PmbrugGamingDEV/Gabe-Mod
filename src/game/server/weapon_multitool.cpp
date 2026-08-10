@@ -13,7 +13,7 @@
 #include "game.h"
 #include "entityflame.h"
 #include "IEffects.h"
-#include "GABE.H"
+#include "gabe_shared.h"
 #include "beam_shared.h"
 #include "in_buttons.h"
 #include "baseanimating.h"
@@ -1045,29 +1045,28 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		CBaseFlex* pFlex = dynamic_cast<CBaseFlex*>(pEnt);
 		if (!pFlex)
 		{
-			CGabeServerFuncs::HudText(pPlayer, "NPC has no facial flexes.", 255, 100, 100);
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"NPC has no facial flexes.",
+				255, 100, 100
+			);
 			break;
 		}
 
-		// Store target so we can override every frame
 		m_hFaceTarget = pEnt;
 
-		// Clear existing flex values
-		int flexCount = pFlex->GetNumFlexControllers();
+		// Reset all flex controllers.
+		const int flexCount = pFlex->GetNumFlexControllers();
 
-		for (LocalFlexController_t i; i < flexCount; i++)
+		for (LocalFlexController_t i = (LocalFlexController_t)0; i < flexCount; ++i)
 		{
-			const char* name = pFlex->GetFlexControllerName(i);
-			if (name && name[0])
-			{
-				pFlex->SetFlexWeight(const_cast<char*>(name), 0.0f);
-			}
+			pFlex->SetFlexWeight(i, 0.0f);
 		}
 
-		// Apply preset immediately
-		FacePreset& preset = g_FacePresets[m_nFaceIndex];
+		// Apply selected preset.
+		const FacePreset& preset = g_FacePresets[m_nFaceIndex];
 
-		for (int i = 0; i < preset.pairCount; i++)
+		for (int i = 0; i < preset.pairCount; ++i)
 		{
 			pFlex->SetFlexWeight(
 				const_cast<char*>(preset.pairs[i].flex),
@@ -1122,13 +1121,11 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 			{
 			case 0: // BallSocket
 			{
-				constraint_ballsocketparams_t ballsocket;
-				ballsocket.Defaults();
-				ballsocket.InitWithCurrentObjectState(pPhys1, pPhys2, anchor);
-				IPhysicsConstraint* pConstraint = physenv->CreateBallsocketConstraint(pPhys1, pPhys2, NULL, ballsocket);
-				if (pConstraint)
+				IPhysicsConstraint* ballsocket = CGabeServerFuncs::Gabe_CreateBallSocket(pEnt1, pEnt2, vec3_origin);
+
+				if (ballsocket)
 				{
-					m_Constraints.AddToTail(pConstraint);
+					m_Constraints.AddToTail(ballsocket);
 					CGabeServerFuncs::HudText(pPlayer, "BallSocket constraint created.", 100, 255, 100);
 				}
 
@@ -1136,13 +1133,11 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 			}
 			case 1: // Weld
 			{
-				constraint_fixedparams_t weld;
-				weld.Defaults();
-				weld.InitWithCurrentObjectState(pPhys1, pPhys2);
-				IPhysicsConstraint* pConstraint = physenv->CreateFixedConstraint(pPhys1, pPhys2, NULL, weld);
-				if (pConstraint)
+				IPhysicsConstraint* fixed = CGabeServerFuncs::Gabe_CreateFixed(m_hConstraintTarget1, m_hConstraintTarget2);
+
+				if (fixed)
 				{
-					m_Constraints.AddToTail(pConstraint);
+					m_Constraints.AddToTail(fixed);
 					CGabeServerFuncs::HudText(pPlayer, "Weld constraint created.", 100, 255, 100);
 				}
 				break;

@@ -487,6 +487,8 @@ CBaseGrenade* HopWire_Create(const Vector& position, const QAngle& angles, const
 	CGrenadeHopWire* pGrenade = (CGrenadeHopWire*)CBaseEntity::Create("npc_grenade_hopwire", position, angles, pOwner);
 
 	pGrenade->SetTimer(timer);
+	pGrenade->SetCollisionGroup(COLLISION_GROUP_NONE);
+	pGrenade->VPhysicsInitNormal(SOLID_VPHYSICS, 0, false);
 	pGrenade->SetVelocity(velocity, angVelocity);
 	pGrenade->SetThrower(ToBaseCombatCharacter(pOwner));
 

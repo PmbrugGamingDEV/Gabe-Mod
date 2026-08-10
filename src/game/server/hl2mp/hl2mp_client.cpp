@@ -14,7 +14,7 @@
 */
 
 #include "cbase.h"
-#include "hl2mp_player.h"
+#include "gabe_shared.h"
 #include "hl2mp_gamerules.h"
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
@@ -39,7 +39,7 @@ ConVar sv_motd_unload_on_dismissal( "sv_motd_unload_on_dismissal", "0", 0, "If e
 extern CBaseEntity*	FindPickerEntityClass( CBasePlayer *pPlayer, char *classname );
 extern bool			g_fGameOver;
 
-void FinishClientPutInServer( CHL2MP_Player *pPlayer )
+void FinishClientPutInServer( CGabeMod_Player *pPlayer )
 {
 	pPlayer->InitialSpawn();
 	pPlayer->Spawn();
@@ -104,7 +104,7 @@ void ClientActive( edict_t *pEdict, bool bLoadGame )
 	// Can't load games in CS!
 	Assert( !bLoadGame );
 
-	CHL2MP_Player *pPlayer = ToHL2MPPlayer( CBaseEntity::Instance( pEdict ) );
+	CGabeMod_Player *pPlayer = ToGabeModPlayer( CBaseEntity::Instance( pEdict ) );
 	FinishClientPutInServer( pPlayer );
 }
 
@@ -121,7 +121,7 @@ const char *GetGameDescription()
 	if ( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life 2 Deathmatch";
+		return "Gabe Mod";
 }
 
 //-----------------------------------------------------------------------------

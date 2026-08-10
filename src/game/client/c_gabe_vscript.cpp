@@ -30,7 +30,7 @@
 #include <vgui_controls/menu.h>
 
 /* EXTERNAL ADDITIONS */
-#include "gabe.h"
+#include "gabe_shared.h"
 #include "gabe_spawnmenu.h"
 #include "gabe_newgame.h"
 #include "vscript_in_buttons.h"

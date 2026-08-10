@@ -1,5 +1,4 @@
-﻿  filesystem_helpers.cpp
-  vgui_key_translation.cpp
+﻿  A subdirectory or file ..\..\lib\public\x64 already exists.
   AnalogBar.cpp
   AnimatingImagePanel.cpp
   AnimationController.cpp
@@ -13,13 +12,17 @@
   CircularProgressBar.cpp
   CodeEditor.cpp
   ComboBox.cpp
+  consoledialog.cpp
   ControllerMap.cpp
+  controls.cpp
+  cvartogglecheckbutton.cpp
   DirectorySelectDialog.cpp
   Divider.cpp
   EditablePanel.cpp
   ExpandButton.cpp
   FileOpenDialog.cpp
   FileOpenStateMachine.cpp
+  filesystem_helpers.cpp
   FocusNavGroup.cpp
   Frame.cpp
   GraphPanel.cpp
@@ -44,6 +47,7 @@
   PanelListPanel.cpp
   PerforceFileExplorer.cpp
   PerforceFileList.cpp
+  perforcefilelistframe.cpp
   ProgressBar.cpp
   ProgressBox.cpp
   PropertyDialog.cpp
@@ -53,27 +57,24 @@
   RadioButton.cpp
   RichText.cpp
   RotatingProgressBar.cpp
+  savedocumentquery.cpp
   ScalableImagePanel.cpp
+  ScrollableEditablePanel.cpp
   ScrollBar.cpp
   ScrollBarSlider.cpp
-  ScrollableEditablePanel.cpp
   SectionedListPanel.cpp
   Slider.cpp
   Splitter.cpp
+  subrectimage.cpp
   TextEntry.cpp
   TextImage.cpp
   ToggleButton.cpp
-  ToolWindow.cpp
   Tooltip.cpp
+  ToolWindow.cpp
   TreeView.cpp
   TreeViewListControl.cpp
   URLLabel.cpp
+  vgui_key_translation.cpp
   WizardPanel.cpp
   WizardSubPanel.cpp
-  consoledialog.cpp
-  controls.cpp
-  cvartogglecheckbutton.cpp
-  perforcefilelistframe.cpp
-  savedocumentquery.cpp
-  subrectimage.cpp
   vgui_controls_win64.vcxproj -> C:\GabeMod\src\lib\public\x64\vgui_controls.lib

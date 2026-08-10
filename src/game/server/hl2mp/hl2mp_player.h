@@ -54,8 +54,6 @@ public:
 	DECLARE_ENT_SCRIPTDESC();
 
 	virtual void Precache( void );
-	void GiveJBModItems(void);
-	void GiveBEModItems(void);
 	virtual void Spawn( void );
 	virtual void PostThink( void );
 	virtual void PreThink( void );
@@ -93,14 +91,7 @@ public:
 	void CheatImpulseCommands( int iImpulse );
 	void CreateRagdollEntity( void );
 	void GiveAllItems( void );
-	void GiveHL2Items(void);
-	void GiveHL1Items(void);
 	void GiveDefaultItems( void );
-
-	void GiveNoItems();
-
-	void GiveBemodItems();
-
 	void NoteWeaponFired( void );
 
 	void ResetAnimation( void );
@@ -151,7 +142,12 @@ public:
 
 	bool IsThreatAimingTowardMe( CBaseEntity* threat, float cosTolerance = 0.8f ) const;
 	bool IsThreatFiringAtMe( CBaseEntity* threat ) const;
+	int GetScore() { return m_iPoints; }
+	void AddScore(int add = 1) { m_iPoints += add; }
 	bool CallScriptOnPlayerSpawn(void);
+
+	int GetSpawnInterpCounter() const { return m_iSpawnInterpCounter; }
+	bool GetReady() const { return m_bReady; }
 private:
 
 	CNetworkQAngle( m_angEyeAngles );
@@ -177,6 +173,8 @@ private:
 
     bool m_bEnterObserver;
 	bool m_bReady;
+
+	CNetworkVar(int, m_iPoints);
 };
 
 inline CHL2MP_Player *ToHL2MPPlayer( CBaseEntity *pEntity )

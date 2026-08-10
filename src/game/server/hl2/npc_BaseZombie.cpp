@@ -36,6 +36,7 @@
 #include "entitylist.h"
 #include "gib.h"
 #include "soundenvelope.h"
+#include "hl2mp_player.h"
 #include "ndebugoverlay.h"
 #include "rope.h"
 #include "rope_shared.h"
@@ -2279,6 +2280,18 @@ void CNPC_BaseZombie::Event_Killed( const CTakeDamageInfo &info )
 
 		// Big blood splat
 		UTIL_BloodSpray( WorldSpaceCenter(), vecDamageDir, BLOOD_COLOR_YELLOW, 8, FX_BLOODSPRAY_CLOUD );
+	}
+
+	CBaseEntity* attacker = info.GetAttacker();
+
+	if (attacker && attacker->IsPlayer())
+	{
+		CHL2MP_Player *pPlayer = dynamic_cast<CHL2MP_Player*>(attacker);
+
+		if (pPlayer)
+		{
+			pPlayer->AddScore(1); // Add a point for killing a zombie.
+		}
 	}
 
    	BaseClass::Event_Killed( info );

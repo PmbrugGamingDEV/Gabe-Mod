@@ -1,4 +1,5 @@
-﻿  LzmaDec.c
+﻿  A subdirectory or file ..\lib\public\x64 already exists.
+  LzmaDec.c
   bitbuf.cpp
   byteswap.cpp
   characterset.cpp

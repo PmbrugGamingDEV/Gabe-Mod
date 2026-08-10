@@ -114,6 +114,9 @@
 #include "matsys_controls/matsyscontrols.h"
 #include "gamestats.h"
 #include "particle_parse.h"
+
+#include "luamanager.h"
+
 #if defined( TF_CLIENT_DLL )
 #include "rtime.h"
 #include "tf_hud_disconnect_prompt.h"
@@ -1194,6 +1197,8 @@ void CHLClient::PostInit()
 		}
 	}
 #endif
+
+	g_LuaManager.Initialize();
 
 	if ( !r_lightmap_bicubic_set.GetBool() && materials )
 	{

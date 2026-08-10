@@ -41,6 +41,7 @@ protected:
 	CNetworkArray( int, m_iTeam, MAX_PLAYERS_ARRAY_SAFE );
 	CNetworkArray( int, m_bAlive, MAX_PLAYERS_ARRAY_SAFE );
 	CNetworkArray( int, m_iHealth, MAX_PLAYERS_ARRAY_SAFE );
+	CNetworkArray(int, m_iPoints, MAX_PLAYERS_ARRAY_SAFE );
 	CNetworkArray( uint32, m_iAccountID, MAX_PLAYERS_ARRAY_SAFE );
 	CNetworkArray( int, m_bValid, MAX_PLAYERS_ARRAY_SAFE );
 	CNetworkArray( int, m_iUserID, MAX_PLAYERS_ARRAY_SAFE );

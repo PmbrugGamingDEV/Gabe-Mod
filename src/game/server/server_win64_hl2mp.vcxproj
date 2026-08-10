@@ -141,6 +141,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
       <BrowseInformationFile>$(IntDir)/</BrowseInformationFile>
       <ErrorReporting>Prompt</ErrorReporting>
       <BuildStlModules>false</BuildStlModules>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>;_DEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -149,7 +150,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <PreLinkEvent />
     <Link>
       <AdditionalOptions> /ignore:4221</AdditionalOptions>
-      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib;lua5.1.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)\server.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -321,6 +322,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
       <BrowseInformationFile>$(IntDir)/</BrowseInformationFile>
       <ErrorReporting>Prompt</ErrorReporting>
       <BuildStlModules>false</BuildStlModules>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>;NDEBUG;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -329,7 +331,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <PreLinkEvent />
     <Link>
       <AdditionalOptions> /ignore:4221</AdditionalOptions>
-      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;user32.lib;advapi32.lib;gdi32.lib;comdlg32.lib;ole32.lib;winmm.lib;NMath.lib;lua5.1.lib</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(OutDir)\server.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -490,14 +492,24 @@ exit 1
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\imath.h" />
+    <ClInclude Include="..\..\public\lauxlib.h" />
+    <ClInclude Include="..\..\public\lua.h" />
+    <ClInclude Include="..\..\public\lua.hpp" />
+    <ClInclude Include="..\..\public\luaconf.h" />
+    <ClInclude Include="..\..\public\lualib.h" />
     <ClInclude Include="..\..\public\mathlib\amd3dx.h" />
     <ClInclude Include="..\..\public\mysticlight\IMysticLight.h" />
+    <ClInclude Include="..\..\public\sol\config.hpp" />
+    <ClInclude Include="..\..\public\sol\forward.hpp" />
+    <ClInclude Include="..\..\public\sol\sol.hpp" />
     <ClInclude Include="..\shared\ammodef.h" />
     <ClInclude Include="..\shared\base_playeranimstate.h" />
-    <ClInclude Include="..\shared\GABE.H" />
+    <ClInclude Include="..\shared\bindings.h" />
+    <ClInclude Include="..\shared\gabe_shared.h" />
     <ClInclude Include="..\shared\gabe_vscript_shared.h" />
     <ClInclude Include="..\shared\hl1\hl1_baseweapon_shared.h" />
     <ClInclude Include="..\shared\hl2mp\weapon_physgun.h" />
+    <ClInclude Include="..\shared\luamanager.h" />
     <ClInclude Include="..\shared\tf\tf_weapon_fists.h" />
     <ClInclude Include="..\shared\vscript_in_buttons.h" />
     <ClInclude Include="..\shared\vscript_think.h" />
@@ -1093,7 +1105,10 @@ exit 1
     <ClInclude Include="hl2mp\hl2mp_gameinterface.h" />
     <ClInclude Include="..\shared\hl2mp\hl2mp_gamerules.h" />
     <ClInclude Include="hl2mp\hl2mp_player.h" />
-    <ClInclude Include="..\shared\hl2mp\hl2mp_player_shared.h" />
+    <ClInclude Include="..\shared\hl2mp\hl2mp_player_shared.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\shared\hl2mp\hl2mp_weapon_parse.h" />
     <ClInclude Include="hl2mp\bot\hl2mp_bot.h" />
     <ClInclude Include="hl2mp\bot\hl2mp_bot_body.h" />
@@ -1173,10 +1188,16 @@ exit 1
     <ClInclude Include="toolframework_server.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\shared\GABE.CPP" />
+    <ClCompile Include="..\shared\gabe_shared.cpp" />
     <ClCompile Include="..\shared\hl1\hl1_baseweapon_shared.cpp" />
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
+    <ClCompile Include="..\shared\luamanager.cpp" />
+    <ClCompile Include="..\shared\sbaseentity.cpp" />
+    <ClCompile Include="..\shared\scolor.cpp" />
+    <ClCompile Include="..\shared\scvar.cpp" />
+    <ClCompile Include="..\shared\sdbg.cpp" />
+    <ClCompile Include="..\shared\svector.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
     <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
     <ClCompile Include="..\shared\vscript_think.cpp" />
@@ -1590,8 +1611,10 @@ exit 1
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="npc_bombzombie.cpp" />
     <ClCompile Include="npc_bullsquid.cpp" />
     <ClCompile Include="npc_fastzombie.cpp" />
+    <ClCompile Include="npc_firezombie.cpp" />
     <ClCompile Include="npc_houndeye.cpp" />
     <ClCompile Include="npc_vehicledriver.cpp" />
     <ClCompile Include="..\shared\obstacle_pushaway.cpp" />
@@ -1917,7 +1940,10 @@ exit 1
     <ClCompile Include="hl2mp\hl2mp_gameinterface.cpp" />
     <ClCompile Include="..\shared\hl2mp\hl2mp_gamerules.cpp" />
     <ClCompile Include="hl2mp\hl2mp_player.cpp" />
-    <ClCompile Include="..\shared\hl2mp\hl2mp_player_shared.cpp" />
+    <ClCompile Include="..\shared\hl2mp\hl2mp_player_shared.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\shared\hl2mp\hl2mp_weapon_parse.cpp" />
     <ClCompile Include="hl2mp\bot\hl2mp_bot.cpp" />
     <ClCompile Include="hl2mp\bot\hl2mp_bot_body.cpp" />
@@ -2052,6 +2078,7 @@ exit 1
     <ClCompile Include="..\shared\usermessages.cpp" />
     <ClCompile Include="entity_tools_server.cpp" />
     <ClCompile Include="toolframework_server.cpp" />
+    <ClCompile Include="zombie_ghost.cpp" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

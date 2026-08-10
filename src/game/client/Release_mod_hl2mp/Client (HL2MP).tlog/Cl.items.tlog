@@ -8,11 +8,17 @@ C:\GabeMod\src\game\server\hl1\HL1_WEAPON_MP5.CPP;C:\GabeMod\src\game\client\Rel
 C:\GabeMod\src\game\server\hl1\HL1_WEAPON_RPG.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\HL1_WEAPON_RPG.obj
 C:\GabeMod\src\game\server\hl1\HL1_WEAPON_SATCHEL.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\HL1_WEAPON_SATCHEL.obj
 C:\GabeMod\src\game\server\hl1\HL1_WEAPON_SHOTGUN.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\HL1_WEAPON_SHOTGUN.obj
-C:\GabeMod\src\game\shared\GABE.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\GABE.obj
+C:\GabeMod\src\game\shared\gabe_shared.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_shared.obj
 C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hl1_baseweapon_shared.obj
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\achievements_hl2.obj
 C:\GabeMod\src\game\shared\hl2\survival_gamerules.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\survival_gamerules.obj
+C:\GabeMod\src\game\shared\luamanager.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\luamanager.obj
+C:\GabeMod\src\game\shared\sbaseentity.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\sbaseentity.obj
+C:\GabeMod\src\game\shared\scolor.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\scolor.obj
+C:\GabeMod\src\game\shared\scvar.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\scvar.obj
+C:\GabeMod\src\game\shared\sdbg.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\sdbg.obj
+C:\GabeMod\src\game\shared\svector.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\svector.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\tf_weapon_fists.obj
 C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_in_buttons.obj
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_think.obj
@@ -29,6 +35,7 @@ C:\GabeMod\src\game\client\episodic\episodic_screenspaceeffects.cpp;C:\GabeMod\s
 C:\GabeMod\src\game\client\gabe_events.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_events.obj
 C:\GabeMod\src\game\client\gabe_friends.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_friends.obj
 C:\GabeMod\src\game\client\gabe_newgame.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_newgame.obj
+C:\GabeMod\src\game\client\gabe_score.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_score.obj
 C:\GabeMod\src\game\client\gabe_spawnmenu.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_spawnmenu.obj
 C:\GabeMod\src\game\client\gabe_thanks.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_thanks.obj
 C:\GabeMod\src\game\client\gabe_tutorials.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_tutorials.obj

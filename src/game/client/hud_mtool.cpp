@@ -233,9 +233,19 @@ void CHudMultitool::Paint(void)
     {
         const wchar_t* decals[] =
         {
-            L"YellowBlood", L"Bigshot", L"RedGlowFade", L"BeerSplash",
-            L"Blood", L"Scorch", L"ManhackCut", L"FadingScorch",
-            L"Rollermine.Crater"
+            L"YellowBlood",
+            L"Bigshot",
+            L"RedGlowFade",
+            L"BeerSplash",
+            L"Blood",
+            L"Scorch",
+            L"ManhackCut",
+            L"FadingScorch",
+            L"Rollermine.Crater",
+            L"Impact.Concrete",
+            L"Impact.Metal",
+            L"Impact.Glass",
+            L"Impact.Sand"
         };
 
         for (int i = 0; i < 9; i++)

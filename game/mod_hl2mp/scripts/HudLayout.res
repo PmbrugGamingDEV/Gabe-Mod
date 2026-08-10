@@ -35,6 +35,24 @@
 		"digit_ypos" "0"
 	}
 
+	HudScore
+	{
+		"fieldName"		"HudScore"
+		"xpos"	"300"
+		"ypos"	"432"
+		"wide"	"96"
+		"tall"  "36"
+		"visible" "1"
+		"enabled" "1"
+
+		"PaintBackgroundType"	"2"
+ 		
+		"text_xpos" "8"
+		"text_ypos" "20"
+		"digit_xpos" "25"
+		"digit_ypos" "2"
+	}
+
 	TargetID
 	{
 		"fieldName" "TargetID"

@@ -29,6 +29,7 @@
 #endif
 #include "soundflags.h"
 #include "shareddefs.h"
+#include "soundstartparams.h" // since IntelliSense won't shut up
 #include "networkvar.h"
 #include "interpolatedvar.h"
 #include "collisionproperty.h"

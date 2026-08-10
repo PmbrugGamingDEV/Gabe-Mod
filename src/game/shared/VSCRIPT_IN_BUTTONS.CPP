@@ -8,7 +8,7 @@
 
 #include "cbase.h"
 #include "in_buttons.h"
-#include "gabe.h"
+#include "gabe_shared.h"
 
 #include "vscript_shared.h"
 #include "vscript_in_buttons.h"

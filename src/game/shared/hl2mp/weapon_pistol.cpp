@@ -13,7 +13,7 @@
 #else
 	#include "hl2mp_player.h"
 	#include "util.h" // For UTIL_HudHintText
-	#include "GABE.H"
+	#include "gabe_shared.h"
 #endif
 
 #include "weapon_hl2mpbasehlmpcombatweapon.h"

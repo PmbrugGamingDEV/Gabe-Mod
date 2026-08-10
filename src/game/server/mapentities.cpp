@@ -40,7 +40,7 @@ CBaseEntity *CreateEntityByName( const char *className, int iForceEdictIndex )
 	{
 		g_pForceAttachEdict = engine->CreateEdict( iForceEdictIndex );
 		if ( !g_pForceAttachEdict )
-			Error( "CreateEntityByName( %s, %d ) - CreateEdict failed.", className, iForceEdictIndex );
+			Warning( "CreateEntityByName( %s, %d ) - CreateEdict failed.", className, iForceEdictIndex );
 	}
 
 	IServerNetworkable *pNetwork = EntityFactoryDictionary()->Create( className );

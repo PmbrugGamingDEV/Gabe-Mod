@@ -473,6 +473,7 @@ enum PLAYER_ANIM
 #define DMG_BLAST_SURFACE	(1<<27)		// A blast on the surface of water that cannot harm things underwater
 #define DMG_DIRECT			(1<<28)
 #define DMG_BUCKSHOT		(1<<29)		// not quite a bullet. Little, rounder, different.
+#define DMG_ZBURN			(1<<30)
 
 // NOTE: DO NOT ADD ANY MORE CUSTOM DMG_ TYPES. MODS USE THE DMG_LASTGENERICFLAG BELOW, AND
 //		 IF YOU ADD NEW DMG_ TYPES, THEIR TYPES WILL BE HOSED. WE NEED A BETTER SOLUTION.

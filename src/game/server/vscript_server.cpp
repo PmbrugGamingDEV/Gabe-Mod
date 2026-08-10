@@ -27,7 +27,7 @@
 #include "netpropmanager.h"
 
 /*EXTERNAL ADDITIONS*/
-#include "gabe.h"
+#include "gabe_shared.h"
 #include "vscript_in_buttons.h"
 #include "vscript_think.h"
 
