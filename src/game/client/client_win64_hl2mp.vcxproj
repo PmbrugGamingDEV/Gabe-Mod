@@ -505,15 +505,7 @@ exit 1
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\public\imath.h" />
-    <ClInclude Include="..\..\public\lauxlib.h" />
-    <ClInclude Include="..\..\public\lua.h" />
-    <ClInclude Include="..\..\public\lua.hpp" />
-    <ClInclude Include="..\..\public\luaconf.h" />
-    <ClInclude Include="..\..\public\lualib.h" />
     <ClInclude Include="..\..\public\mysticlight\IMysticLight.h" />
-    <ClInclude Include="..\..\public\sol\config.hpp" />
-    <ClInclude Include="..\..\public\sol\forward.hpp" />
-    <ClInclude Include="..\..\public\sol\sol.hpp" />
     <ClInclude Include="..\server\hl1\hl1_gamerules.h" />
     <ClInclude Include="..\server\hl1\HL1_WEAPON_MP5.H" />
     <ClInclude Include="..\server\hl1\hl1_weapon_rpg.h" />
@@ -527,7 +519,6 @@ exit 1
     <ClInclude Include="..\shared\base_playeranimstate.h" />
     <ClInclude Include="..\shared\baseentity_shared.h" />
     <ClInclude Include="..\shared\basegrenade_shared.h" />
-    <ClInclude Include="..\shared\bindings.h" />
     <ClInclude Include="..\shared\gabe_shared.h" />
     <ClInclude Include="..\shared\gabe_vscript_shared.h" />
     <ClInclude Include="..\shared\hl1\hl1_baseweapon_shared.h" />
@@ -576,7 +567,6 @@ exit 1
     <ClInclude Include="..\shared\ipredictionsystem.h" />
     <ClInclude Include="..\shared\itempents.h" />
     <ClInclude Include="..\shared\IVehicle.h" />
-    <ClInclude Include="..\shared\luamanager.h" />
     <ClInclude Include="..\shared\mapdata_shared.h" />
     <ClInclude Include="..\shared\mapentities_shared.h" />
     <ClInclude Include="..\shared\movevars_shared.h" />
@@ -1171,12 +1161,6 @@ exit 1
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
     <ClCompile Include="..\shared\hl2\survival_gamerules.cpp" />
-    <ClCompile Include="..\shared\luamanager.cpp" />
-    <ClCompile Include="..\shared\sbaseentity.cpp" />
-    <ClCompile Include="..\shared\scolor.cpp" />
-    <ClCompile Include="..\shared\scvar.cpp" />
-    <ClCompile Include="..\shared\sdbg.cpp" />
-    <ClCompile Include="..\shared\svector.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
     <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
     <ClCompile Include="..\shared\vscript_think.cpp" />

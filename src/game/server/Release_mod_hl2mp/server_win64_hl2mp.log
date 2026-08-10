@@ -1,14 +1,4 @@
-﻿  gabe_shared.cpp
-  weapon_pistol.cpp
-  vscript_in_buttons.cpp
-  hl2mp_client.cpp
-  vscript_server.cpp
-  weapon_lasergun.cpp
-  weapon_multitool.cpp
-C:\GabeMod\src\game\shared\gabe_vscript_shared.h(427,2): warning C4002: too many arguments for function-like macro invocation 'AssertMsgOnce'
-  (compiling source file '/vscript_server.cpp')
-  
-C:\GabeMod\src\game\server\weapon_multitool.cpp(1718,1): warning C4701: potentially uninitialized local variable 'i' used
+﻿  weapon_multitool.cpp
   NMath.lib(NMath.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
      Creating library .\Release_mod_hl2mp\server.lib and object .\Release_mod_hl2mp\server.exp
   Generating code

@@ -741,6 +741,47 @@ namespace GabeMod
 		physenv->DestroyConstraint(constraint);
 	}
 
+	IPhysicsConstraint* CGabeServerFuncs::Gabe_CreateAxis(
+		CBaseEntity* ent1,
+		CBaseEntity* ent2,
+		const Vector& worldPos,
+		const Vector& worldAxis)
+	{
+		if (!ent1 || !ent2)
+			return NULL;
+
+		IPhysicsObject* pPhys1 = ent1->VPhysicsGetObject();
+		IPhysicsObject* pPhys2 = ent2->VPhysicsGetObject();
+
+		if (!pPhys1 || !pPhys2)
+			return NULL;
+
+		Vector axis = worldAxis;
+
+		if (axis.LengthSqr() < 0.001f)
+			return NULL;
+
+		VectorNormalize(axis);
+
+		constraint_hingeparams_t params;
+		params.Defaults();
+
+		params.worldPosition = worldPos;
+		params.worldAxisDirection = axis;
+
+		// Unbreakable by default.
+		params.constraint.forceLimit = 0.0f;
+		params.constraint.torqueLimit = 0.0f;
+		params.constraint.strength = 1.0f;
+
+		return physenv->CreateHingeConstraint(
+			pPhys1,
+			pPhys2,
+			NULL,
+			params
+		);
+	}
+
 	// ============================================================
 	// Entity state
 	// ============================================================

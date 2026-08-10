@@ -186,10 +186,11 @@ void CHudMultitool::Paint(void)
         L"Light Watermelon",
         L"Decal",
         L"Render FX",
-        L"Faceposer"
+        L"Faceposer",
+        L"Balloon"
     };
 
-    if (m_iMode >= 0 && m_iMode < 12)
+    if (m_iMode >= 0 && m_iMode < 13)
     {
         surface()->DrawSetTextColor(230, 230, 230, 220);
         surface()->DrawSetTextPos(textX, textY);
@@ -248,7 +249,7 @@ void CHudMultitool::Paint(void)
             L"Impact.Sand"
         };
 
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < 13; i++)
         {
             surface()->DrawSetTextColor(
                 (i == m_iDecal) ? 255 : 180,
@@ -342,10 +343,10 @@ void CHudMultitool::Paint(void)
     {
         const wchar_t* constraints[] =
         {
-            L"BallSocket", L"Weld", L"Rope"
+			L"BallSocket", L"Weld", L"Rope", L"Slider", L"Hinge/Axis"
         };
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 5; i++)
         {
             surface()->DrawSetTextColor(
                 (i == m_iConstraint) ? 255 : 180,

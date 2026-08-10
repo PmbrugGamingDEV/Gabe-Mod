@@ -302,6 +302,8 @@ namespace GabeMod
 		static void Gabe_SetBreakable(constraint_breakableparams_t& breakParams, float forceLimit, float torqueLimit);
 		static void Gabe_DestroyConstraint(IPhysicsConstraint* constraint);
 
+		static IPhysicsConstraint* Gabe_CreateAxis(CBaseEntity* ent1, CBaseEntity* ent2, const Vector& worldPos, const Vector& worldAxis);
+
 		// ============================================================
 		// Entity state
 		// ============================================================

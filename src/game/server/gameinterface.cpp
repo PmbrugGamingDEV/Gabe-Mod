@@ -91,8 +91,6 @@
 #include "querycache.h"
 #include "player_voice_listener.h"
 
-#include "luamanager.h"
-
 #ifdef TF_DLL
 #include "gc_clientsystem.h"
 #include "econ_item_inventory.h"
@@ -1153,8 +1151,6 @@ void CServerGameDLL::ServerActivate(edict_t* pEdictList, int edictCount, int cli
 #ifdef NEXT_BOT
 	TheNextBots().OnMapLoaded();
 #endif
-
-	g_LuaManager.Initialize();
 }
 
 //-----------------------------------------------------------------------------

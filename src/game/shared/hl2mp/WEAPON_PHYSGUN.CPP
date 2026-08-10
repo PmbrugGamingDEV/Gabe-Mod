@@ -2020,12 +2020,12 @@ bool CWeaponGravityGun::Reload(void)
 	{
 		IPhysicsObject* pPhys = m_vecFrozenPhys[i];
 		if (!pPhys)
-			continue;
+			return false;
 
 		// 🔥 Get entity from physics object
 		CBaseEntity* pEnt = (CBaseEntity*)pPhys->GetGameData();
 		if (!pEnt)
-			continue;
+			return false;
 
 		// --------------------------------------------------
 		// Visual effect at THIS BONE (not whole entity)

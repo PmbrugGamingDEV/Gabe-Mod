@@ -79,9 +79,6 @@
     <Filter Include="Source Files\Gabe Mod Files\BEMod">
       <UniqueIdentifier>{29559b0c-a066-421a-95ca-2a82ba7d14e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Gabe Mod Files\Lua">
-      <UniqueIdentifier>{6c4b5fa7-765c-4117-801d-0ed78b803fcd}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\bitmap.lib">
@@ -2048,36 +2045,6 @@
     <ClInclude Include="..\shared\vscript_think.h">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\bindings.h">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\luamanager.h">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\lauxlib.h">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\lua.h">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\lua.hpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\luaconf.h">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\lualib.h">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\sol\config.hpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\sol\forward.hpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\public\sol\sol.hpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3792,24 +3759,6 @@
     </ClCompile>
     <ClCompile Include="..\shared\vscript_think.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\luamanager.cpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\sbaseentity.cpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\scolor.cpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\scvar.cpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\sdbg.cpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\shared\svector.cpp">
-      <Filter>Source Files\Gabe Mod Files\Lua</Filter>
     </ClCompile>
     <ClCompile Include="gabe_score.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>

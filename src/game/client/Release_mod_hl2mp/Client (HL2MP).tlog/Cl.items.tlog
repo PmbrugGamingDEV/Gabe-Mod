@@ -13,12 +13,6 @@ C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\cli
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\achievements_hl2.obj
 C:\GabeMod\src\game\shared\hl2\survival_gamerules.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\survival_gamerules.obj
-C:\GabeMod\src\game\shared\luamanager.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\luamanager.obj
-C:\GabeMod\src\game\shared\sbaseentity.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\sbaseentity.obj
-C:\GabeMod\src\game\shared\scolor.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\scolor.obj
-C:\GabeMod\src\game\shared\scvar.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\scvar.obj
-C:\GabeMod\src\game\shared\sdbg.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\sdbg.obj
-C:\GabeMod\src\game\shared\svector.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\svector.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\tf_weapon_fists.obj
 C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_in_buttons.obj
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_think.obj

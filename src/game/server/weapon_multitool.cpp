@@ -116,6 +116,77 @@ RenderFxEntry g_RenderFxModes[] =
 
 const int RENDERFX_COUNT = sizeof(g_RenderFxModes) / sizeof(g_RenderFxModes[0]);
 
+class CToolBalloon : public CBaseAnimating
+{
+public:
+	DECLARE_CLASS(CToolBalloon, CBaseAnimating);
+	DECLARE_DATADESC();
+
+	void Spawn() override;
+	void Precache() override;
+	void BalloonThink();
+
+	void SetLift(float flLift)
+	{
+		m_flLift = flLift;
+	}
+
+private:
+	float m_flLift;
+};
+
+LINK_ENTITY_TO_CLASS(tool_balloon, CToolBalloon);
+
+BEGIN_DATADESC(CToolBalloon)
+DEFINE_FIELD(m_flLift, FIELD_FLOAT),
+DEFINE_THINKFUNC(BalloonThink),
+END_DATADESC()
+
+void CToolBalloon::Precache()
+{
+	// Replace this with whatever balloon model you actually have.
+	PrecacheModel("models/props_junk/watermelon01.mdl");
+
+	BaseClass::Precache();
+}
+
+void CToolBalloon::Spawn()
+{
+	Precache();
+
+	SetModel("models/props_junk/watermelon01.mdl");
+
+	SetSolid(SOLID_VPHYSICS);
+	SetMoveType(MOVETYPE_VPHYSICS);
+
+	VPhysicsInitNormal(
+		SOLID_VPHYSICS,
+		0,
+		false
+	);
+
+	m_flLift = 300.0f;
+
+	SetThink(&CToolBalloon::BalloonThink);
+	SetNextThink(gpGlobals->curtime + 0.02f);
+}
+
+void CToolBalloon::BalloonThink()
+{
+	IPhysicsObject* pPhysics = VPhysicsGetObject();
+
+	if (pPhysics)
+	{
+		// Apply upward force continuously.
+		Vector force(0, 0, m_flLift);
+
+		pPhysics->ApplyForceCenter(force);
+		pPhysics->Wake();
+	}
+
+	SetNextThink(gpGlobals->curtime + 0.02f);
+}
+
 class CRainbowThinker : public CBaseEntity
 {
 public:
@@ -282,6 +353,7 @@ private:
 	void ApplyToolAction(CBaseEntity* pEnt);
 	void ShowDistance(CBaseEntity* pEnt);
 	void ThrowLightWatermelon();
+	void CreateBalloon(CBaseEntity* pTarget);
 
 	int m_nMultitoolMode;
 	int m_nColorIndex;
@@ -379,6 +451,7 @@ enum MultitoolMode_t
 	MODE_DECAL,
 	MODE_MATERIAL,
 	MODE_FACEPOSER,
+	MODE_BALLOON,
 	MODE_MAX
 };
 
@@ -399,6 +472,7 @@ MultitoolMode_t StringToMode(const char* psz)
 	if (!Q_stricmp(psz, "decal")) return MODE_DECAL;
 	if (!Q_stricmp(psz, "material")) return MODE_MATERIAL;
 	if (!Q_stricmp(psz, "faceposer")) return MODE_FACEPOSER;
+	if (!Q_stricmp(psz, "balloon")) return MODE_BALLOON;
 
 	return MODE_REMOVE;
 }
@@ -416,6 +490,7 @@ BEGIN_LIST(g_szModeNames)
 	LIST_ENTRY(Decal),
 	LIST_ENTRY(Render_FX),
 	LIST_ENTRY(Faceposer_NPCs)
+	LIST_ENTRY(Balloon)
 END_LIST(g_szModeNames)
 
 BEGIN_LIST(g_szConstraintTypes)
@@ -530,6 +605,7 @@ void CWeaponMultitool::SecondaryAttack()
 		return;
 
 	if (m_nMultitoolMode != MODE_DUPLICATE)
+
 		return;
 
 	CBaseEntity* pEnt = FindEntityInFront();
@@ -716,6 +792,126 @@ void CWeaponMultitool::ThrowLightWatermelon()
 	// Apply color
 	const ColorPreset& col = g_ColorPresets[m_nLightWatermelonColor];
 	pEnt->SetRenderColor(col.r, col.g, col.b);
+}
+
+void CWeaponMultitool::CreateBalloon(CBaseEntity* pTarget)
+{
+	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
+
+	if (!pPlayer)
+		return;
+
+	trace_t tr;
+
+	Vector start = pPlayer->EyePosition();
+	Vector forward;
+	pPlayer->EyeVectors(&forward);
+
+	UTIL_TraceLine(
+		start,
+		start + forward * 2048.0f,
+		MASK_SOLID,
+		pPlayer,
+		COLLISION_GROUP_NONE,
+		&tr
+	);
+
+	if (tr.fraction == 1.0f)
+		return;
+
+	Vector balloonPos =
+		tr.endpos + Vector(0, 0, 64.0f);
+
+	CToolBalloon* pBalloon =
+		static_cast<CToolBalloon*>(
+			CreateEntityByName("tool_balloon")
+			);
+
+	if (!pBalloon)
+		return;
+
+	pBalloon->SetAbsOrigin(balloonPos);
+	pBalloon->SetAbsAngles(vec3_angle);
+
+	DispatchSpawn(pBalloon);
+	pBalloon->Activate();
+
+	CGabeServerFuncs::HudText(
+		pPlayer,
+		"Balloon created.",
+		150, 255, 150
+	);
+
+	IPhysicsObject* pTargetPhys =
+		pTarget->VPhysicsGetObject();
+
+	IPhysicsObject* pBalloonPhys =
+		pBalloon->VPhysicsGetObject();
+
+	if (pTargetPhys && pBalloonPhys)
+	{
+		Vector targetPos = tr.endpos;
+		Vector balloonAttach =
+			pBalloon->WorldSpaceCenter();
+
+		constraint_lengthparams_t rope;
+		rope.Defaults();
+
+		rope.InitWorldspace(
+			pTargetPhys,
+			pBalloonPhys,
+			targetPos,
+			balloonAttach,
+			false
+		);
+
+		rope.totalLength =
+			(balloonAttach - targetPos).Length();
+
+		rope.minLength = 0.0f;
+
+		IPhysicsConstraint* pConstraint =
+			physenv->CreateLengthConstraint(
+				pTargetPhys,
+				pBalloonPhys,
+				NULL,
+				rope
+			);
+
+		if (pConstraint)
+		{
+			m_Constraints.AddToTail(pConstraint);
+		}
+
+		PrecacheModel("cable/cable.vmt");
+
+		CRopeKeyframe* pRope =
+			CRopeKeyframe::Create(
+				pTarget,
+				pBalloon,
+				0,
+				0,
+				2,
+				"cable/cable.vmt",
+				10
+			);
+
+		if (pRope)
+		{
+			pRope->m_Width = 1.5f;
+			pRope->m_Slack = 20.0f;
+			pRope->m_nSegments = 12;
+
+			m_CreatedRopes.AddToTail(pRope);
+		}
+	}
+
+
+	float mass = pTargetPhys->GetMass();
+
+	pBalloon->SetLift(
+		600.0f + mass * 25.0f
+	);
 }
 
 
@@ -1082,222 +1278,475 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 		break;
 	}
+
 	case MODE_CONSTRAINT:
 	{
-		if (!m_hConstraintTarget1)
+		// ============================================================
+		// ROPE
+		// Rope needs its own two-click handling because we need to
+		// remember the exact trace position from the first click.
+		// ============================================================
+		if (m_nConstraintType == 2)
 		{
-			m_hConstraintTarget1 = pEnt;
-			m_hConstraintTarget2 = NULL; // Reset second just in case
-			CGabeServerFuncs::HudText(pPlayer, "First point selected.", 200, 255, 255);
-		}
-		else if (m_hConstraintTarget1 == pEnt)
-		{
-			CGabeServerFuncs::HudText(pPlayer, "Cannot constrain an entity to itself.", 255, 100, 100);
-			m_hConstraintTarget1 = NULL;
-		}
-		else
-		{
-			m_hConstraintTarget2 = pEnt;
+			trace_t tr;
 
-			CBaseEntity* pEnt1 = m_hConstraintTarget1;
-			CBaseEntity* pEnt2 = m_hConstraintTarget2;
+			Vector start = pPlayer->EyePosition();
+			Vector forward;
+			pPlayer->EyeVectors(&forward);
 
-			Vector origin1 = pEnt1->WorldSpaceCenter();
-			Vector origin2 = pEnt2->WorldSpaceCenter();
-			Vector anchor = (origin1 + origin2) * 0.5f;
+			UTIL_TraceLine(
+				start,
+				start + forward * 2048.0f,
+				MASK_SOLID,
+				pPlayer,
+				COLLISION_GROUP_NONE,
+				&tr
+			);
+
+			// --------------------------------------------------------
+			// FIRST CLICK
+			// --------------------------------------------------------
+			if (!m_hConstraintTarget1)
+			{
+				if (!pEnt || pEnt->IsWorld())
+				{
+					CGabeServerFuncs::HudText(
+						pPlayer,
+						"Invalid first rope target.",
+						255, 100, 100
+					);
+
+					break;
+				}
+
+				m_hConstraintTarget1 = pEnt;
+				m_vecConstraintPos1 = tr.endpos;
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"First rope point set.",
+					200, 255, 255
+				);
+
+				break;
+			}
+
+			// --------------------------------------------------------
+			// SECOND CLICK
+			// --------------------------------------------------------
+			CBaseEntity* pEnt1 = m_hConstraintTarget1.Get();
+			CBaseEntity* pEnt2 = pEnt;
+
+			Vector vec1 = m_vecConstraintPos1;
+			Vector vec2 = tr.endpos;
+
+			if (!pEnt1 || !pEnt2)
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Invalid rope targets.",
+					255, 100, 100
+				);
+
+				m_hConstraintTarget1 = NULL;
+				m_hConstraintTarget2 = NULL;
+				break;
+			}
+
+			if (pEnt1 == pEnt2)
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Cannot rope an entity to itself.",
+					255, 100, 100
+				);
+
+				m_hConstraintTarget1 = NULL;
+				m_hConstraintTarget2 = NULL;
+				break;
+			}
 
 			IPhysicsObject* pPhys1 = pEnt1->VPhysicsGetObject();
 			IPhysicsObject* pPhys2 = pEnt2->VPhysicsGetObject();
 
 			if (!pPhys1 || !pPhys2)
 			{
-				CGabeServerFuncs::HudText(pPlayer, "Both objects must have physics!", 255, 100, 100);
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Both objects need physics!",
+					255, 100, 100
+				);
+
 				m_hConstraintTarget1 = NULL;
 				m_hConstraintTarget2 = NULL;
 				break;
 			}
 
-			switch (m_nConstraintType)
-			{
-			case 0: // BallSocket
-			{
-				IPhysicsConstraint* ballsocket = CGabeServerFuncs::Gabe_CreateBallSocket(pEnt1, pEnt2, vec3_origin);
+			// ========================================================
+			// VISUAL ROPE
+			// ========================================================
+			PrecacheModel("cable/cable.vmt");
 
-				if (ballsocket)
-				{
-					m_Constraints.AddToTail(ballsocket);
-					CGabeServerFuncs::HudText(pPlayer, "BallSocket constraint created.", 100, 255, 100);
-				}
+			CRopeKeyframe* pRope = CRopeKeyframe::Create(
+				pEnt1,
+				pEnt2,
+				0,
+				0,
+				2,
+				"cable/cable.vmt",
+				10
+			);
+
+			if (pRope)
+			{
+				pRope->m_Width = 2.0f;
+				pRope->m_Slack = 60.0f;
+				pRope->m_nSegments = 12;
+
+				m_CreatedRopes.AddToTail(pRope);
+			}
+
+			// ========================================================
+			// PHYSICS LENGTH CONSTRAINT
+			// ========================================================
+			constraint_lengthparams_t rope;
+			rope.Defaults();
+
+			rope.InitWorldspace(
+				pPhys1,
+				pPhys2,
+				vec1,
+				vec2,
+				false
+			);
+
+			// Add some slack.
+			rope.totalLength *= 1.2f;
+			rope.minLength = 0.0f;
+
+			rope.constraint.strength = 0.8f;
+			rope.constraint.forceLimit = 0;
+			rope.constraint.torqueLimit = 0;
+
+			IPhysicsConstraint* pConstraint =
+				physenv->CreateLengthConstraint(
+					pPhys1,
+					pPhys2,
+					NULL,
+					rope
+				);
+
+			if (pConstraint)
+			{
+				m_Constraints.AddToTail(pConstraint);
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Rope constraint created.",
+					100, 255, 100
+				);
+			}
+			else
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Failed to create rope constraint.",
+					255, 100, 100
+				);
+			}
+
+			// Reset selection.
+			m_hConstraintTarget1 = NULL;
+			m_hConstraintTarget2 = NULL;
+
+			break;
+		}
+
+		// ============================================================
+		// BALL SOCKET / WELD / ETC.
+		// ============================================================
+
+		// ------------------------------------------------------------
+		// FIRST CLICK
+		// ------------------------------------------------------------
+		if (!m_hConstraintTarget1)
+		{
+			if (!pEnt || pEnt->IsWorld())
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Invalid first constraint target.",
+					255, 100, 100
+				);
 
 				break;
 			}
-			case 1: // Weld
+
+			if (!pEnt->VPhysicsGetObject())
 			{
-				IPhysicsConstraint* fixed = CGabeServerFuncs::Gabe_CreateFixed(m_hConstraintTarget1, m_hConstraintTarget2);
-
-				if (fixed)
-				{
-					m_Constraints.AddToTail(fixed);
-					CGabeServerFuncs::HudText(pPlayer, "Weld constraint created.", 100, 255, 100);
-				}
-				break;
-			}
-			case 2: // Rope
-			{
-				// ----------------------------------------
-				// FIRST CLICK
-				// ----------------------------------------
-				if (!m_hConstraintTarget1)
-				{
-					m_hConstraintTarget1 = pEnt; // store first entity (if any)
-
-					// Store vector position too (trace)
-					trace_t tr;
-					Vector start = pPlayer->EyePosition();
-					Vector forward;
-					pPlayer->EyeVectors(&forward);
-
-					UTIL_TraceLine(start, start + forward * 2048,
-						MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
-
-					m_vecConstraintPos1 = tr.endpos;
-
-					CGabeServerFuncs::HudText(pPlayer, "First rope point set.", 200, 255, 255);
-					break;
-				}
-
-				// ----------------------------------------
-				// SECOND CLICK
-				// ----------------------------------------
-				CBaseEntity* pEnt1 = m_hConstraintTarget1;
-				CBaseEntity* pEnt2 = pEnt;
-
-				trace_t tr;
-				Vector start = pPlayer->EyePosition();
-				Vector forward;
-				pPlayer->EyeVectors(&forward);
-
-				UTIL_TraceLine(start, start + forward * 2048,
-					MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
-
-				Vector vec2 = tr.endpos;
-				Vector vec1 = m_vecConstraintPos1;
-
-				// ----------------------------------------
-				// 🟢 VECTOR MODE (no entities)
-				// ----------------------------------------
-				if (!pEnt1 && !pEnt2)
-				{
-					CBaseEntity* pStart = CreateEntityByName("move_rope");
-					CBaseEntity* pEnd = CreateEntityByName("keyframe_rope");
-
-					if (pStart && pEnd)
-					{
-						pStart->SetAbsOrigin(vec1);
-						pEnd->SetAbsOrigin(vec2);
-
-						char name[64];
-						Q_snprintf(name, sizeof(name), "rope_start_%d", gpGlobals->tickcount);
-
-						pStart->SetName(MAKE_STRING(name));
-						pEnd->KeyValue("NextKey", name);
-
-						pStart->KeyValue("Slack", "60");
-						pStart->KeyValue("Width", "2");
-
-						DispatchSpawn(pStart);
-						DispatchSpawn(pEnd);
-
-						CGabeServerFuncs::HudText(pPlayer, "Vector rope created!", 100, 255, 100);
-					}
-				}
-				else
-				{
-					// ----------------------------------------
-					// 🔵 ENTITY MODE (physics rope)
-					// ----------------------------------------
-					if (!pEnt1 || !pEnt2 || pEnt1 == pEnt2)
-					{
-						CGabeServerFuncs::HudText(pPlayer, "Invalid rope targets!", 255, 100, 100);
-						m_hConstraintTarget1 = NULL;
-						break;
-					}
-
-					IPhysicsObject* pPhys1 = pEnt1->VPhysicsGetObject();
-					IPhysicsObject* pPhys2 = pEnt2->VPhysicsGetObject();
-
-					if (!pPhys1 || !pPhys2)
-					{
-						CGabeServerFuncs::HudText(pPlayer, "Both objects need physics!", 255, 100, 100);
-						m_hConstraintTarget1 = NULL;
-						break;
-					}
-
-					Vector pos1 = pEnt1->WorldSpaceCenter();
-					Vector pos2 = pEnt2->WorldSpaceCenter();
-
-					// ---------------------------
-					// VISUAL ROPE
-					// ---------------------------
-					PrecacheModel("cable/cable.vmt");
-
-					CRopeKeyframe* pRope = CRopeKeyframe::Create(
-						pEnt1,
-						pEnt2,
-						0,
-						0,
-						2,
-						"cable/cable.vmt",
-						10
-					);
-
-					if (pRope)
-					{
-						pRope->SetParent(pEnt1, 1);
-						pRope->m_Width = 2.0f;
-						pRope->m_Slack = 60.0f;
-						pRope->m_nSegments = 12;
-
-						m_CreatedRopes.AddToTail(pRope);
-					}
-
-					// ---------------------------
-					// PHYSICS ROPE
-					// ---------------------------
-					constraint_lengthparams_t rope;
-					rope.Defaults();
-
-					rope.InitWorldspace(pPhys1, pPhys2, pos1, pos2, false);
-
-					rope.totalLength *= 1.2f; // slack
-					rope.minLength = 0.0f;
-
-					rope.constraint.strength = 0.8f;
-					rope.constraint.forceLimit = 0;
-					rope.constraint.torqueLimit = 0;
-
-					IPhysicsConstraint* pConstraint =
-						physenv->CreateLengthConstraint(pPhys1, pPhys2, NULL, rope);
-
-					if (pConstraint)
-					{
-						m_Constraints.AddToTail(pConstraint);
-						CGabeServerFuncs::HudText(pPlayer, "Entity rope created!", 100, 255, 100);
-					}
-				}
-
-				// ----------------------------------------
-				// RESET
-				// ----------------------------------------
-				m_hConstraintTarget1 = NULL;
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Object must have physics.",
+					255, 100, 100
+				);
 
 				break;
 			}
-			}
+
+			m_hConstraintTarget1 = pEnt;
+			m_hConstraintTarget2 = NULL;
+
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"First point selected.",
+				200, 255, 255
+			);
+
+			break;
+		}
+
+		// ------------------------------------------------------------
+		// SECOND CLICK
+		// ------------------------------------------------------------
+		if (m_hConstraintTarget1 == pEnt)
+		{
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"Cannot constrain an entity to itself.",
+				255, 100, 100
+			);
 
 			m_hConstraintTarget1 = NULL;
 			m_hConstraintTarget2 = NULL;
+			break;
 		}
+
+		m_hConstraintTarget2 = pEnt;
+
+		CBaseEntity* pEnt1 = m_hConstraintTarget1.Get();
+		CBaseEntity* pEnt2 = m_hConstraintTarget2.Get();
+
+		if (!pEnt1 || !pEnt2)
+		{
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"Invalid constraint target.",
+				255, 100, 100
+			);
+
+			m_hConstraintTarget1 = NULL;
+			m_hConstraintTarget2 = NULL;
+			break;
+		}
+
+		IPhysicsObject* pPhys1 = pEnt1->VPhysicsGetObject();
+		IPhysicsObject* pPhys2 = pEnt2->VPhysicsGetObject();
+
+		if (!pPhys1 || !pPhys2)
+		{
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"Both objects must have physics!",
+				255, 100, 100
+			);
+
+			m_hConstraintTarget1 = NULL;
+			m_hConstraintTarget2 = NULL;
+			break;
+		}
+
+		// ============================================================
+		// CREATE SELECTED CONSTRAINT
+		// ============================================================
+		switch (m_nConstraintType)
+		{
+		case 0: // BallSocket
+		{
+			IPhysicsConstraint* pConstraint =
+				CGabeServerFuncs::Gabe_CreateBallSocket(
+					pEnt1,
+					pEnt2,
+					vec3_origin
+				);
+
+			if (pConstraint)
+			{
+				m_Constraints.AddToTail(pConstraint);
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"BallSocket constraint created.",
+					100, 255, 100
+				);
+			}
+			else
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Failed to create BallSocket.",
+					255, 100, 100
+				);
+			}
+
+			break;
+		}
+
+		case 1: // Weld
+		{
+			IPhysicsConstraint* pConstraint =
+				CGabeServerFuncs::Gabe_CreateFixed(
+					pEnt1,
+					pEnt2
+				);
+
+			if (pConstraint)
+			{
+				m_Constraints.AddToTail(pConstraint);
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Weld constraint created.",
+					100, 255, 100
+				);
+			}
+			else
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Failed to create weld.",
+					255, 100, 100
+				);
+			}
+
+			break;
+		}
+
+		case 3: // Slider
+		{
+			// Build an axis from entity 1 toward entity 2.
+			Vector slideAxis =
+				pEnt2->WorldSpaceCenter() -
+				pEnt1->WorldSpaceCenter();
+
+			if (slideAxis.LengthSqr() < 0.001f)
+			{
+				// Fallback if both centers are basically identical.
+				pPlayer->EyeVectors(&slideAxis);
+			}
+
+			VectorNormalize(slideAxis);
+
+			const float limitMin = -128.0f;
+			const float limitMax = 128.0f;
+
+			IPhysicsConstraint* pConstraint =
+				CGabeServerFuncs::Gabe_CreateSlider(
+					pEnt1,
+					pEnt2,
+					slideAxis,
+					limitMin,
+					limitMax
+				);
+
+			if (pConstraint)
+			{
+				m_Constraints.AddToTail(pConstraint);
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Slider constraint created.",
+					100, 255, 100
+				);
+			}
+			else
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Failed to create slider.",
+					255, 100, 100
+				);
+			}
+
+			break;
+		}
+
+		case 4: // Hinge
+		{
+			trace_t tr;
+
+			Vector start = pPlayer->EyePosition();
+			Vector forward;
+			pPlayer->EyeVectors(&forward);
+
+			UTIL_TraceLine(
+				start,
+				start + forward * 2048.0f,
+				MASK_SOLID,
+				pPlayer,
+				COLLISION_GROUP_NONE,
+				&tr
+			);
+
+			Vector hingePos = tr.endpos;
+			Vector hingeAxis = tr.plane.normal;
+
+			if (hingeAxis.LengthSqr() < 0.001f)
+			{
+				hingeAxis.Init(0, 0, 1);
+			}
+			else
+			{
+				VectorNormalize(hingeAxis);
+			}
+
+			IPhysicsConstraint* pConstraint =
+				CGabeServerFuncs::Gabe_CreateHinge(
+					pEnt1,
+					pEnt2,
+					hingePos,
+					hingeAxis
+				);
+
+			if (pConstraint)
+			{
+				m_Constraints.AddToTail(pConstraint);
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Hinge constraint created.",
+					100, 255, 100
+				);
+			}
+			else
+			{
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Failed to create hinge.",
+					255, 100, 100
+				);
+			}
+
+			break;
+		}
+
+		default:
+		{
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"Unknown constraint type.",
+				255, 100, 100
+			);
+
+			break;
+		}
+		}
+
+		// ============================================================
+		// RESET
+		// ============================================================
+		m_hConstraintTarget1 = NULL;
+		m_hConstraintTarget2 = NULL;
+
 		break;
 	}
 	case MODE_IGNITE:
@@ -1531,6 +1980,16 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		break;
 	}
 
+	case MODE_BALLOON:
+	{
+		if (pEnt->IsWorld())
+			break;
+
+		CreateBalloon(pEnt);
+
+		break;
+	}
+
 	}
 }
 
@@ -1715,7 +2174,7 @@ void CWeaponMultitool::ItemPostFrame()
 		// Reset all flex weights every frame
 		LocalFlexController_t flexCount = pFlex->GetNumFlexControllers();
 
-		for (LocalFlexController_t i; i < flexCount; ++i)
+		for (LocalFlexController_t i = (LocalFlexController_t)0; i < flexCount; ++i)
 		{
 			const char* name = pFlex->GetFlexControllerName(i);
 
