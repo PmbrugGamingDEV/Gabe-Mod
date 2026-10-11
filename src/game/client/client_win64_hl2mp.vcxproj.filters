@@ -79,6 +79,12 @@
     <Filter Include="Source Files\Gabe Mod Files\BEMod">
       <UniqueIdentifier>{29559b0c-a066-421a-95ca-2a82ba7d14e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\SDK">
+      <UniqueIdentifier>{77a58fa2-fd9a-43a0-9dcb-b2301e63c0c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Beta Weapons">
+      <UniqueIdentifier>{caeee38e-6fc1-4448-a7b4-9107cd4ccaa4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\bitmap.lib">
@@ -2045,6 +2051,9 @@
     <ClInclude Include="..\shared\vscript_think.h">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\sdk\weapon_sdkbase.h">
+      <Filter>Source Files\Gabe Mod Files\SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mp3player.cpp">
@@ -3760,7 +3769,19 @@
     <ClCompile Include="..\shared\vscript_think.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
-    <ClCompile Include="gabe_score.cpp">
+    <ClCompile Include="gabe_city17browser.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hud_gabewm.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\sdk\weapon_sdkbase.cpp">
+      <Filter>Source Files\Gabe Mod Files\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\sdk\weapon_sdk_shotgun.cpp">
+      <Filter>Source Files\Gabe Mod Files\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="c_weapon__stubs_gabemod.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>

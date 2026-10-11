@@ -29,6 +29,7 @@
 #include <KeyValues.h>
 #include "text_message.h"
 #include "panelmetaclassmgr.h"
+#include "vgui/sdkviewport.h"
 
 
 ConVar default_fov( "default_fov", "90", FCVAR_CHEAT );

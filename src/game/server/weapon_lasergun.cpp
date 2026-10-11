@@ -5,7 +5,7 @@
 #include "te_effect_dispatch.h"
 #include "ieffects.h"
 #include "beam_shared.h"
-#include "gabe_shared.h"
+#include "GABE_SHARED.H"
 
 IMPLEMENT_NETWORKCLASS_ALIASED(WeaponLaserGun, DT_WeaponLaserGun)
 

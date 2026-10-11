@@ -45,47 +45,8 @@
 	"Iron Beam 2"                	"models/props_junk/iBeam01a_cluster01.mdl"
 
 	"~Symbols" ""
-// Numbers
-"Number 0"    "models/letters/0.mdl"
-"Number 1"    "models/letters/1.mdl"
-"Number 2"    "models/letters/2.mdl"
-"Number 3"    "models/letters/3.mdl"
-"Number 4"    "models/letters/4.mdl"
-"Number 5"    "models/letters/5.mdl"
-"Number 6"    "models/letters/6.mdl"
-"Number 7"    "models/letters/7.mdl"
-"Number 8"    "models/letters/8.mdl"
-"Number 9"    "models/letters/9.mdl"
 
-// Letters
-"Letter A"    "models/letters/a.mdl"
-"Letter B"    "models/letters/b.mdl"
-"Letter C"    "models/letters/c.mdl"
-"Letter D"    "models/letters/d.mdl"
-"Letter E"    "models/letters/e.mdl"
-"Letter F"    "models/letters/f.mdl"
-"Letter G"    "models/letters/g.mdl"
-"Letter H"    "models/letters/h.mdl"
-"Letter I"    "models/letters/i.mdl"
-"Letter J"    "models/letters/j.mdl"
-"Letter K"    "models/letters/k.mdl"
-"Letter L"    "models/letters/l.mdl"
-"Letter M"    "models/letters/m.mdl"
-"Letter N"    "models/letters/n.mdl"
-"Letter O"    "models/letters/o.mdl"
-"Letter P"    "models/letters/p.mdl"
-"Letter Q"    "models/letters/q.mdl"
-"Letter R"    "models/letters/r.mdl"
-"Letter S"    "models/letters/s.mdl"
-"Letter T"    "models/letters/t.mdl"
-"Letter U"    "models/letters/u.mdl"
-"Letter V"    "models/letters/v.mdl"
-"Letter W"    "models/letters/w.mdl"
-"Letter X"    "models/letters/x.mdl"
-"Letter Y"    "models/letters/y.mdl"
-"Letter Z"    "models/letters/z.mdl"
-
-"Letter Rus1"           		  "models/props_rooftop/Sign_Letter02_Rus1002.mdl"		
+	"Letter Rus1"           		  "models/props_rooftop/Sign_Letter02_Rus1002.mdl"		
  	
  	"~Misc" ""
 	"Teleporter"                		"models/props_lab/teleplatform.mdl"
@@ -784,6 +745,13 @@
         "entries"
         {
             "~Debug Stuff" ""
+
+            "NPC Inspector (SPAWN ONCE)" "env_gabeplus_npcinspect"
+            "Dev Watermelon" "env_devwatermelon"
+            "Debug Party Ball" "env_debugpartyball"
+            "Crystal Meth Melon" "env_debugcrystal"
+            "Holo Kill Box" "gabedebug_holokill"
+            "Chaos (WILL EVENTUALLY CRASH THE GAME)" "gabeplus_chaos"
         }
     }
 

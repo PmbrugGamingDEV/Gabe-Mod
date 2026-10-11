@@ -194,6 +194,8 @@ namespace GabeMod
 		static void SetScreenOverlay(const char* material);
 		static void ClearScreenOverlay();
 
+		static void StartPrecipitation();
+
 		static bool HasScreenOverlay();
 	};
 #endif
@@ -705,7 +707,22 @@ namespace GabeMod
 	};
 #endif
 
-	void RunMsgTest();
+	class CGabeWindows
+	{
+	public:
+		static void MsgBox(const char* title, const char* message);
+		static void MsgBoxFmt(const char* title, const char* fmt, ...);
+		static void MsgBoxError(const char* title, const char* message);
+		static void MsgBoxFmtV(const char* title, const char* fmt, va_list args);
+		static void MsgBoxYesNo(const char* title, const char* message, void(*yesCallback)(), void(*noCallback)());
+		static void MsgBoxAbortRetryIgnore(const char* title, const char* message, void(*abortCallback)(), void(*retryCallback)(), void(*ignoreCallback)());
+		static void MsgBoxYesNoCancel(const char* title, const char* message, void(*yesCallback)(), void(*noCallback)(), void(*cancelCallback)());
+		static void MsgBoxOkCancel(const char* title, const char* message, void(*okCallback)(), void(*cancelCallback)());
+		static void MsgBoxRetryCancel(const char* title, const char* message, void(*retryCallback)(), void(*cancelCallback)());
+		static void MsgBoxCustom(const char* title, const char* message, const char* button1Text, void(*button1Callback)(), const char* button2Text, void(*button2Callback)(), const char* button3Text = nullptr, void(*button3Callback)() = nullptr);
+
+		static void CreateExternalWindow(const char* title, int width, int height, void(*drawCallback)(), void(*closeCallback)() = nullptr);
+	};
 }
 
 #ifndef CLIENT_DLL
@@ -747,74 +764,3 @@ GabeHoliday GabeEvents_GetHoliday();
 const char* GabeEvents_GetHolidayName();
 bool GabeEvents_IsActive(GabeHoliday holiday);
 #endif
-
-
-#ifdef CLIENT_DLL
-#define CGabeMod_Player C_GabeMod_Player
-#endif
-
-class CPlayerAnimState;
-
-
-//=============================================================================
-// >> GabeMod_Player
-//=============================================================================
-
-
-class CGabeMod_Player : public CHL2MP_Player
-{
-public:
-	DECLARE_CLASS(CGabeMod_Player, CHL2MP_Player);
-	DECLARE_DATADESC();
-
-#ifndef CLIENT_DLL
-	DECLARE_SERVERCLASS();
-#else
-	DECLARE_CLIENTCLASS();
-	DECLARE_PREDICTABLE();
-#endif
-
-#ifndef CLIENT_DLL
-
-	static CGabeMod_Player* CreatePlayer(const char* className, edict_t* ed)
-	{
-		CGabeMod_Player::s_PlayerEdict = ed;
-		return (CGabeMod_Player*)CreateEntityByName(className);
-	}
-
-	void Precache() override;
-	void Spawn() override;
-
-	void GiveJBModItems();
-	void GiveBEModItems();
-
-	void GiveAllItems();
-	void GiveHL2Items();
-	void GiveHL1Items();
-	void GiveDefaultItems();
-
-	void GiveNoItems();
-
-	void GiveBemodItems();
-#endif
-
-#ifdef CLIENT_DLL
-	static C_GabeMod_Player* GetLocalGabeModPlayer() { return (C_GabeMod_Player*)C_BasePlayer::GetLocalPlayer(); }
-#endif
-
-private:
-};
-
-inline CGabeMod_Player* ToGabeModPlayer(CBaseEntity* pEntity) // Convert to a Gabe Mod player
-{
-	if (!pEntity || !pEntity->IsPlayer())
-		return nullptr;
-
-#if _DEBUG
-	Assert(dynamic_cast<CGabeMod_Player*>(pEntity) != NULL);
-#endif
-
-	return static_cast<CGabeMod_Player*>(pEntity);
-
-	Msg("C++ class: %s\n", typeid(*pEntity).name());
-}

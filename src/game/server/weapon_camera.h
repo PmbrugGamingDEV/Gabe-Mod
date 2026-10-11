@@ -32,6 +32,9 @@ private:
 
     std::string GenerateRandomString(size_t length);
     int m_iBlurMode;
+    float m_flZoomFOV = 90.0f;
+    bool m_bZooming = false;
+	CNetworkVar(bool, m_bViewLocked);
 };
 
 #endif // WEAPON_CAMERA_H

@@ -13,9 +13,10 @@
 #include "game.h"
 #include "entityflame.h"
 #include "IEffects.h"
-#include "gabe_shared.h"
 #include "beam_shared.h"
+#include "GABE_SHARED.H"
 #include "in_buttons.h"
+#include "imath.h"
 #include "baseanimating.h"
 #include "vphysics/constraints.h"
 #include "rope.h"
@@ -332,6 +333,176 @@ void CL_Watermelon::SetLightColor(int r, int g, int b)
 	}
 }
 
+class CToolThruster : public CBaseAnimating
+{
+public:
+	DECLARE_CLASS(CToolThruster, CBaseAnimating);
+	DECLARE_DATADESC();
+
+	void Precache()
+	{
+		PrecacheModel("models/props_junk/watermelon01.mdl");
+		BaseClass::Precache();
+	}
+
+	void Spawn()
+	{
+		Precache();
+
+		SetModel("models/props_junk/watermelon01.mdl");
+
+		// The watermelon is visual only.
+		// Physics force is applied to the target prop.
+		SetSolid(SOLID_NONE);
+		SetMoveType(MOVETYPE_NONE);
+
+		m_flForce = 500.0f;
+		m_bEnabled = true;
+		m_nPowerLevel = 0;
+
+		SetRenderColor(255, 0, 0);
+
+		SetThink(&CToolThruster::ThrusterThink);
+		SetNextThink(gpGlobals->curtime + 0.02f);
+	}
+
+	void SetupThruster(
+		CBaseEntity* pTarget,
+		const Vector& vecWorldPos,
+		const Vector& vecDirection,
+		int nPowerLevel)
+	{
+		if (!pTarget)
+			return;
+
+		m_hTarget = pTarget;
+
+		// Store thrust direction relative to the target.
+		VectorIRotate(
+			vecDirection,
+			pTarget->EntityToWorldTransform(),
+			m_vecLocalDirection
+		);
+
+		VectorNormalize(m_vecLocalDirection);
+
+		VectorITransform(
+			vecWorldPos,
+			pTarget->EntityToWorldTransform(),
+			m_vecLocalOffset
+		);
+
+		// Attach the watermelon visually.
+		SetParent(pTarget);
+		SetLocalOrigin(m_vecLocalOffset);
+		SetLocalAngles(vec3_angle);
+
+		SetPowerLevel(nPowerLevel);
+	}
+
+	void SetPowerLevel(int nLevel)
+	{
+		m_nPowerLevel = clamp(nLevel, 0, 2);
+
+		switch (m_nPowerLevel)
+		{
+		case 0: // LOW - RED
+			m_flForce = 500.0f;
+			SetRenderColor(255, 0, 0);
+			break;
+
+		case 1: // MEDIUM - GREEN
+			m_flForce = 1500.0f;
+			SetRenderColor(0, 255, 0);
+			break;
+
+		case 2: // HIGH - BLUE
+			m_flForce = 4000.0f;
+			SetRenderColor(0, 100, 255);
+			break;
+		}
+	}
+
+	void ThrusterThink()
+	{
+		CBaseEntity* pTarget = m_hTarget.Get();
+
+		if (!pTarget)
+		{
+			UTIL_Remove(this);
+			return;
+		}
+
+		IPhysicsObject* pPhysics =
+			pTarget->VPhysicsGetObject();
+
+		if (pPhysics && m_bEnabled)
+		{
+			Vector vecDirection;
+
+			// Rotate thrust direction with the prop.
+			VectorRotate(
+				m_vecLocalDirection,
+				pTarget->EntityToWorldTransform(),
+				vecDirection
+			);
+
+			Vector vecWorldPos;
+
+			VectorTransform(
+				m_vecLocalOffset,
+				pTarget->EntityToWorldTransform(),
+				vecWorldPos
+			);
+
+			// Approximate continuous force using a fixed think interval.
+			Vector vecForce =
+				vecDirection * m_flForce * 0.02f;
+
+			pPhysics->ApplyForceOffset(
+				vecForce,
+				vecWorldPos
+			);
+
+			pPhysics->Wake();
+		}
+
+		SetNextThink(gpGlobals->curtime + 0.02f);
+	}
+
+	void Toggle()
+	{
+		m_bEnabled = !m_bEnabled;
+	}
+
+	CBaseEntity* GetTarget()
+	{
+		return m_hTarget.Get();
+	}
+
+private:
+	EHANDLE m_hTarget;
+
+	Vector m_vecLocalOffset;
+	Vector m_vecLocalDirection;
+
+	float m_flForce;
+	bool m_bEnabled;
+	int m_nPowerLevel;
+};
+
+LINK_ENTITY_TO_CLASS(tool_thruster, CToolThruster);
+
+BEGIN_DATADESC(CToolThruster)
+DEFINE_FIELD(m_hTarget, FIELD_EHANDLE),
+DEFINE_FIELD(m_vecLocalOffset, FIELD_VECTOR),
+DEFINE_FIELD(m_vecLocalDirection, FIELD_VECTOR),
+DEFINE_FIELD(m_flForce, FIELD_FLOAT),
+DEFINE_FIELD(m_bEnabled, FIELD_BOOLEAN),
+DEFINE_FIELD(m_nPowerLevel, FIELD_INTEGER),
+DEFINE_THINKFUNC(ThrusterThink),
+END_DATADESC()
+
 class CWeaponMultitool : public CBaseHL2MPCombatWeapon
 {
 public:
@@ -401,6 +572,12 @@ private:
 	EHANDLE m_hFaceTarget;
 
 	DupedEntityData_t m_DupeData;
+
+	// Balloon lift forces
+	float m_BalloonLiftForces[10] = { 100.0f, 200.0f, 300.0f, 400.0f, 500.0f, 600.0f, 700.0f, 800.0f, 900.0f, 1000.0f };
+	int m_nBalloonLiftIndex;
+
+	int m_nThrusterPower;
 };
 
 IMPLEMENT_SERVERCLASS_ST(CWeaponMultitool, DT_WeaponMultitool)
@@ -435,6 +612,8 @@ CWeaponMultitool::CWeaponMultitool()
 	m_nMaterialIndex = 0;
 	m_nFaceIndex = 0;
 	m_hFaceTarget = nullptr;
+	m_nBalloonLiftIndex = 2;
+	m_nThrusterPower = 0; // Red / Low
 }
 
 enum MultitoolMode_t
@@ -452,6 +631,7 @@ enum MultitoolMode_t
 	MODE_MATERIAL,
 	MODE_FACEPOSER,
 	MODE_BALLOON,
+	MODE_THRUSTER,
 	MODE_MAX
 };
 
@@ -473,6 +653,7 @@ MultitoolMode_t StringToMode(const char* psz)
 	if (!Q_stricmp(psz, "material")) return MODE_MATERIAL;
 	if (!Q_stricmp(psz, "faceposer")) return MODE_FACEPOSER;
 	if (!Q_stricmp(psz, "balloon")) return MODE_BALLOON;
+	if (!Q_stricmp(psz, "thruster")) return MODE_THRUSTER;
 
 	return MODE_REMOVE;
 }
@@ -491,6 +672,7 @@ BEGIN_LIST(g_szModeNames)
 	LIST_ENTRY(Render_FX),
 	LIST_ENTRY(Faceposer_NPCs)
 	LIST_ENTRY(Balloon)
+	LIST_ENTRY(Thruster)
 END_LIST(g_szModeNames)
 
 BEGIN_LIST(g_szConstraintTypes)
@@ -604,132 +786,182 @@ void CWeaponMultitool::SecondaryAttack()
 	if (!pPlayer)
 		return;
 
-	if (m_nMultitoolMode != MODE_DUPLICATE)
-
-		return;
-
-	CBaseEntity* pEnt = FindEntityInFront();
-
-	if (!pEnt)
+	if (m_nMultitoolMode == MODE_DUPLICATE)
 	{
-		Warning("[Duplicator] could not copy whatever's in-front!\n");
-		return;
-	}
 
-	if (pEnt->GetClassname() && (Q_stricmp(pEnt->GetClassname(), "prop_vehicle_jeep") == 0 || Q_stricmp(pEnt->GetClassname(), "prop_vehicle_airboat") == 0))
-	{
-		pEnt->AddTimedOverlay("Cannot dupe vehicles, sorry!", 2);
-		return;
-	}
+		CBaseEntity* pEnt = FindEntityInFront();
 
-	if (pEnt->IsWorld())
-	{
-		CGabeServerFuncs::HudText(pPlayer, "Nothing to copy.", 255, 100, 100);
-		return;
-	}
-
-	// -----------------------------------------
-	// Base info (always safe)
-	// -----------------------------------------
-	m_DupeData.className = AllocPooledString(pEnt->GetClassname());
-	m_DupeData.modelName = pEnt->GetModelName();
-	m_DupeData.angles = pEnt->GetAbsAngles();
-	m_DupeData.color = pEnt->GetRenderColor();
-	m_DupeData.valid = true;
-
-	// -----------------------------------------
-	// Collision bounds (SAFE)
-	// -----------------------------------------
-	if (pEnt->CollisionProp())
-	{
-		m_DupeData.mins = pEnt->CollisionProp()->OBBMins();
-		m_DupeData.maxs = pEnt->CollisionProp()->OBBMaxs();
-	}
-	else
-	{
-		m_DupeData.mins = Vector(-8, -8, -8);
-		m_DupeData.maxs = Vector(8, 8, 8);
-	}
-
-	// -----------------------------------------
-	// Physics mass (SAFE)
-	// -----------------------------------------
-	m_DupeData.mass = 0.0f;
-
-	IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
-	if (pPhys)
-	{
-		m_DupeData.mass = pPhys->GetMass();
-	}
-
-	// -----------------------------------------
-	// Ragdoll handling (SAFE)
-	// -----------------------------------------
-	m_DupeData.isRagdoll = false;
-	m_DupeData.boneCount = 0;
-
-	CBaseAnimating* pAnim = pEnt->GetBaseAnimating();
-
-	if (pAnim && pAnim->IsRagdoll())
-	{
-		CRagdollProp* ragdollProp =
-			dynamic_cast<CRagdollProp*>(pAnim);
-
-		if (ragdollProp)
+		if (!pEnt)
 		{
-			ragdoll_t* pRagdoll =
-				ragdollProp->GetRagdoll();
+			Warning("[Duplicator] could not copy whatever's in-front!\n");
+			return;
+		}
 
-			if (pRagdoll && pRagdoll->listCount > 0)
+		if (pEnt->GetClassname() && (Q_stricmp(pEnt->GetClassname(), "prop_vehicle_jeep") == 0 || Q_stricmp(pEnt->GetClassname(), "prop_vehicle_airboat") == 0))
+		{
+			pEnt->AddTimedOverlay("Cannot dupe vehicles, sorry!", 2);
+			return;
+		}
+
+		if (pEnt->IsWorld())
+		{
+			CGabeServerFuncs::HudText(pPlayer, "Nothing to copy.", 255, 100, 100);
+			return;
+		}
+
+		// -----------------------------------------
+		// Base info (always safe)
+		// -----------------------------------------
+		m_DupeData.className = AllocPooledString(pEnt->GetClassname());
+		m_DupeData.modelName = pEnt->GetModelName();
+		m_DupeData.angles = pEnt->GetAbsAngles();
+		m_DupeData.color = pEnt->GetRenderColor();
+		m_DupeData.valid = true;
+
+		// -----------------------------------------
+		// Collision bounds (SAFE)
+		// -----------------------------------------
+		if (pEnt->CollisionProp())
+		{
+			m_DupeData.mins = pEnt->CollisionProp()->OBBMins();
+			m_DupeData.maxs = pEnt->CollisionProp()->OBBMaxs();
+		}
+		else
+		{
+			m_DupeData.mins = Vector(-8, -8, -8);
+			m_DupeData.maxs = Vector(8, 8, 8);
+		}
+
+		// -----------------------------------------
+		// Physics mass (SAFE)
+		// -----------------------------------------
+		m_DupeData.mass = 0.0f;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+		if (pPhys)
+		{
+			m_DupeData.mass = pPhys->GetMass();
+		}
+
+		// -----------------------------------------
+		// Ragdoll handling (SAFE)
+		// -----------------------------------------
+		m_DupeData.isRagdoll = false;
+		m_DupeData.boneCount = 0;
+
+		CBaseAnimating* pAnim = pEnt->GetBaseAnimating();
+
+		if (pAnim && pAnim->IsRagdoll())
+		{
+			CRagdollProp* ragdollProp =
+				dynamic_cast<CRagdollProp*>(pAnim);
+
+			if (ragdollProp)
 			{
-				m_DupeData.isRagdoll = true;
+				ragdoll_t* pRagdoll =
+					ragdollProp->GetRagdoll();
 
-				Vector baseOrigin =
-					pEnt->GetAbsOrigin();
-
-				m_DupeData.boneCount =
-					MIN(pRagdoll->listCount,
-						MAX_DUPE_RAGDOLL_BONES);
-
-				for (int i = 0;
-					i < m_DupeData.boneCount;
-					i++)
+				if (pRagdoll && pRagdoll->listCount > 0)
 				{
-					IPhysicsObject* pBonePhys =
-						pRagdoll->list[i].pObject;
+					m_DupeData.isRagdoll = true;
 
-					if (pBonePhys)
+					Vector baseOrigin =
+						pEnt->GetAbsOrigin();
+
+					m_DupeData.boneCount =
+						MIN(pRagdoll->listCount,
+							MAX_DUPE_RAGDOLL_BONES);
+
+					for (int i = 0;
+						i < m_DupeData.boneCount;
+						i++)
 					{
-						Vector worldPos;
-						QAngle worldAng;
+						IPhysicsObject* pBonePhys =
+							pRagdoll->list[i].pObject;
 
-						pBonePhys->GetPosition(
-							&worldPos,
-							&worldAng
-						);
+						if (pBonePhys)
+						{
+							Vector worldPos;
+							QAngle worldAng;
 
-						m_DupeData.bones[i].localPos =
-							worldPos - baseOrigin;
+							pBonePhys->GetPosition(
+								&worldPos,
+								&worldAng
+							);
 
-						m_DupeData.bones[i].ang =
-							worldAng;
+							m_DupeData.bones[i].localPos =
+								worldPos - baseOrigin;
+
+							m_DupeData.bones[i].ang =
+								worldAng;
+						}
 					}
 				}
 			}
 		}
+
+		// -----------------------------------------
+		// Success feedback
+		// -----------------------------------------
+		CGabeServerFuncs::HudText(
+			pPlayer,
+			UTIL_VarArgs(
+				"Copied: %s",
+				STRING(m_DupeData.className)
+			),
+			150, 255, 150
+		);
 	}
 
-	// -----------------------------------------
-	// Success feedback
-	// -----------------------------------------
-	CGabeServerFuncs::HudText(
-		pPlayer,
-		UTIL_VarArgs(
-			"Copied: %s",
-			STRING(m_DupeData.className)
-		),
-		150, 255, 150
-	);
+	else if (m_nMultitoolMode == MODE_THRUSTER)
+	{
+		CBaseEntity* pTarget = FindEntityInFront();
+
+		if (!pTarget || pTarget->IsWorld())
+			return;
+
+		CBaseEntity* pEnt = NULL;
+		bool bFoundThruster = false;
+
+		while ((pEnt = gEntList.FindEntityByClassname(
+			pEnt, "tool_thruster")) != NULL)
+		{
+			CToolThruster* pThruster =
+				static_cast<CToolThruster*>(pEnt);
+
+			if (pThruster->GetTarget() == pTarget)
+			{
+				pThruster->Toggle();
+				bFoundThruster = true;
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					"Thruster toggled.",
+					150, 255, 150
+				);
+
+				break;
+			}
+		}
+
+		if (!bFoundThruster)
+		{
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"No thruster attached to this object.",
+				255, 150, 100
+			);
+		}
+
+		m_flNextSecondaryAttack =
+			gpGlobals->curtime + 0.3f;
+
+		return;
+	}
+	else
+	{
+		return;
+	}
 
 	// -----------------------------------------
 	// Visual trace feedback
@@ -832,6 +1064,7 @@ void CWeaponMultitool::CreateBalloon(CBaseEntity* pTarget)
 
 	pBalloon->SetAbsOrigin(balloonPos);
 	pBalloon->SetAbsAngles(vec3_angle);
+	pBalloon->SetRenderColor(g_pRandom->RandomInt(0, 255), g_pRandom->RandomInt(0, 255), g_pRandom->RandomInt(0, 255), 255);
 
 	DispatchSpawn(pBalloon);
 	pBalloon->Activate();
@@ -907,11 +1140,9 @@ void CWeaponMultitool::CreateBalloon(CBaseEntity* pTarget)
 	}
 
 
-	float mass = pTargetPhys->GetMass();
+	float mass = pTargetPhys ? pTargetPhys->GetMass() : 0.0f;
 
-	pBalloon->SetLift(
-		600.0f + mass * 25.0f
-	);
+	pBalloon->SetLift(m_BalloonLiftForces[m_nBalloonLiftIndex] + mass * 25.0f);
 }
 
 
@@ -1009,6 +1240,7 @@ const int FACE_COUNT = sizeof(g_FacePresets) / sizeof(g_FacePresets[0]);
 
 #undef FACE_PRESET
 
+
 void CWeaponMultitool::SendHudUpdate()
 {
 	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
@@ -1027,9 +1259,12 @@ void CWeaponMultitool::SendHudUpdate()
 	WRITE_BYTE(m_nFaceIndex);
 	WRITE_BYTE(m_nConstraintType);
 	WRITE_BYTE(m_nLightWatermelonColor);
+	WRITE_BYTE(m_nBalloonLiftIndex);
+	WRITE_BYTE(m_nThrusterPower);
 
 	MessageEnd();
 }
+
 
 void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 {
@@ -1795,6 +2030,64 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 
 		break;
 	}
+	case MODE_THRUSTER:
+	{
+		if (!pEnt || pEnt->IsWorld())
+			break;
+
+		IPhysicsObject* pPhysics = pEnt->VPhysicsGetObject();
+
+		if (!pPhysics)
+		{
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				"Target has no physics.",
+				255, 100, 100
+			);
+			break;
+		}
+
+		trace_t tr;
+
+		Vector vecStart = pPlayer->EyePosition();
+		Vector vecForward;
+		pPlayer->EyeVectors(&vecForward);
+
+		UTIL_TraceLine(
+			vecStart,
+			vecStart + vecForward * 2048.0f,
+			MASK_SOLID,
+			pPlayer,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
+
+		CToolThruster* pThruster =
+			static_cast<CToolThruster*>(
+				CreateEntityByName("tool_thruster")
+				);
+
+		if (!pThruster)
+			break;
+
+		// Push in the direction the player is aiming.
+		pThruster->SetupThruster(
+			pEnt,
+			tr.endpos,
+			vecForward,
+			m_nThrusterPower
+		);
+
+		DispatchSpawn(pThruster);
+
+		CGabeServerFuncs::HudText(
+			pPlayer,
+			"Thruster attached!",
+			100, 255, 100
+		);
+
+		break;
+	}
 	case MODE_DUPLICATE:
 	{
 		if (!m_DupeData.valid)
@@ -2017,7 +2310,7 @@ void CWeaponMultitool::ItemPostFrame()
 
 	if ((pPlayer->m_nButtons & IN_RELOAD) && (pPlayer->m_afButtonPressed & IN_RELOAD))
 	{
-		if (m_nMultitoolMode == MODE_COLOR || m_nMultitoolMode == MODE_DECAL)
+		if (m_nMultitoolMode == MODE_COLOR || m_nMultitoolMode == MODE_DECAL || m_nMultitoolMode == MODE_THRUSTER)
 		{
 			if (m_nMultitoolMode == MODE_COLOR)
 			{
@@ -2031,6 +2324,42 @@ void CWeaponMultitool::ItemPostFrame()
 				m_nDecalIndex = (m_nDecalIndex + 1) % DECAL_COUNT;
 				const char* name = g_DecalNames[m_nDecalIndex];
 				CGabeServerFuncs::HudText(pPlayer, UTIL_VarArgs("Decal: %s", name), 255, 255, 255);
+				SendHudUpdate();
+			}
+
+			// -----------------------------------------
+			// Thruster power selection (R)
+			// -----------------------------------------
+			else if (m_nMultitoolMode == MODE_THRUSTER)
+			{
+				// Red -> Green -> Blue -> Red
+				m_nThrusterPower = (m_nThrusterPower + 1) % 3;
+
+				const char* pszPowerNames[] =
+				{
+					"LOW (RED)",
+					"MEDIUM (GREEN)",
+					"HIGH (BLUE)"
+				};
+
+				const int colors[3][3] =
+				{
+					{ 255, 0, 0 },
+					{ 0, 255, 0 },
+					{ 0, 100, 255 }
+				};
+
+				CGabeServerFuncs::HudText(
+					pPlayer,
+					UTIL_VarArgs(
+						"Thruster Power: %s",
+						pszPowerNames[m_nThrusterPower]
+					),
+					colors[m_nThrusterPower][0],
+					colors[m_nThrusterPower][1],
+					colors[m_nThrusterPower][2]
+				);
+
 				SendHudUpdate();
 			}
 		}
@@ -2049,6 +2378,28 @@ void CWeaponMultitool::ItemPostFrame()
 					g_RenderFxModes[m_nMaterialIndex].name
 				),
 				255, 255, 255
+			);
+
+			SendHudUpdate();
+		}
+	}
+
+	if (m_nMultitoolMode == MODE_BALLOON)
+	{
+		if (pPlayer->m_afButtonPressed & IN_RELOAD)
+		{
+			m_nBalloonLiftIndex++;
+
+			if (m_nBalloonLiftIndex >= 10)
+				m_nBalloonLiftIndex = 0;
+
+			CGabeServerFuncs::HudText(
+				pPlayer,
+				UTIL_VarArgs(
+					"Balloon lift: %.0f",
+					m_BalloonLiftForces[m_nBalloonLiftIndex]
+				),
+				150, 255, 150
 			);
 
 			SendHudUpdate();

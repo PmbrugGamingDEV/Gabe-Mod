@@ -12,8 +12,8 @@
 
 #include "player.h"
 #include "server_class.h"
-#include "sdk_playeranimstate.h"
-#include "sdk_shareddefs.h"
+#include "base_playeranimstate.h"
+#include "shareddefs.h"
 
 
 //=============================================================================

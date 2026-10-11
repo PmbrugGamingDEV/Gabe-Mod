@@ -20,6 +20,7 @@ LINK_ENTITY_TO_CLASS(weapon_camera, CWeaponCamera);
 PRECACHE_WEAPON_REGISTER(weapon_camera);
 
 IMPLEMENT_SERVERCLASS_ST(CWeaponCamera, DT_WeaponCamera)
+SendPropBool(SENDINFO(m_bViewLocked)),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CWeaponCamera)
@@ -28,6 +29,7 @@ END_DATADESC()
 CWeaponCamera::CWeaponCamera()
 {
     m_iBlurMode = 2; // start at no blur
+	m_bViewLocked = false;
 }
 
 void CWeaponCamera::Precache(void)
@@ -62,6 +64,7 @@ bool CWeaponCamera::Holster(CBaseCombatWeapon* pSwitchingTo)
         CBasePlayer* pOwner = ToBasePlayer(GetOwner());
         if (pOwner)
         {
+            m_bViewLocked = false;
             pOwner->ShowViewModel(true);
         }
     }
@@ -75,56 +78,33 @@ void CWeaponCamera::PrimaryAttack(void)
 
     m_flNextPrimaryAttack = gpGlobals->curtime + 1.0f;
 }
+
 void CWeaponCamera::SecondaryAttack()
 {
     CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
     if (!pPlayer)
         return;
 
-    float targetFOV = 30.0f;  // Desired zoom level
-    float maxFOV = 140.0f;    // FOV reset threshold
-    float zoomSpeed = 50.0f;  // Speed at which the zoom is applied
-    float currentFOV = pPlayer->GetFOV();
+    CUserCmd* cmd = pPlayer->GetCurrentCommand();
+    if (!cmd)
+        return;
 
-    // Gradually decrease the FOV to the target FOV
-    if (currentFOV > targetFOV)
+    // Initialize zoom when right-click begins.
+    if (!m_bZooming)
     {
-        currentFOV -= zoomSpeed * gpGlobals->frametime;  // Apply zoom over time
-        if (currentFOV < targetFOV)
-        {
-            currentFOV = targetFOV;  // Clamp to the target FOV
-        }
-        pPlayer->SetFOV(this, currentFOV);
-
-        // Print the FOV change to the client
-        ClientPrint(pPlayer, HUD_PRINTCENTER, CFmtStr("FOV: %.1f", currentFOV).Access());
+        m_flZoomFOV = pPlayer->GetFOV();
+        m_bZooming = true;
     }
 
-    // Check if FOV reaches or exceeds 140, and reset if so
-    if (currentFOV >= maxFOV)
-    {
-        currentFOV = 90.0f;  // Reset to default FOV
-        pPlayer->SetFOV(this, currentFOV);
+    // Mouse up = zoom in
+    // Mouse down = zoom out
+    m_flZoomFOV += cmd->mousedy * 0.1f;
 
-        // Print the FOV reset to the client
-        ClientPrint(pPlayer, HUD_PRINTTALK, "FOV reset to default.");
-    }
+    m_flZoomFOV = clamp(m_flZoomFOV, 10.0f, 140.0f);
 
-    // Rotate the camera in a circular motion
-    QAngle viewAngles = pPlayer->GetLocalAngles();
-    CUserCmd* cmd = pPlayer->GetCurrentCommand();  // Get the current user command
-    if (cmd)
-    {
-        float angleIncrementX = cmd->mousedy * 0.02f;  // Adjust this value for smoothness
-        float angleIncrementY = cmd->mousedx * 0.02f;  // Adjust this value for smoothness
+    pPlayer->SetFOV(this, m_flZoomFOV);
 
-        // Rotate around the Yaw axis (left/right) and Pitch axis (up/down)
-        viewAngles.y += angleIncrementY;
-        viewAngles.x = cos(angleIncrementY) * viewAngles.x + sin(angleIncrementX) * 5.0f; // Small circular adjustment
-    }
-    pPlayer->SnapEyeAngles(viewAngles);
-
-    m_flNextSecondaryAttack = gpGlobals->curtime + 0.01f;  // Continuous update with a small delay
+    m_flNextSecondaryAttack = gpGlobals->curtime;
 }
 
 static const char* g_pszCamFXNames[] =
@@ -151,6 +131,9 @@ void CWeaponCamera::ItemPostFrame()
     CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
     if (!pPlayer)
         return;
+
+    // Update the networked lock state every frame.
+    m_bViewLocked = (pPlayer->m_nButtons & IN_ATTACK2) != 0;
 
     // Force-hide the viewmodel every frame
     pPlayer->ShowViewModel(false);

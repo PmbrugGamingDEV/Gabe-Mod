@@ -2282,18 +2282,6 @@ void CNPC_BaseZombie::Event_Killed( const CTakeDamageInfo &info )
 		UTIL_BloodSpray( WorldSpaceCenter(), vecDamageDir, BLOOD_COLOR_YELLOW, 8, FX_BLOODSPRAY_CLOUD );
 	}
 
-	CBaseEntity* attacker = info.GetAttacker();
-
-	if (attacker && attacker->IsPlayer())
-	{
-		CHL2MP_Player *pPlayer = dynamic_cast<CHL2MP_Player*>(attacker);
-
-		if (pPlayer)
-		{
-			pPlayer->AddScore(1); // Add a point for killing a zombie.
-		}
-	}
-
    	BaseClass::Event_Killed( info );
 }
 

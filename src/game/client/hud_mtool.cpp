@@ -36,7 +36,9 @@ enum
     MODE_LIGHT_WATERMELON,
     MODE_DECAL,
     MODE_MATERIAL,
-    MODE_FACEPOSER
+    MODE_FACEPOSER,
+    MODE_BALLOON,
+    MODE_THRUSTER
 };
 
 //=========================================================
@@ -64,6 +66,8 @@ private:
     int m_iFace;
     int m_iConstraint;
     int m_iWatermelonColor;
+    int m_iBalloonLift;
+    int m_iThrusterPower;
 };
 
 DECLARE_HUDELEMENT(CHudMultitool);
@@ -87,6 +91,8 @@ CHudMultitool::CHudMultitool(const char* pElementName)
     m_iFace = 0;
     m_iConstraint = 0;
     m_iWatermelonColor = 0;
+    m_iBalloonLift = 0;
+    m_iThrusterPower = 0;
 }
 
 //=========================================================
@@ -141,6 +147,8 @@ void CHudMultitool::MsgFunc_MultitoolHUD(bf_read& msg)
     m_iFace = msg.ReadByte();
     m_iConstraint = msg.ReadByte();
     m_iWatermelonColor = msg.ReadByte();
+    m_iBalloonLift = msg.ReadByte();
+    m_iThrusterPower = msg.ReadByte();
 }
 
 //=========================================================
@@ -187,10 +195,11 @@ void CHudMultitool::Paint(void)
         L"Decal",
         L"Render FX",
         L"Faceposer",
-        L"Balloon"
+        L"Balloon",
+        L"Thruster"
     };
 
-    if (m_iMode >= 0 && m_iMode < 13)
+    if (m_iMode >= 0 && m_iMode < (int)(sizeof(modeNames) / sizeof(modeNames[0])))
     {
         surface()->DrawSetTextColor(230, 230, 230, 220);
         surface()->DrawSetTextPos(textX, textY);
@@ -214,9 +223,9 @@ void CHudMultitool::Paint(void)
         for (int i = 0; i < 12; i++)
         {
             surface()->DrawSetTextColor(
-                (i == m_iColor) ? 255 : 180,
-                (i == m_iColor) ? 220 : 180,
-                (i == m_iColor) ? 120 : 180,
+                (i == ((m_iMode == MODE_LIGHT_WATERMELON) ? m_iWatermelonColor : m_iColor)) ? 255 : 180,
+                (i == ((m_iMode == MODE_LIGHT_WATERMELON) ? m_iWatermelonColor : m_iColor)) ? 220 : 180,
+                (i == ((m_iMode == MODE_LIGHT_WATERMELON) ? m_iWatermelonColor : m_iColor)) ? 120 : 180,
                 220
             );
 
@@ -343,7 +352,7 @@ void CHudMultitool::Paint(void)
     {
         const wchar_t* constraints[] =
         {
-			L"BallSocket", L"Weld", L"Rope", L"Slider", L"Hinge/Axis"
+            L"BallSocket", L"Weld", L"Rope", L"Slider", L"Hinge/Axis"
         };
 
         for (int i = 0; i < 5; i++)
@@ -358,6 +367,66 @@ void CHudMultitool::Paint(void)
             surface()->DrawSetTextPos(textX, textY);
             surface()->DrawPrintText(constraints[i], wcslen(constraints[i]));
             textY += 22;
+        }
+    }
+
+    //---------------------------------------------------------
+    // BALLOON LIFT (index 0..9 = 100..1000)
+    //---------------------------------------------------------
+    if (m_iMode == MODE_BALLOON)
+    {
+        const wchar_t* liftNames[] =
+        {
+            L"100", L"200", L"300", L"400", L"500",
+            L"600", L"700", L"800", L"900", L"1000"
+        };
+
+        for (int i = 0; i < 10; ++i)
+        {
+            const bool selected = (i == m_iBalloonLift);
+            surface()->DrawSetTextColor(
+                selected ? 255 : 180,
+                selected ? 220 : 180,
+                selected ? 120 : 180,
+                220
+            );
+            surface()->DrawSetTextPos(textX, textY);
+            surface()->DrawPrintText(liftNames[i], wcslen(liftNames[i]));
+            textY += 22;
+        }
+    }
+
+    //---------------------------------------------------------
+    // THRUSTER POWER (R cycles red -> green -> blue)
+    //---------------------------------------------------------
+    if (m_iMode == MODE_THRUSTER)
+    {
+        const wchar_t* powerNames[] =
+        {
+            L"Low - Red (500)",
+            L"Medium - Green (1500)",
+            L"High - Blue (4000)"
+        };
+
+        const int powerColors[3][3] =
+        {
+            {255, 80, 80},
+            {80, 255, 80},
+            {80, 150, 255}
+        };
+
+        for (int i = 0; i < 3; ++i)
+        {
+            const bool selected = (i == m_iThrusterPower);
+            surface()->DrawSetTextColor(
+                selected ? powerColors[i][0] : 180,
+                selected ? powerColors[i][1] : 180,
+                selected ? powerColors[i][2] : 180,
+                255
+            );
+            surface()->DrawSetTextPos(textX, textY);
+            surface()->DrawPrintText(powerNames[i], wcslen(powerNames[i]));
+            textY += 24;
         }
     }
 }

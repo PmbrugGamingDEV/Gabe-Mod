@@ -1111,7 +1111,7 @@ void CJBMWeaponGravityGun::EffectUpdate(void)
 			float flSensitivity = 0.05f;
 
 			float flYaw = pCmd->mousedx * flSensitivity;
-			float flPitch = -pCmd->mousedy * flSensitivity;
+			float flPitch = pCmd->mousedy * flSensitivity;
 
 			Vector forward, right, up;
 			pOwner->EyeVectors(&forward, &right, &up);

@@ -982,16 +982,21 @@ private:
 	 * If any Action buried underneath me has either exited
 	 * or is changing to a different Action, we're "out of scope"
 	 */
-	bool IsOutOfScope( void ) const
+	bool IsOutOfScope(void) const
 	{
-		for( Action< Actor > *under = GetActionBuriedUnderMe(); under; under = under->GetActionBuriedUnderMe() )
+		Action<Actor>* under = GetActionBuriedUnderMe();
+
+		while (under)
 		{
-			if ( under->m_eventResult.m_type == CHANGE_TO ||
-				 under->m_eventResult.m_type == DONE )
+			if (under->m_eventResult.m_type == CHANGE_TO ||
+				under->m_eventResult.m_type == DONE)
 			{
 				return true;
 			}
+
+			under = under->GetActionBuriedUnderMe();
 		}
+
 		return false;
 	}
 

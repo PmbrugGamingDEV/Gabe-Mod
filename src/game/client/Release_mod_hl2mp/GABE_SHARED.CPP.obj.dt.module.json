@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release_mod_hl2mp\\GABE_SHARED.obj",
+            "outputs": [
+                ".\\Release_mod_hl2mp\\GABE_SHARED.CPP.obj.dt.module.json",
+                ".\\Release_mod_hl2mp\\GABE_SHARED.CPP.obj.dt.d.json",
+                ".\\Release_mod_hl2mp\\/client.pch"
+            ],
+            "requires": []
+        }
+    ]
+}

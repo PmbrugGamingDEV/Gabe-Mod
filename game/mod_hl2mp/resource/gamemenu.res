@@ -89,5 +89,10 @@
 		"label" "SCRIPT MENU"
 		"command" "engine gabe_loadscripts"
 	}
+	"15"
+	{
+		"label" "CITY 17 WEBBROWSER"
+		"command" "engine gabe_showbrowser"
+	}
 }
 

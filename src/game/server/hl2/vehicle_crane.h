@@ -151,7 +151,7 @@ public:
 	float			GetTurnRate( void ) { return m_flTurn; }
 	float			GetMaxTurnRate( void ) { return m_flMaxTurnSpeed; }
 	CPhysMagnet		*GetMagnet( void ) { return m_hCraneMagnet; }
-	float			GetTotalMassOnCrane( void ) { return m_hCraneMagnet->GetTotalMassAttachedObjects(); }
+	float			GetTotalMassOnCrane( void ) { if (m_hCraneMagnet) { return m_hCraneMagnet->GetTotalMassAttachedObjects(); } return 0.0f; }
 	bool			IsDropping( void ) { return m_bDropping; }
 
 	// Inputs

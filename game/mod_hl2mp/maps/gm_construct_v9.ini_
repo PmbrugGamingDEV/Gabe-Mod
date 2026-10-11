@@ -1,0 +1,114 @@
+//
+// This is a map init file
+//
+// Here you can remove/add/edit entities without editing the map
+// this allows you to remove/add spawn points to maps
+//
+// The file needs to be called <mapname>.ini
+"remove"
+{
+	"multiplayer_only"	"1"
+	//"singleplayer_only"	"1"
+
+	"info_player_start" // name of the entity to remove (careful - if you remove all
+			    // spawns the game will crash when you try to spawn)
+	{			
+		// If there aren't any positions it will remove all of these entities
+		// The positions are x y z - you don't need to specify all three.
+		// Do not put decimals in the position - they're transformed to integers
+		// to make things a little bit easier.
+
+		//"x"	"823"
+	}
+}
+
+"create"
+{
+	// Creates are almost the same format that Hammer saves in vmf files.
+	// In fact - they're handled in exactly the same way.
+
+	"prop_physics_respawnable"
+	{
+		"angles" "0 -90 90"
+		"model" "models/props_junk/wood_crate001a.mdl"
+		"ExplodeDamage" "50"
+		"ExplodeRadius" "500"
+		"pressuredelay" "0"
+		"minhealthdmg" "0"
+		"physdamagescale" "1"
+		"Damagetype" "0"
+		"inertiaScale" "1.0"
+		"massScale" "0"
+		"damagetoenablemotion" "0"
+		"spawnflags" "0"
+		"fademindist" "5500"
+		"fademaxdist" "6000"
+		"fadescale" "1"
+		"targetname" "crates"
+		"RespawnTime" "60"
+		"origin" "660 235 -123"
+		"OnBreak" "crates_counter,Add,1,0,-1"
+	}
+
+	"prop_physics_respawnable"
+	{
+		"angles" "0 -45 90"
+		"model" "models/props_junk/wood_crate001a.mdl"
+		"ExplodeDamage" "50"
+		"ExplodeRadius" "500"
+		"pressuredelay" "0"
+		"minhealthdmg" "0"
+		"physdamagescale" "1"
+		"Damagetype" "0"
+		"inertiaScale" "1.0"
+		"massScale" "0"
+		"damagetoenablemotion" "0"
+		"spawnflags" "0"
+		"fademindist" "5500"
+		"fademaxdist" "6000"
+		"fadescale" "1"
+		"targetname" "crates"
+		"RespawnTime" "60"
+		"origin" "660 235 -83"
+		"OnBreak" "crates_counter,Add,1,0,-1"
+	}
+
+	// In multiplayer we're going to move the spawns over to the other side
+	"multiplayer_only"	"1"
+
+	"info_player_start"
+	{
+		"origin" "300 -1714 -143"
+	}
+
+	"info_player_start"
+	{
+		"origin" "200 -1714 -143"
+	}
+
+	"info_player_start"
+	{
+		"origin" "100 -1714 -143"
+	}
+}
+
+// Change properties on existing entities
+
+// NOTE: don't try to edit entities you created in the create section!
+"edit"
+{
+	
+
+	"prop_vehicle_airboat"
+	{
+		// the position tells us which one it is
+		"x" "1204"
+		"y"	"726"
+		"z"	"-143"
+		
+		// and set the new location (found using ent_text)
+		"angles" "0 -142 -95"
+		"origin" "-623 1977 -95"
+	}
+
+}

@@ -14,7 +14,7 @@ WeaponData
 	"clip2_size"			"-1"
 	"primary_ammo"			"None"
 	"secondary_ammo"		"Gasoline"
-	"default_clip2"			"100"
+	"default_clip2"			"999"
 
 	"weight"				"2"
 	"item_flags"			"0"

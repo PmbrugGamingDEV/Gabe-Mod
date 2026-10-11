@@ -450,6 +450,18 @@ public:
 
 	void EmitSoundByHandle( IRecipientFilter& filter, int entindex, const EmitSound_t & ep, HSOUNDSCRIPTHANDLE& handle )
 	{
+		static ConVarRef host_timescale("host_timescale");
+
+		float flTimeScale = host_timescale.IsValid()
+			? host_timescale.GetFloat()
+			: 1.0f;
+
+		int nScaledPitch = clamp(
+			static_cast<int>(ep.m_nPitch * flTimeScale),
+			1,
+			255
+		);
+
 		// Pull data from parameters
 		CSoundParameters params;
 
@@ -490,7 +502,7 @@ public:
 			params.soundlevel, 
 			params.volume, 
 			ep.m_nFlags, 
-			params.pitch, 
+			nScaledPitch, 
 			ep.m_pOrigin, 
 			ep.m_flSoundTime,
 			ep.m_UtlVecSoundOrigin );
@@ -520,7 +532,7 @@ public:
 			params.volume,
 			(soundlevel_t)params.soundlevel,
 			ep.m_nFlags,
-			params.pitch,
+			nScaledPitch,
 			ep.m_nSpecialDSP,
 			ep.m_pOrigin,
 			NULL,
@@ -552,6 +564,17 @@ public:
 	{
 		VPROF( "CSoundEmitterSystem::EmitSound (calls engine)" );
 
+		static ConVarRef host_timescale("host_timescale");
+
+		float flTimeScale = host_timescale.IsValid()
+			? host_timescale.GetFloat()
+			: 1.0f;
+
+		int nScaledPitch = clamp(
+			static_cast<int>(ep.m_nPitch * flTimeScale),
+			1,
+			255
+		);
 
 		if ( ep.m_pSoundName && 
 			( Q_stristr( ep.m_pSoundName, ".wav" ) || 
@@ -565,7 +588,7 @@ public:
 				ep.m_SoundLevel, 
 				ep.m_flVolume, 
 				ep.m_nFlags, 
-				ep.m_nPitch, 
+				nScaledPitch, 
 				ep.m_pOrigin, 
 				ep.m_flSoundTime,
 				ep.m_UtlVecSoundOrigin );
@@ -593,7 +616,7 @@ public:
 				ep.m_flVolume, 
 				ep.m_SoundLevel, 
 				ep.m_nFlags, 
-				ep.m_nPitch, 
+				nScaledPitch, 
 				ep.m_nSpecialDSP,
 				ep.m_pOrigin,
 				NULL, 

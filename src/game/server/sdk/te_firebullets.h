@@ -10,6 +10,7 @@
 #pragma once
 #endif
 
+#include "cbase.h"
 
 void TE_FireBullets( 
 	int	iPlayerIndex,

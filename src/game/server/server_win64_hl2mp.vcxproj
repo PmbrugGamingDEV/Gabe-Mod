@@ -115,7 +115,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <ClCompile>
       <AdditionalOptions>/Zm200 /Gw /Zc:inline /Zc:threadSafeInit- /Wv:18 /Zc:__cplusplus</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;.\;..\..\game\shared;..\..\utils\common;..\..\game\shared\econ;..\..\game\server\NextBot;..\..\game\shared\hl2;.\hl2;.\hl2mp;..\..\game\shared\hl2mp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;.\;..\..\game\shared;..\..\utils\common;..\..\game\shared\econ;..\..\game\server\NextBot;..\..\game\shared\hl2;.\hl2;.\hl2mp;C:\GabeMod\src\game\shared\sdk;..\..\game\shared\hl2mp</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPC;SOURCESDK;SOURCE_HAS_FREETYPE;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64;COMPILER_MSVC;_DLL_EXT=.dll;ARGG;DLLNAME=server;DEV_BUILD;FRAME_POINTER_OMISSION_DISABLED;GAME_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;sprintf=use_Q_snprintf_instead_of_sprintf;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead;INCLUDED_STEAM2_USERID_STRUCTS;fopen=dont_use_fopen;USE_NAV_MESH;HL2MP;HL2_DLL;NEXT_BOT;_DLL_EXT=.dll;_DLL_PREFIX=;_EXTERNAL_DLL_EXT=.dll;PROJECTDIR=C:\GabeMod\src\game\server;VPCGAME=valve;VPCGAMECAPS=VALVE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -296,7 +296,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;.\;..\..\game\shared;..\..\utils\common;..\..\game\shared\econ;..\..\game\server\NextBot;..\..\game\shared\hl2;.\hl2;.\hl2mp;..\..\game\shared\hl2mp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\server\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;.\;..\..\game\shared;..\..\utils\common;..\..\game\shared\econ;..\..\game\server\NextBot;..\..\game\shared\hl2;.\hl2;.\hl2mp;C:\GabeMod\src\game\shared\sdk;..\..\game\shared\hl2mp</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPC;SOURCESDK;ARGG;GLOWS_ENABLE;SOURCE_HAS_FREETYPE;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_ALLOW_RUNTIME_LIBRARY_MISMATCH;_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH;_ALLOW_MSC_VER_MISMATCH;%(PreprocessorDefinitions);PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64;COMPILER_MSVC;_DLL_EXT=.dll;DLLNAME=server;DEV_BUILD;FRAME_POINTER_OMISSION_DISABLED;GAME_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;sprintf=use_Q_snprintf_instead_of_sprintf;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead;INCLUDED_STEAM2_USERID_STRUCTS;fopen=dont_use_fopen;USE_NAV_MESH;HL2MP;HL2_DLL;NEXT_BOT;_DLL_EXT=.dll;_DLL_PREFIX=;_EXTERNAL_DLL_EXT=.dll;PROJECTDIR=C:\GabeMod\src\game\server;VPCGAME=valve;VPCGAMECAPS=VALVE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -500,6 +500,7 @@ exit 1
     <ClInclude Include="..\shared\gabe_vscript_shared.h" />
     <ClInclude Include="..\shared\hl1\hl1_baseweapon_shared.h" />
     <ClInclude Include="..\shared\hl2mp\weapon_physgun.h" />
+    <ClInclude Include="..\shared\sdk\weapon_sdkbase.h" />
     <ClInclude Include="..\shared\tf\tf_weapon_fists.h" />
     <ClInclude Include="..\shared\vscript_in_buttons.h" />
     <ClInclude Include="..\shared\vscript_think.h" />
@@ -1182,6 +1183,7 @@ exit 1
     <ClCompile Include="..\shared\hl1\hl1_baseweapon_shared.cpp" />
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
+    <ClCompile Include="..\shared\sdk\weapon_sdkbase.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
     <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
     <ClCompile Include="..\shared\vscript_think.cpp" />
@@ -1203,6 +1205,7 @@ exit 1
     <ClCompile Include="episodic\weapon_striderbuster.cpp" />
     <ClCompile Include="fartcmd.cpp" />
     <ClCompile Include="func_sphere.cpp" />
+    <ClCompile Include="gabemod_client.cpp" />
     <ClCompile Include="gabe_cmds.cpp" />
     <ClCompile Include="gabe_objects.cpp" />
     <ClCompile Include="gabe_spmenuspawn.cpp" />
@@ -1463,7 +1466,6 @@ exit 1
     <ClCompile Include="hl1\HL1_WEAPON_SHOTGUN.CPP" />
     <ClCompile Include="hl1\hl1_weapon_snark.cpp" />
     <ClCompile Include="hl1\hl1_weapon_tripmine.cpp" />
-    <ClCompile Include="hl2mp\hl2mp_client.cpp" />
     <ClCompile Include="hl2\Func_Monitor.cpp" />
     <ClCompile Include="func_movelinear.cpp" />
     <ClCompile Include="func_occluder.cpp" />
@@ -1503,6 +1505,7 @@ exit 1
     <ClCompile Include="hl2\vehicle_jeep.cpp" />
     <ClCompile Include="hl2\weapon_alyxgun.cpp" />
     <ClCompile Include="hl2\weapon_brickbat.cpp" />
+    <ClCompile Include="hl2\weapon_immolator.cpp" />
     <ClCompile Include="h_ai.cpp" />
     <ClCompile Include="h_cycler.cpp" />
     <ClCompile Include="h_export.cpp">

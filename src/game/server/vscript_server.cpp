@@ -13,6 +13,7 @@
 #include "eventqueue.h"
 #include "GameEventListener.h"
 #include "gameinterface.h"
+#include "GABE_SHARED.H"
 #include "functorutils.h"
 #include "mapentities.h"
 #include "characterset.h"
@@ -27,7 +28,6 @@
 #include "netpropmanager.h"
 
 /*EXTERNAL ADDITIONS*/
-#include "gabe_shared.h"
 #include "vscript_in_buttons.h"
 #include "vscript_think.h"
 

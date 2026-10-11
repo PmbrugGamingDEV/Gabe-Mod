@@ -10,6 +10,7 @@
 #include "c_weapon__stubs.h"
 #include "cl_camerablur.h"
 #include "cdll_util.h"
+#include "in_buttons.h"
 #include "con_nprint.h"
 
 extern IViewRender* view;
@@ -21,27 +22,80 @@ extern IViewRender* view;
 class C_WeaponCamera : public C_BaseHLCombatWeapon
 {
     DECLARE_CLASS(C_WeaponCamera, C_BaseHLCombatWeapon);
+
 public:
     DECLARE_PREDICTABLE();
     DECLARE_CLIENTCLASS();
-    C_WeaponCamera() {};
 
-    // Hide viewmodel completely
+    C_WeaponCamera() : m_bViewLocked(false), m_bLocalViewLocked(false) {}
+
     virtual bool ShouldDrawViewModel() { return false; }
-
-    // Do not draw world model either
     virtual bool ShouldDraw() { return false; }
-
-    // Prevent animation spam
     virtual bool IsPredicted() const { return true; }
 
+    void CreateMove(float flInputSampleTime, CUserCmd* pCmd, const QAngle& vecOldViewAngles)
+    {
+        BaseClass::CreateMove(flInputSampleTime, pCmd, vecOldViewAngles);
+
+        if (!pCmd)
+            return;
+
+        C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+        if (!pPlayer)
+            return;
+
+        if (pPlayer->GetActiveWeapon() != this)
+        {
+            m_bLocalViewLocked = false;
+            return;
+        }
+
+        // Unlock when right-click is released.
+        if (!(pCmd->buttons & IN_ATTACK2))
+        {
+            m_bLocalViewLocked = false;
+            return;
+        }
+
+        // Capture view angles when right-click begins.
+        if (!m_bLocalViewLocked)
+        {
+            pPlayer->m_vecUseAngles = vecOldViewAngles;
+            m_bLocalViewLocked = true;
+        }
+
+        // Preserve mouse movement for server-side zoom.
+        const short nMouseX = pCmd->mousedx;
+        const short nMouseY = pCmd->mousedy;
+
+        // Lock view angles using m_vecUseAngles.
+        pCmd->viewangles = pPlayer->m_vecUseAngles;
+
+        QAngle localViewAngles = pPlayer->m_vecUseAngles;
+        engine->SetViewAngles(localViewAngles);
+
+        // Keep raw mouse movement available.
+        pCmd->mousedx = nMouseX;
+        pCmd->mousedy = nMouseY;
+    }
+
+    bool OverrideViewAngles(void)
+    {
+        return m_bLocalViewLocked;
+    }
+
 private:
+    bool m_bViewLocked;       // Networked from server
+    bool m_bLocalViewLocked;  // Local angle-lock state
+    QAngle m_angLockedView;
 
     C_WeaponCamera(const C_WeaponCamera&);
 };
 
 STUB_WEAPON_CLASS_IMPLEMENT(weapon_camera, C_WeaponCamera);
+
 IMPLEMENT_CLIENTCLASS_DT(C_WeaponCamera, DT_WeaponCamera, CWeaponCamera)
+RecvPropBool(RECVINFO(m_bViewLocked)),
 END_RECV_TABLE()
 
 // --------------------------------------------------

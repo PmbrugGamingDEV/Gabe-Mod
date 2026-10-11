@@ -14,11 +14,11 @@
 
 #if defined( CLIENT_DLL )
 
-	#include "c_sdk_player.h"
+	#include "c_hl2mp_player.h"
 
 #else
 
-	#include "sdk_player.h"
+	#include "hl2mp_player.h"
 
 #endif
 
@@ -110,16 +110,16 @@ CWeaponSDKBase::CWeaponSDKBase()
 	AddSolidFlags( FSOLID_TRIGGER ); // Nothing collides with these but it gets touches.
 }
 
-const CSDKWeaponInfo &CWeaponSDKBase::GetSDKWpnData() const
+const CHL2MPSWeaponInfo &CWeaponSDKBase::GetSDKWpnData() const
 {
 	const FileWeaponInfo_t *pWeaponInfo = &GetWpnData();
-	const CSDKWeaponInfo *pSDKInfo;
+	const CHL2MPSWeaponInfo *pSDKInfo;
 
 	#ifdef _DEBUG
-		pSDKInfo = dynamic_cast< const CSDKWeaponInfo* >( pWeaponInfo );
+		pSDKInfo = dynamic_cast< const CHL2MPSWeaponInfo* >( pWeaponInfo );
 		Assert( pSDKInfo );
 	#else
-		pSDKInfo = static_cast< const CSDKWeaponInfo* >( pWeaponInfo );
+		pSDKInfo = static_cast< const CHL2MPSWeaponInfo* >( pWeaponInfo );
 	#endif
 
 	return *pSDKInfo;
@@ -135,16 +135,16 @@ bool CWeaponSDKBase::PlayEmptySound()
 	return 0;
 }
 
-CSDKPlayer* CWeaponSDKBase::GetPlayerOwner() const
+CHL2MP_Player* CWeaponSDKBase::GetPlayerOwner() const
 {
-	return dynamic_cast< CSDKPlayer* >( GetOwner() );
+	return dynamic_cast< CHL2MP_Player* >( GetOwner() );
 }
 
 #ifdef GAME_DLL
 
 void CWeaponSDKBase::SendReloadEvents()
 {
-	CSDKPlayer *pPlayer = dynamic_cast< CSDKPlayer* >( GetOwner() );
+	CHL2MP_Player *pPlayer = dynamic_cast< CHL2MP_Player* >( GetOwner() );
 	if ( !pPlayer )
 		return;
 
@@ -157,7 +157,7 @@ void CWeaponSDKBase::SendReloadEvents()
 	MessageEnd();
 
 	// Make the player play his reload animation.
-	pPlayer->DoAnimationEvent( PLAYERANIMEVENT_RELOAD );
+	SendWeaponAnim(ACT_VM_RELOAD);
 }
 
 #endif

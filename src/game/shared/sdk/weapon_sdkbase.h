@@ -10,14 +10,18 @@
 #pragma once
 #endif
 
-#include "sdk_playeranimstate.h"
-#include "sdk_weapon_parse.h"
+#include "base_playeranimstate.h"
+#include "hl2mp_weapon_parse.h"
 
 #if defined( CLIENT_DLL )
 	#define CWeaponSDKBase C_WeaponSDKBase
 #endif
 
-class CSDKPlayer;
+#if defined( CLIENT_DLL )
+#define CHL2MP_Player C_HL2MP_Player
+#endif
+
+class CHL2MP_Player;
 
 // These are the names of the ammo types that the weapon script files reference.
 #define AMMO_BULLETS			"AMMO_BULLETS"
@@ -65,10 +69,10 @@ public:
 	virtual SDKWeaponID GetWeaponID( void ) const { return WEAPON_NONE; }
 	
 	// Get SDK weapon specific weapon data.
-	CSDKWeaponInfo const	&GetSDKWpnData() const;
+	CHL2MPSWeaponInfo const	&GetSDKWpnData() const;
 
 	// Get a pointer to the player that owns this weapon
-	CSDKPlayer* GetPlayerOwner() const;
+	CHL2MP_Player* GetPlayerOwner() const;
 
 	// override to play custom empty sounds
 	virtual bool PlayEmptySound();

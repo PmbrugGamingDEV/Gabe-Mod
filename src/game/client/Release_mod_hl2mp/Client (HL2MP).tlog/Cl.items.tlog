@@ -13,6 +13,8 @@ C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\cli
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\client\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\achievements_hl2.obj
 C:\GabeMod\src\game\shared\hl2\survival_gamerules.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\survival_gamerules.obj
+C:\GabeMod\src\game\shared\sdk\weapon_sdkbase.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\weapon_sdkbase.obj
+C:\GabeMod\src\game\shared\sdk\weapon_sdk_shotgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\weapon_sdk_shotgun.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\tf_weapon_fists.obj
 C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_in_buttons.obj
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_think.obj
@@ -21,15 +23,16 @@ C:\GabeMod\src\game\client\c_bemod_physgun.cpp;C:\GabeMod\src\game\client\Releas
 C:\GabeMod\src\game\client\c_gabe_vscript.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_gabe_vscript.obj
 C:\GabeMod\src\game\client\c_vehicle_apc.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_vehicle_apc.obj
 C:\GabeMod\src\game\client\c_weapon_jb_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_jb_physgun.obj
+C:\GabeMod\src\game\client\c_weapon__stubs_gabemod.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon__stubs_gabemod.obj
 C:\GabeMod\src\game\client\episodic\c_npc_advisor.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_npc_advisor.obj
 C:\GabeMod\src\game\client\episodic\c_npc_puppet.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_npc_puppet.obj
 C:\GabeMod\src\game\client\episodic\c_vehicle_jeep_episodic.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_vehicle_jeep_episodic.obj
 C:\GabeMod\src\game\client\episodic\c_weapon_hopwire.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_hopwire.obj
 C:\GabeMod\src\game\client\episodic\episodic_screenspaceeffects.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\episodic_screenspaceeffects.obj
+C:\GabeMod\src\game\client\gabe_city17browser.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_city17browser.obj
 C:\GabeMod\src\game\client\gabe_events.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_events.obj
 C:\GabeMod\src\game\client\gabe_friends.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_friends.obj
 C:\GabeMod\src\game\client\gabe_newgame.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_newgame.obj
-C:\GabeMod\src\game\client\gabe_score.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_score.obj
 C:\GabeMod\src\game\client\gabe_spawnmenu.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_spawnmenu.obj
 C:\GabeMod\src\game\client\gabe_thanks.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_thanks.obj
 C:\GabeMod\src\game\client\gabe_tutorials.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_tutorials.obj
@@ -41,6 +44,7 @@ C:\GabeMod\src\game\client\hl1\hl1_menu_rm.cpp;C:\GabeMod\src\game\client\Releas
 C:\GabeMod\src\game\client\hl1\hl1_usermessages.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hl1_usermessages.obj
 C:\GabeMod\src\game\client\hl1\hud_numbers.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_numbers.obj
 C:\GabeMod\src\game\client\hl2\hud_radar.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_radar.obj
+C:\GabeMod\src\game\client\hud_gabewm.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_gabewm.obj
 C:\GabeMod\src\game\client\hud_killfeed.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_killfeed.obj
 C:\GabeMod\src\game\client\hud_mtool.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_mtool.obj
 C:\GabeMod\src\game\client\mp3player.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\mp3player.obj

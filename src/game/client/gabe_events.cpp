@@ -1,5 +1,5 @@
 #include "cbase.h"
-#include "gabe_shared.h"
+#include "GABE_SHARED.H"
 #include <time.h>
 
 /// Valve Corporation, Gabe Mod Plus

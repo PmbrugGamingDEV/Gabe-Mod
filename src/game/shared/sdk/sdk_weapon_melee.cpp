@@ -16,7 +16,7 @@
 #include "animation.h"
 
 #if defined( CLIENT_DLL )
-	#include "c_sdk_player.h"
+	#include "sdk/c_sdk_player.h"
 #else
 	#include "sdk_player.h"
 	#include "ndebugoverlay.h"

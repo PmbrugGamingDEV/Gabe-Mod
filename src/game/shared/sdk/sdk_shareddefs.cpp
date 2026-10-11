@@ -63,9 +63,8 @@ const char *pszTeamNames[] =
 //Tony; We need to precache all possible player models that we're going to use
 const char *pszPossiblePlayerModels[] =
 {
-	SDK_PLAYER_MODEL,
-	"models/player/american_rifleman.mdl",
-	"models/player/german_rifleman.mdl",
+	"models/player/combine_soldier.mdl",
+	"models/player/male_07.mdl",
 	NULL
 };
 

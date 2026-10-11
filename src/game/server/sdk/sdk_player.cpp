@@ -7,7 +7,7 @@
 
 #include "cbase.h"
 #include "sdk_player.h"
-#include "sdk_gamerules.h"
+#include "hl2mp_gamerules.h"
 #include "weapon_sdkbase.h"
 #include "predicted_viewmodel.h"
 #include "iservervehicle.h"
@@ -19,6 +19,16 @@ ConVar sv_motd_unload_on_dismissal( "sv_motd_unload_on_dismissal", "0", 0, "If e
 
 #define SDK_PLAYER_MODEL "models/player/terror.mdl"
 
+enum PlayerAnimEvent_t
+{
+	PLAYERANIMEVENT_FIRE_GUN_PRIMARY = 0,
+	PLAYERANIMEVENT_FIRE_GUN_SECONDARY,
+	PLAYERANIMEVENT_THROW_GRENADE,
+	PLAYERANIMEVENT_JUMP,
+	PLAYERANIMEVENT_RELOAD,
+
+	PLAYERANIMEVENT_COUNT
+};
 
 // -------------------------------------------------------------------------------- //
 // Player animation event. Sent to the client when a player fires, jumps, reloads, etc..
@@ -63,7 +73,7 @@ void TE_PlayerAnimEvent( CBasePlayer *pPlayer, PlayerAnimEvent_t event, int nDat
 // Tables.
 // -------------------------------------------------------------------------------- //
 BEGIN_DATADESC( CSDKPlayer )
-DEFINE_THINKFUNC( SDKPushawayThink ),
+//DEFINE_THINKFUNC( SDKPushawayThink ),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( player, CSDKPlayer );
@@ -145,7 +155,7 @@ CSDKPlayer::CSDKPlayer()
 	UseClientSideAnimation();
 	m_angEyeAngles.Init();
 
-	SetViewOffset( SDK_PLAYER_VIEW_OFFSET );
+	//SetViewOffset( HL2MP_PLAYER_VIEW_OFFSET );
 
 	m_iThrowGrenadeCounter = 0;
 }

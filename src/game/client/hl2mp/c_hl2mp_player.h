@@ -119,9 +119,6 @@ public:
 	bool IsWalking( void ) { return m_fIsWalking; }
 
 	virtual void PostThink( void );
-
-	int GetScore() { return m_iPoints; }
-
 private:
 	
 	C_HL2MP_Player( const C_HL2MP_Player & );
@@ -140,8 +137,6 @@ private:
 	float m_headYawMax;
 	float m_headPitchMin;
 	float m_headPitchMax;
-
-	int m_iPoints;
 
 	bool m_isInit;
 	Vector m_vLookAtTarget;

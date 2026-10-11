@@ -94,6 +94,15 @@
     <Filter Include="Source Files\Gabe Mod Files\BEMod">
       <UniqueIdentifier>{a291a85d-f1b3-4b34-a96d-97beadfd70f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Game-Specific">
+      <UniqueIdentifier>{bc504b31-8b06-4ab0-b7d3-515ee882fdb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\SDK">
+      <UniqueIdentifier>{2c9c2ab7-50b1-4eb6-a43e-7f18d17c2171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Beta Weapons">
+      <UniqueIdentifier>{75ebdbb4-ac9a-4674-ab58-f61d2e5325f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\choreoobjects.lib">
@@ -2179,6 +2188,9 @@
     </ClInclude>
     <ClInclude Include="..\shared\vscript_think.h">
       <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\sdk\weapon_sdkbase.h">
+      <Filter>Source Files\Gabe Mod Files\SDK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4276,9 +4288,6 @@
     <ClCompile Include="hl2\vehicle_jeep.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
-    <ClCompile Include="hl2mp\hl2mp_client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp">
       <Filter>Source Files\Gabe Mod Files\TF2</Filter>
     </ClCompile>
@@ -4377,6 +4386,15 @@
     </ClCompile>
     <ClCompile Include="npc_firezombie.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gabemod_client.cpp">
+      <Filter>Source Files\Gabe Mod Files\Game-Specific</Filter>
+    </ClCompile>
+    <ClCompile Include="..\shared\sdk\weapon_sdkbase.cpp">
+      <Filter>Source Files\Gabe Mod Files\SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="hl2\weapon_immolator.cpp">
+      <Filter>Source Files\Gabe Mod Files\Beta Weapons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup />

@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release_mod_hl2mp\\hud_mtool.obj",
+            "outputs": [
+                ".\\Release_mod_hl2mp\\hud_mtool.cpp.obj.dt.module.json",
+                ".\\Release_mod_hl2mp\\hud_mtool.cpp.obj.dt.d.json",
+                ".\\Release_mod_hl2mp\\/client.pch"
+            ],
+            "requires": []
+        }
+    ]
+}

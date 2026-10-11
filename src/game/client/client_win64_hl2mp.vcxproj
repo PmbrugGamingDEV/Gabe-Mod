@@ -119,7 +119,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
     <ClCompile>
       <AdditionalOptions>/Zm200 /Gw /Zc:inline /Zc:threadSafeInit- /Wv:18 /Zc:__cplusplus</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\client\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;..\..\vgui2\include;..\..\vgui2\controls;..\..\game\shared;.\game_controls;..\..\thirdparty\sixensesdk\include;hl2mp\ui;.\hl2mp;..\..\game\shared\hl2mp;.\hl2;.\hl2\elements;..\..\game\shared\hl2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\client\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;..\..\vgui2\include;..\..\vgui2\controls;..\..\game\shared;.\game_controls;..\..\thirdparty\sixensesdk\include;hl2mp\ui;.\hl2mp;..\..\game\shared\hl2mp;.\hl2;C:\GabeMod\src\game\shared\sdk;.\hl2\elements;..\..\game\shared\hl2</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPC;SOURCESDK;SOURCE_HAS_FREETYPE;WIN32;_WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions);PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64;COMPILER_MSVC;_DLL_EXT=.dll;ARGG;DLLNAME=client;DEV_BUILD;FRAME_POINTER_OMISSION_DISABLED;NO_STRING_T;CLIENT_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead;INCLUDED_STEAM2_USERID_STRUCTS;HL2MP;HL2_CLIENT_DLL;NEXT_BOT;_DLL_EXT=.dll;_DLL_PREFIX=;_EXTERNAL_DLL_EXT=.dll;PROJECTDIR=C:\GabeMod\src\game\client;VPCGAME=valve;VPCGAMECAPS=VALVE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -302,7 +302,7 @@ if "%valveTmpIsReadOnlyLetter%"=="R" del /q "$(TargetDir)"$(TargetFileName)
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\client\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;..\..\vgui2\include;..\..\vgui2\controls;..\..\game\shared;.\game_controls;..\..\thirdparty\sixensesdk\include;hl2mp\ui;.\hl2mp;..\..\game\shared\hl2mp;.\hl2;.\hl2\elements;..\..\game\shared\hl2</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\..\common;..\..\public;..\..\public\tier0;..\..\public\tier1;..\..\game\client\generated_proto_mod_hl2mp;..\..\thirdparty\protobuf-2.6.1\src;..\..\vgui2\include;..\..\vgui2\controls;..\..\game\shared;.\game_controls;..\..\thirdparty\sixensesdk\include;hl2mp\ui;.\hl2mp;..\..\game\shared\hl2mp;.\hl2;C:\GabeMod\src\game\shared\sdk;.\hl2\elements;..\..\game\shared\hl2</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VPC;SOURCESDK;ARGG;GLOWS_ENABLE;SOURCE_HAS_FREETYPE;WIN32;_WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_ALLOW_RUNTIME_LIBRARY_MISMATCH;_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH;_ALLOW_MSC_VER_MISMATCH;%(PreprocessorDefinitions);PLATFORM_64BITS;WIN64;_WIN64;COMPILER_MSVC64;COMPILER_MSVC;_DLL_EXT=.dll;DLLNAME=client;DEV_BUILD;FRAME_POINTER_OMISSION_DISABLED;NO_STRING_T;CLIENT_DLL;VECTOR;VERSION_SAFE_STEAM_API_INTERFACES;PROTECTED_THINGS_ENABLE;strncpy=use_Q_strncpy_instead;_snprintf=use_Q_snprintf_instead;INCLUDED_STEAM2_USERID_STRUCTS;HL2MP;HL2_CLIENT_DLL;NEXT_BOT;_DLL_EXT=.dll;_DLL_PREFIX=;_EXTERNAL_DLL_EXT=.dll;PROJECTDIR=C:\GabeMod\src\game\client;VPCGAME=valve;VPCGAMECAPS=VALVE</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -593,6 +593,7 @@ exit 1
     <ClInclude Include="..\shared\saverestore_utlvector.h" />
     <ClInclude Include="..\shared\sceneentity_shared.h" />
     <ClInclude Include="..\shared\scriptevent.h" />
+    <ClInclude Include="..\shared\sdk\weapon_sdkbase.h" />
     <ClInclude Include="..\shared\sequence_Transitioner.h" />
     <ClInclude Include="..\shared\shared_classnames.h" />
     <ClInclude Include="..\shared\shareddefs.h" />
@@ -1161,6 +1162,8 @@ exit 1
     <ClCompile Include="..\shared\hl2mp\WEAPON_PHYSGUN.CPP" />
     <ClCompile Include="..\shared\hl2\achievements_hl2.cpp" />
     <ClCompile Include="..\shared\hl2\survival_gamerules.cpp" />
+    <ClCompile Include="..\shared\sdk\weapon_sdkbase.cpp" />
+    <ClCompile Include="..\shared\sdk\weapon_sdk_shotgun.cpp" />
     <ClCompile Include="..\shared\tf\tf_weapon_fists.cpp" />
     <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
     <ClCompile Include="..\shared\vscript_think.cpp" />
@@ -1169,15 +1172,16 @@ exit 1
     <ClCompile Include="c_gabe_vscript.cpp" />
     <ClCompile Include="c_vehicle_apc.cpp" />
     <ClCompile Include="c_weapon_jb_physgun.cpp" />
+    <ClCompile Include="c_weapon__stubs_gabemod.cpp" />
     <ClCompile Include="episodic\c_npc_advisor.cpp" />
     <ClCompile Include="episodic\c_npc_puppet.cpp" />
     <ClCompile Include="episodic\c_vehicle_jeep_episodic.cpp" />
     <ClCompile Include="episodic\c_weapon_hopwire.cpp" />
     <ClCompile Include="episodic\episodic_screenspaceeffects.cpp" />
+    <ClCompile Include="gabe_city17browser.cpp" />
     <ClCompile Include="gabe_events.cpp" />
     <ClCompile Include="gabe_friends.cpp" />
     <ClCompile Include="gabe_newgame.cpp" />
-    <ClCompile Include="gabe_score.cpp" />
     <ClCompile Include="gabe_spawnmenu.cpp" />
     <ClCompile Include="gabe_thanks.cpp" />
     <ClCompile Include="gabe_tutorials.cpp" />
@@ -1189,6 +1193,7 @@ exit 1
     <ClCompile Include="hl1\hl1_usermessages.cpp" />
     <ClCompile Include="hl1\hud_numbers.cpp" />
     <ClCompile Include="hl2\hud_radar.cpp" />
+    <ClCompile Include="hud_gabewm.cpp" />
     <ClCompile Include="hud_killfeed.cpp" />
     <ClCompile Include="hud_mtool.cpp" />
     <ClCompile Include="mp3player.cpp" />

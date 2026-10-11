@@ -2,6 +2,7 @@ C:\GabeMod\src\game\shared\gabe_shared.cpp;C:\GabeMod\src\game\server\Release_mo
 C:\GabeMod\src\game\shared\hl1\hl1_baseweapon_shared.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl1_baseweapon_shared.obj
 C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP;C:\GabeMod\src\game\server\Release_mod_hl2mp\WEAPON_PHYSGUN.obj
 C:\GabeMod\src\game\shared\hl2\achievements_hl2.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\achievements_hl2.obj
+C:\GabeMod\src\game\shared\sdk\weapon_sdkbase.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_sdkbase.obj
 C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\tf_weapon_fists.obj
 C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vscript_in_buttons.obj
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vscript_think.obj
@@ -23,6 +24,7 @@ C:\GabeMod\src\game\server\episodic\weapon_hopwire.cpp;C:\GabeMod\src\game\serve
 C:\GabeMod\src\game\server\episodic\weapon_striderbuster.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_striderbuster.obj
 C:\GabeMod\src\game\server\fartcmd.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\fartcmd.obj
 C:\GabeMod\src\game\server\func_sphere.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_sphere.obj
+C:\GabeMod\src\game\server\gabemod_client.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabemod_client.obj
 C:\GabeMod\src\game\server\gabe_cmds.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_cmds.obj
 C:\GabeMod\src\game\server\gabe_objects.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_objects.obj
 C:\GabeMod\src\game\server\gabe_spmenuspawn.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_spmenuspawn.obj
@@ -248,7 +250,6 @@ C:\GabeMod\src\game\server\hl1\HL1_WEAPON_SATCHEL.CPP;C:\GabeMod\src\game\server
 C:\GabeMod\src\game\server\hl1\HL1_WEAPON_SHOTGUN.CPP;C:\GabeMod\src\game\server\Release_mod_hl2mp\HL1_WEAPON_SHOTGUN.obj
 C:\GabeMod\src\game\server\hl1\hl1_weapon_snark.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl1_weapon_snark.obj
 C:\GabeMod\src\game\server\hl1\hl1_weapon_tripmine.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl1_weapon_tripmine.obj
-C:\GabeMod\src\game\server\hl2mp\hl2mp_client.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl2mp_client.obj
 C:\GabeMod\src\game\server\hl2\Func_Monitor.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\Func_Monitor.obj
 C:\GabeMod\src\game\server\func_movelinear.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_movelinear.obj
 C:\GabeMod\src\game\server\func_occluder.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_occluder.obj
@@ -278,6 +279,7 @@ C:\GabeMod\src\game\server\hl2\grenade_brickbat.cpp;C:\GabeMod\src\game\server\R
 C:\GabeMod\src\game\server\hl2\vehicle_jeep.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vehicle_jeep.obj
 C:\GabeMod\src\game\server\hl2\weapon_alyxgun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_alyxgun.obj
 C:\GabeMod\src\game\server\hl2\weapon_brickbat.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_brickbat.obj
+C:\GabeMod\src\game\server\hl2\weapon_immolator.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_immolator.obj
 C:\GabeMod\src\game\server\h_ai.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\h_ai.obj
 C:\GabeMod\src\game\server\h_cycler.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\h_cycler.obj
 C:\GabeMod\src\game\server\h_export.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\h_export.obj

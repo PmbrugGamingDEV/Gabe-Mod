@@ -15,14 +15,14 @@
 #ifdef CLIENT_DLL
 
 #include "fx_impact.h"
-#include "c_sdk_player.h"
+#include "c_hl2mp_player.h"
 
 	// this is a cheap ripoff from CBaseCombatWeapon::WeaponSound():
 	void FX_WeaponSound(
 		int iPlayerIndex,
 		WeaponSound_t sound_type,
 		const Vector &vOrigin,
-		CSDKWeaponInfo *pWeaponInfo )
+		CHL2MPSWeaponInfo *pWeaponInfo )
 	{
 
 		// If we have some sounds from the weapon classname.txt file, play a random one of them
@@ -118,9 +118,9 @@ void FX_FireBullets(
 	bool bDoEffects = true;
 
 #ifdef CLIENT_DLL
-	C_SDKPlayer *pPlayer = ToSDKPlayer( ClientEntityList().GetBaseEntity( iPlayerIndex ) );
+	C_HL2MP_Player *pPlayer = ToHL2MPPlayer( ClientEntityList().GetBaseEntity( iPlayerIndex ) );
 #else
-	CSDKPlayer *pPlayer = ToSDKPlayer( UTIL_PlayerByIndex( iPlayerIndex) );
+	CHL2MP_Player *pPlayer = ToHL2MPPlayer( UTIL_PlayerByIndex( iPlayerIndex) );
 #endif
 
 	const char * weaponAlias =	WeaponIDToAlias( iWeaponID );
@@ -141,18 +141,9 @@ void FX_FireBullets(
 		return;
 	}
 
-	CSDKWeaponInfo *pWeaponInfo = static_cast< CSDKWeaponInfo* >( GetFileWeaponInfoFromHandle( hWpnInfo ) );
+	CHL2MPSWeaponInfo *pWeaponInfo = static_cast< CHL2MPSWeaponInfo* >( GetFileWeaponInfoFromHandle( hWpnInfo ) );
 
-#ifdef CLIENT_DLL
-	// Do the firing animation event.
-	if ( pPlayer && !pPlayer->IsDormant() )
-	{
-		if ( iMode == Primary_Mode )
-			pPlayer->m_PlayerAnimState->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_PRIMARY );
-		else
-			pPlayer->m_PlayerAnimState->DoAnimationEvent( PLAYERANIMEVENT_FIRE_GUN_SECONDARY );
-	}
-#else
+#ifndef CLIENT_DLL
 	// if this is server code, send the effect over to client as temp entity
 	// Dispatch one message for all the bullet impacts and sounds.
 	TE_FireBullets( 
@@ -170,7 +161,6 @@ void FX_FireBullets(
 
 	iSeed++;
 
-	int		iDamage = pWeaponInfo->m_iDamage;
 	int		iAmmoType = pWeaponInfo->iAmmoType;
 
 	WeaponSound_t sound_type = SINGLE;
@@ -192,28 +182,6 @@ void FX_FireBullets(
 	// Move other players back to history positions based on local player's lag
 	lagcompensation->StartLagCompensation( pPlayer, pPlayer->GetCurrentCommand() );
 #endif
-
-	for ( int iBullet=0; iBullet < pWeaponInfo->m_iBullets; iBullet++ )
-	{
-		RandomSeed( iSeed );	// init random system with this seed
-
-		// Get circular gaussian spread.
-		float x, y;
-		x = RandomFloat( -0.5, 0.5 ) + RandomFloat( -0.5, 0.5 );
-		y = RandomFloat( -0.5, 0.5 ) + RandomFloat( -0.5, 0.5 );
-	
-		iSeed++; // use new seed for next bullet
-
-		pPlayer->FireBullet(
-			vOrigin,
-			vAngles,
-			flSpread,
-			iDamage,
-			iAmmoType,
-			pPlayer,
-			bDoEffects,
-			x,y );
-	}
 
 #if !defined (CLIENT_DLL)
 	lagcompensation->FinishLagCompensation( pPlayer );

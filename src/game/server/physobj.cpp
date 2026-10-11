@@ -1884,7 +1884,7 @@ void CPhysMagnet::DetachAll( void )
 //-----------------------------------------------------------------------------
 int CPhysMagnet::GetNumAttachedObjects( void )
 {
-	return m_MagnettedEntities.Count();
+		return m_MagnettedEntities.Count();
 }
 
 //-----------------------------------------------------------------------------
@@ -1892,7 +1892,7 @@ int CPhysMagnet::GetNumAttachedObjects( void )
 //-----------------------------------------------------------------------------
 float CPhysMagnet::GetTotalMassAttachedObjects( void )
 {
-	return m_flTotalMass;
+		return m_flTotalMass;
 }
 
 //-----------------------------------------------------------------------------

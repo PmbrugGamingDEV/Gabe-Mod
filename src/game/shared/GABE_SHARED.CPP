@@ -9,10 +9,9 @@
 
 #include "cbase.h"
 
-#include "gabe_shared.h"
-
 #include "vscript_shared.h"
 #include "baseentity_shared.h"
+#include "GABE_SHARED.H"
 
 // =========================
 // 🔹 Shared (client + server)
@@ -31,6 +30,8 @@
 #include "vgui_all.h"
 #include "IVehicle.h"
 #include "iclientvehicle.h"
+
+#include "c_effects.h"
 
 #else // ================== SERVER ==================
 
@@ -60,7 +61,6 @@
 
 #include "rope.h"
 #include "rope_helpers.h"
-
 #endif
 
 #define FUNC_REGISTER(name, func, description) ScriptRegisterFunctionNamed(g_pScriptVM, func, name, description)
@@ -2398,6 +2398,11 @@ namespace GabeMod
 			return;
 
 		pPlayer->SetScriptOverlayMaterial("");
+	}
+
+	void CGabeClientFuncs::StartPrecipitation()
+	{
+		DrawPrecipitation();
 	}
 #endif
 
@@ -5077,292 +5082,638 @@ void RegisterGabeModClientVScript()
 
 #endif
 
-#define HL2MP_COMMAND_MAX_RATE 0.3
+using namespace GabeMod;
 
-#define MAX_COMBINE_MODELS 4
-#define MODEL_CHANGE_INTERVAL 5.0f
-#define TEAM_CHANGE_INTERVAL 5.0f
+#include <windows.h>
+#include <stdarg.h>
+#include <stdio.h>
 
-#define HL2MPPLAYER_PHYSDAMAGE_SCALE 4.0f
+// ------------------------------------------------------------
+// Normal message boxes
+// ------------------------------------------------------------
 
-BEGIN_DATADESC(CGabeMod_Player)
-END_DATADESC()
-
-#ifdef GAME_DLL
-IMPLEMENT_SERVERCLASS_ST(CGabeMod_Player, DT_GabeMod_Player)
-END_SEND_TABLE()
-#else
-
-#undef CGabeMod_Player
-
-IMPLEMENT_CLIENTCLASS_DT(C_GabeMod_Player, DT_GabeMod_Player, CGabeMod_Player)
-END_RECV_TABLE()
-
-#define CGabeMod_Player C_GabeMod_Player
-
-BEGIN_PREDICTION_DATA(C_GabeMod_Player)
-END_PREDICTION_DATA()
-#endif
-
-LINK_ENTITY_TO_CLASS(player, CGabeMod_Player);
-
-#ifndef CLIENT_DLL // Server funcs
-
-void CGabeMod_Player::Precache()
+void CGabeWindows::MsgBox(const char* title, const char* message)
 {
-	BaseClass::Precache();
+	MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_OK | MB_ICONINFORMATION
+	);
 }
 
-void CGabeMod_Player::GiveJBModItems(void)
+void CGabeWindows::MsgBoxFmt(const char* title, const char* format, ...)
 {
-	EquipSuit();
-	GiveNamedItem("weapon_jbm_physgun");
+	va_list args;
+	va_start(args, format);
 
-	if (GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER)
+	char buffer[1024];
+
+	vsnprintf(
+		buffer,
+		sizeof(buffer),
+		format,
+		args
+	);
+
+	buffer[sizeof(buffer) - 1] = '\0';
+
+	va_end(args);
+
+	MessageBoxA(
+		NULL,
+		buffer,
+		title,
+		MB_OK | MB_ICONINFORMATION
+	);
+}
+
+void CGabeWindows::MsgBoxError(const char* title, const char* message)
+{
+	MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_OK | MB_ICONERROR
+	);
+}
+
+void CGabeWindows::MsgBoxFmtV(const char* title, const char* fmt, va_list args)
+{
+	char buffer[1024];
+
+	vsnprintf(
+		buffer,
+		sizeof(buffer),
+		fmt,
+		args
+	);
+
+	buffer[sizeof(buffer) - 1] = '\0';
+
+	MessageBoxA(
+		NULL,
+		buffer,
+		title,
+		MB_OK | MB_ICONINFORMATION
+	);
+}
+
+
+// ------------------------------------------------------------
+// Yes / No
+// ------------------------------------------------------------
+
+void CGabeWindows::MsgBoxYesNo(
+	const char* title,
+	const char* message,
+	void (*yesCallback)(),
+	void (*noCallback)())
+{
+	int result = MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_YESNO | MB_ICONQUESTION
+	);
+
+	switch (result)
 	{
-		GiveNamedItem("weapon_stunstick");
-	}
-	else if (GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN)
-	{
-		GiveNamedItem("weapon_crowbar");
-	}
-}
+	case IDYES:
+		if (yesCallback)
+			yesCallback();
+		break;
 
-void CGabeMod_Player::GiveBEModItems(void)
-{
-	// Stub
-}
-
-void CGabeMod_Player::GiveAllItems(void)
-{
-	EquipSuit();
-
-	CBasePlayer::GiveAmmo(255, "Pistol");
-	CBasePlayer::GiveAmmo(255, "AR2");
-	CBasePlayer::GiveAmmo(5, "AR2AltFire");
-	CBasePlayer::GiveAmmo(255, "SMG1");
-	CBasePlayer::GiveAmmo(3, "smg1_grenade");
-	CBasePlayer::GiveAmmo(255, "Buckshot");
-	CBasePlayer::GiveAmmo(32, "357");
-	CBasePlayer::GiveAmmo(3, "rpg_round");
-	CBasePlayer::GiveAmmo(255, "ammo_proto1");
-	CBasePlayer::GiveAmmo(999, "hopwire");
-
-
-	CBasePlayer::GiveAmmo(5, "grenade");
-	CBasePlayer::GiveAmmo(2, "slam");
-
-	GiveNamedItem("weapon_crowbar");
-	GiveNamedItem("weapon_stunstick");
-	GiveNamedItem("weapon_pistol");
-	GiveNamedItem("weapon_357");
-
-	GiveNamedItem("weapon_smg1");
-	GiveNamedItem("weapon_ar2");
-
-	GiveNamedItem("weapon_shotgun");
-	GiveNamedItem("weapon_frag");
-	GiveNamedItem("weapon_physgun");
-	GiveNamedItem("weapon_fuelcan");
-	GiveNamedItem("weapon_jbm_physgun");
-	GiveNamedItem("weapon_hax");
-	GiveNamedItem("weapon_camera");
-	GiveNamedItem("weapon_crossbow");
-	GiveNamedItem("weapon_bugbait");
-	GiveNamedItem("weapon_annabelle");
-	GiveNamedItem("weapon_flaregun");
-	GiveNamedItem("weapon_multitool");
-	GiveNamedItem("weapon_proto1");
-	GiveNamedItem("weapon_hopwire");
-
-	GiveNamedItem("weapon_rpg");
-
-	GiveNamedItem("weapon_slam");
-
-	GiveNamedItem("weapon_physcannon");
-
-	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
-}
-
-void CGabeMod_Player::GiveHL2Items(void)
-{
-	EquipSuit();
-
-	CBasePlayer::GiveAmmo(999, "Pistol");
-	CBasePlayer::GiveAmmo(999, "AR2");
-	CBasePlayer::GiveAmmo(999, "AR2AltFire");
-	CBasePlayer::GiveAmmo(999, "SMG1");
-	CBasePlayer::GiveAmmo(999, "smg1_grenade");
-	CBasePlayer::GiveAmmo(999, "Buckshot");
-	CBasePlayer::GiveAmmo(999, "357");
-	CBasePlayer::GiveAmmo(999, "rpg_round");
-	CBasePlayer::GiveAmmo(5, "grenade");
-	CBasePlayer::GiveAmmo(999, "slam");
-
-	GiveNamedItem("weapon_crowbar");
-	GiveNamedItem("weapon_pistol");
-	GiveNamedItem("weapon_357");
-	GiveNamedItem("weapon_smg1");
-	GiveNamedItem("weapon_ar2");
-	GiveNamedItem("weapon_shotgun");
-	GiveNamedItem("weapon_frag");
-	GiveNamedItem("weapon_crossbow");
-	GiveNamedItem("weapon_bugbait");
-	GiveNamedItem("weapon_rpg");
-	GiveNamedItem("weapon_physcannon");
-
-	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
-
-	SuitPower_Charge(100);
-	SetHealth(100);
-}
-
-void CGabeMod_Player::GiveHL1Items(void)
-{
-	CBasePlayer::GiveAmmo(999, "Uranium");
-	CBasePlayer::GiveAmmo(999, "TripMine");
-	CBasePlayer::GiveAmmo(999, "Pistol");
-	CBasePlayer::GiveAmmo(999, "357");
-	CBasePlayer::GiveAmmo(999, "XBowBolt");
-	CBasePlayer::GiveAmmo(999, "MP5_Grenade");
-	CBasePlayer::GiveAmmo(999, "SMG1");
-	CBasePlayer::GiveAmmo(999, "BuckShot");
-	CBasePlayer::GiveAmmo(999, "rpg_round");
-	CBasePlayer::GiveAmmo(999, "Hornet");
-	CBasePlayer::GiveAmmo(999, "Snark");
-	CBasePlayer::GiveAmmo(999, "grenade");
-	CBasePlayer::GiveAmmo(999, "Satchel");
-
-	GiveNamedItem("weapon_glock");
-	GiveNamedItem("weapon_tripmine");
-	GiveNamedItem("weapon_crowbar_hl1");
-	GiveNamedItem("weapon_egon");
-	GiveNamedItem("weapon_hornetgun");
-	GiveNamedItem("weapon_hl1_gauss");
-	GiveNamedItem("weapon_hl1_357");
-	GiveNamedItem("weapon_snark");
-	GiveNamedItem("weapon_mp5");
-	GiveNamedItem("weapon_hl1_rpg");
-	GiveNamedItem("weapon_hl1_shotgun");
-	GiveNamedItem("weapon_hl1_crossbow");
-	GiveNamedItem("weapon_handgrenade");
-	GiveNamedItem("weapon_satchel");
-
-	engine->ClientCommand(this->edict(), "viewmodel_fov 90");
-}
-
-void CGabeMod_Player::GiveDefaultItems(void)
-{
-	BaseClass::GiveDefaultItems();
-
-	engine->ClientCommand(this->edict(), "viewmodel_fov 54");
-}
-
-void CGabeMod_Player::GiveNoItems()
-{
-	// nothing else
-}
-
-void CGabeMod_Player::GiveBemodItems()
-{
-	EquipSuit();
-	GiveNamedItem("weapon_bemod_physgun");
-	GiveNamedItem("weapon_duplicator");
-	GiveNamedItem("weapon_bmcamera");
-	GiveNamedItem("weapon_proplauncher");
-
-	if (GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER)
-	{
-		GiveNamedItem("weapon_stunstick");
-	}
-	else if (GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN)
-	{
-		GiveNamedItem("weapon_crowbar");
+	case IDNO:
+		if (noCallback)
+			noCallback();
+		break;
 	}
 }
 
-ConVar gabeplus_sandbox("gabe_sandbox", "1", FCVAR_ARCHIVE, "If set to 1, players will spawn with all weapons and infinite aux power.");
-ConVar gabeplus_hl2("gabe_hl2", "0", FCVAR_ARCHIVE, "If set to 1, players will spawn with all hl2 campaign weapons.");
-ConVar gabeplus_jbmod("gabe_jbmod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a jbmod experience, definetly the best game ever made");
-ConVar gabeplus_bemod("gabe_bemod", "0", FCVAR_ARCHIVE, "If set to 1, players will have a buildemod experience");
 
-ConVar gabeplus_deathmatch("gabe_deathmatch", "0", FCVAR_ARCHIVE, "If set to 1, players wil spawn with the default HL2DM weapons.");
-ConVar gabeplus_hl1("gabe_hl1", "0", FCVAR_ARCHIVE, "If set to 1, players wil spawn with the weapons from Half-Life: Source.");
+// ------------------------------------------------------------
+// Abort / Retry / Ignore
+// ------------------------------------------------------------
 
-CON_COMMAND(gabe_createfakeclient, "Creates a fake client for testing purposes")
+void CGabeWindows::MsgBoxAbortRetryIgnore(
+	const char* title,
+	const char* message,
+	void (*abortCallback)(),
+	void (*retryCallback)(),
+	void (*ignoreCallback)())
 {
-	if (args.ArgC() < 2)
+	int result = MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_ABORTRETRYIGNORE | MB_ICONWARNING
+	);
+
+	switch (result)
 	{
-		Msg("Usage: gabe_createfakeclient <name>\n");
+	case IDABORT:
+		if (abortCallback)
+			abortCallback();
+		break;
+
+	case IDRETRY:
+		if (retryCallback)
+			retryCallback();
+		break;
+
+	case IDIGNORE:
+		if (ignoreCallback)
+			ignoreCallback();
+		break;
+	}
+}
+
+
+// ------------------------------------------------------------
+// Yes / No / Cancel
+// ------------------------------------------------------------
+
+void CGabeWindows::MsgBoxYesNoCancel(
+	const char* title,
+	const char* message,
+	void (*yesCallback)(),
+	void (*noCallback)(),
+	void (*cancelCallback)())
+{
+	int result = MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_YESNOCANCEL | MB_ICONQUESTION
+	);
+
+	switch (result)
+	{
+	case IDYES:
+		if (yesCallback)
+			yesCallback();
+		break;
+
+	case IDNO:
+		if (noCallback)
+			noCallback();
+		break;
+
+	case IDCANCEL:
+		if (cancelCallback)
+			cancelCallback();
+		break;
+	}
+}
+
+
+// ------------------------------------------------------------
+// OK / Cancel
+// ------------------------------------------------------------
+
+void CGabeWindows::MsgBoxOkCancel(
+	const char* title,
+	const char* message,
+	void (*okCallback)(),
+	void (*cancelCallback)())
+{
+	int result = MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_OKCANCEL | MB_ICONINFORMATION
+	);
+
+	switch (result)
+	{
+	case IDOK:
+		if (okCallback)
+			okCallback();
+		break;
+
+	case IDCANCEL:
+		if (cancelCallback)
+			cancelCallback();
+		break;
+	}
+}
+
+
+// ------------------------------------------------------------
+// Retry / Cancel
+// ------------------------------------------------------------
+
+void CGabeWindows::MsgBoxRetryCancel(
+	const char* title,
+	const char* message,
+	void (*retryCallback)(),
+	void (*cancelCallback)())
+{
+	int result = MessageBoxA(
+		NULL,
+		message,
+		title,
+		MB_RETRYCANCEL | MB_ICONWARNING
+	);
+
+	switch (result)
+	{
+	case IDRETRY:
+		if (retryCallback)
+			retryCallback();
+		break;
+
+	case IDCANCEL:
+		if (cancelCallback)
+			cancelCallback();
+		break;
+	}
+}
+
+
+// ============================================================
+// Custom message box
+// ============================================================
+
+struct GabeCustomMsgBoxData_t
+{
+	void (*button1Callback)();
+	void (*button2Callback)();
+	void (*button3Callback)();
+};
+
+#define GABE_BUTTON1 1001
+#define GABE_BUTTON2 1002
+#define GABE_BUTTON3 1003
+
+
+static LRESULT CALLBACK GabeCustomMsgBoxProc(
+	HWND hwnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam)
+{
+	GabeCustomMsgBoxData_t* pData =
+		(GabeCustomMsgBoxData_t*)GetWindowLongPtr(
+			hwnd,
+			GWLP_USERDATA
+		);
+
+	switch (uMsg)
+	{
+	case WM_COMMAND:
+	{
+		switch (LOWORD(wParam))
+		{
+		case GABE_BUTTON1:
+			if (pData && pData->button1Callback)
+				pData->button1Callback();
+
+			DestroyWindow(hwnd);
+			return 0;
+
+		case GABE_BUTTON2:
+			if (pData && pData->button2Callback)
+				pData->button2Callback();
+
+			DestroyWindow(hwnd);
+			return 0;
+
+		case GABE_BUTTON3:
+			if (pData && pData->button3Callback)
+				pData->button3Callback();
+
+			DestroyWindow(hwnd);
+			return 0;
+		}
+	}
+	break;
+
+	case WM_CLOSE:
+		DestroyWindow(hwnd);
+		return 0;
+
+	case WM_DESTROY:
+		if (pData)
+		{
+			delete pData;
+
+			SetWindowLongPtr(
+				hwnd,
+				GWLP_USERDATA,
+				0
+			);
+		}
+
+		return 0;
+	}
+
+	return DefWindowProcA(
+		hwnd,
+		uMsg,
+		wParam,
+		lParam
+	);
+}
+
+
+void CGabeWindows::MsgBoxCustom(
+	const char* title,
+	const char* message,
+	const char* button1Text,
+	void (*button1Callback)(),
+	const char* button2Text,
+	void (*button2Callback)(),
+	const char* button3Text,
+	void (*button3Callback)())
+{
+	HINSTANCE hInstance = GetModuleHandleA(NULL);
+
+	const char* className = "GabeCustomMessageBox";
+
+	WNDCLASSA wc;
+	ZeroMemory(&wc, sizeof(wc));
+
+	wc.lpfnWndProc = GabeCustomMsgBoxProc;
+	wc.hInstance = hInstance;
+	wc.lpszClassName = className;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+
+	RegisterClassA(&wc);
+
+	const int width = 450;
+	const int height = 180;
+
+	HWND hwnd = CreateWindowExA(
+		WS_EX_DLGMODALFRAME,
+		className,
+		title,
+		WS_CAPTION |
+		WS_SYSMENU,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		width,
+		height,
+		NULL,
+		NULL,
+		hInstance,
+		NULL
+	);
+
+	if (!hwnd)
 		return;
+
+	GabeCustomMsgBoxData_t* pData =
+		new GabeCustomMsgBoxData_t;
+
+	pData->button1Callback = button1Callback;
+	pData->button2Callback = button2Callback;
+	pData->button3Callback = button3Callback;
+
+	SetWindowLongPtr(
+		hwnd,
+		GWLP_USERDATA,
+		(LONG_PTR)pData
+	);
+
+	// Message text
+	CreateWindowExA(
+		0,
+		"STATIC",
+		message,
+		WS_CHILD |
+		WS_VISIBLE |
+		SS_LEFT,
+		20,
+		20,
+		400,
+		60,
+		hwnd,
+		NULL,
+		hInstance,
+		NULL
+	);
+
+	const int buttonWidth = 110;
+	const int buttonHeight = 28;
+	const int spacing = 10;
+
+	int totalWidth =
+		buttonWidth * 3 +
+		spacing * 2;
+
+	int startX =
+		(width - totalWidth) / 2;
+
+	CreateWindowExA(
+		0,
+		"BUTTON",
+		button1Text,
+		WS_CHILD |
+		WS_VISIBLE |
+		BS_PUSHBUTTON,
+		startX,
+		95,
+		buttonWidth,
+		buttonHeight,
+		hwnd,
+		(HMENU)GABE_BUTTON1,
+		hInstance,
+		NULL
+	);
+
+	CreateWindowExA(
+		0,
+		"BUTTON",
+		button2Text,
+		WS_CHILD |
+		WS_VISIBLE |
+		BS_PUSHBUTTON,
+		startX + buttonWidth + spacing,
+		95,
+		buttonWidth,
+		buttonHeight,
+		hwnd,
+		(HMENU)GABE_BUTTON2,
+		hInstance,
+		NULL
+	);
+
+	CreateWindowExA(
+		0,
+		"BUTTON",
+		button3Text,
+		WS_CHILD |
+		WS_VISIBLE |
+		BS_PUSHBUTTON,
+		startX + (buttonWidth + spacing) * 2,
+		95,
+		buttonWidth,
+		buttonHeight,
+		hwnd,
+		(HMENU)GABE_BUTTON3,
+		hInstance,
+		NULL
+	);
+
+	ShowWindow(hwnd, SW_SHOW);
+	UpdateWindow(hwnd);
+
+	// Make it act similarly to MessageBox:
+	// don't return until the window is closed.
+	MSG msg;
+
+	while (IsWindow(hwnd) && GetMessage(&msg, NULL, 0, 0) > 0)
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+}
+
+
+// ============================================================
+// External window
+// ============================================================
+
+struct GabeExternalWindowData_t
+{
+	void (*drawCallback)();
+	void (*closeCallback)();
+};
+
+
+static LRESULT CALLBACK GabeExternalWindowProc(
+	HWND hwnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam)
+{
+	GabeExternalWindowData_t* pData =
+		(GabeExternalWindowData_t*)GetWindowLongPtr(
+			hwnd,
+			GWLP_USERDATA
+		);
+
+	switch (uMsg)
+	{
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+
+		BeginPaint(hwnd, &ps);
+
+		if (pData && pData->drawCallback)
+			pData->drawCallback();
+
+		EndPaint(hwnd, &ps);
+
+		return 0;
 	}
 
-	const char* pszName = args[1];
+	case WM_CLOSE:
+		if (pData && pData->closeCallback)
+			pData->closeCallback();
 
-	edict_t* pBot = engine->CreateFakeClient(pszName);
+		DestroyWindow(hwnd);
+		return 0;
 
-	if (!pBot)
-	{
-		Msg("Failed to create fake client!\n");
+	case WM_DESTROY:
+		if (pData)
+		{
+			delete pData;
+
+			SetWindowLongPtr(
+				hwnd,
+				GWLP_USERDATA,
+				0
+			);
+		}
+
+		return 0;
+	}
+
+	return DefWindowProcA(
+		hwnd,
+		uMsg,
+		wParam,
+		lParam
+	);
+}
+
+
+void CGabeWindows::CreateExternalWindow(
+	const char* title,
+	int width,
+	int height,
+	void (*drawCallback)(),
+	void (*closeCallback)())
+{
+	HINSTANCE hInstance =
+		GetModuleHandleA(NULL);
+
+	const char* className =
+		"GabeExternalWindow";
+
+	WNDCLASSA wc;
+	ZeroMemory(&wc, sizeof(wc));
+
+	wc.lpfnWndProc =
+		GabeExternalWindowProc;
+
+	wc.hInstance =
+		hInstance;
+
+	wc.lpszClassName =
+		className;
+
+	wc.hCursor =
+		LoadCursor(NULL, IDC_ARROW);
+
+	wc.hbrBackground =
+		(HBRUSH)(COLOR_WINDOW + 1);
+
+	RegisterClassA(&wc);
+
+	HWND hwnd =
+		CreateWindowExA(
+			0,
+			className,
+			title,
+			WS_OVERLAPPEDWINDOW,
+			CW_USEDEFAULT,
+			CW_USEDEFAULT,
+			width,
+			height,
+			NULL,
+			NULL,
+			hInstance,
+			NULL
+		);
+
+	if (!hwnd)
 		return;
-	}
 
-	Msg("Fake client '%s' created!\n", pszName);
-}
+	GabeExternalWindowData_t* pData =
+		new GabeExternalWindowData_t;
 
-void CGabeMod_Player::Spawn()
-{
-	BaseClass::Spawn();
+	pData->drawCallback =
+		drawCallback;
 
-	edict_t* pEdict = this->edict();
+	pData->closeCallback =
+		closeCallback;
 
-	if (gabeplus_deathmatch.GetBool())
-	{
-		GiveDefaultItems(); // Deathmatch
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 0");
-	}
-	else if (gabeplus_hl1.GetBool())
-	{
-		GiveHL1Items(); // Sandbox as well but hl1 weapons
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_sandbox.GetBool())
-	{
-		GiveAllItems(); // Sandbox
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_jbmod.GetBool())
-	{
-		GiveJBModItems(); // Sandbox as well but jbmod physgun
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_hl2.GetBool())
-	{
-		GiveHL2Items(); // Sandbox HL2 Campaign
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else if (gabeplus_bemod.GetBool())
-	{
-		GiveBemodItems(); // Sandbox Buildemod
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 1");
-		engine->ClientCommand(pEdict, "god");
-	}
-	else
-	{
-		GiveNoItems(); // HL2 Campaign
-		engine->ClientCommand(pEdict, "sv_infinite_aux_power 0");
-	}
-}
+	SetWindowLongPtr(
+		hwnd,
+		GWLP_USERDATA,
+		(LONG_PTR)pData
+	);
 
+	ShowWindow(
+		hwnd,
+		SW_SHOW
+	);
 
-
-#endif
-
-
-void GabeMod::RunMsgTest()
-{
+	UpdateWindow(hwnd);
 }

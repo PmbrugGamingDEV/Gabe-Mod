@@ -16,6 +16,7 @@
 #include <vgui_controls/frame.h>
 #include <vgui_controls/label.h>
 #include <vgui_controls/button.h>
+#include "GABE_SHARED.H"
 #include <vgui_controls/textentry.h>
 #include <vgui_controls/checkbutton.h>
 #include <vgui_controls/combobox.h>
@@ -30,7 +31,6 @@
 #include <vgui_controls/menu.h>
 
 /* EXTERNAL ADDITIONS */
-#include "gabe_shared.h"
 #include "gabe_spawnmenu.h"
 #include "gabe_newgame.h"
 #include "vscript_in_buttons.h"

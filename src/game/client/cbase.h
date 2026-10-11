@@ -58,4 +58,6 @@ struct studiohdr_t;
 #define MATRIX3X4_STUB matrix3x4_t z; \
 const matrix3x4_t& RenderableToWorldTransform() {return z;}
 
+#define NO_CALLBACK (void(*)())0
+
 #endif // CBASE_H

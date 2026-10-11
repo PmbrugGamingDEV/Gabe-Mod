@@ -6,6 +6,7 @@
 
 #include "cbase.h"
 #include "npcevent.h"
+#include "GABE_SHARED.H"
 #include "in_buttons.h"
 
 #ifdef CLIENT_DLL
@@ -13,7 +14,6 @@
 #else
 	#include "hl2mp_player.h"
 	#include "util.h" // For UTIL_HudHintText
-	#include "gabe_shared.h"
 #endif
 
 #include "weapon_hl2mpbasehlmpcombatweapon.h"
