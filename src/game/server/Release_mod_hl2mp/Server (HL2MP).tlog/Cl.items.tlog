@@ -436,6 +436,7 @@ C:\GabeMod\src\game\server\sticky_pellet.cpp;C:\GabeMod\src\game\server\Release_
 C:\GabeMod\src\game\server\subs.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\subs.obj
 C:\GabeMod\src\game\server\sun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\sun.obj
 C:\GabeMod\src\game\shared\hl2\survival_gamerules.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\survival_gamerules.obj
+C:\GabeMod\src\game\server\sv_cmenu.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\sv_cmenu.obj
 C:\GabeMod\src\game\server\tactical_mission.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\tactical_mission.obj
 C:\GabeMod\src\game\shared\takedamageinfo.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\takedamageinfo.obj
 C:\GabeMod\src\game\server\tanktrain.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\tanktrain.obj

@@ -1,13 +1,4 @@
-﻿  WEAPON_PHYSGUN.CPP
-C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP(92,19): warning C4189: 'pPhysicsObject': local variable is initialized but not referenced
-  (compiling source file '/shared/hl2mp/WEAPON_PHYSGUN.CPP')
-  
-C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP(990,8): warning C4189: 'distance': local variable is initialized but not referenced
-  (compiling source file '/shared/hl2mp/WEAPON_PHYSGUN.CPP')
-  
-C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP(1308,15): warning C4189: 'pObject': local variable is initialized but not referenced
-  (compiling source file '/shared/hl2mp/WEAPON_PHYSGUN.CPP')
-  
+﻿  contextmenu.cpp
   NMath.lib(NMath.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
      Creating library .\Release_mod_hl2mp\\client.lib and object .\Release_mod_hl2mp\\client.exp
   Generating code

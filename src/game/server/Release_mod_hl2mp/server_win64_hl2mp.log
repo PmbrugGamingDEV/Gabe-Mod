@@ -1,7 +1,4 @@
-﻿  WEAPON_PHYSGUN.CPP
-C:\GabeMod\src\game\shared\hl2mp\WEAPON_PHYSGUN.CPP(92,19): warning C4189: 'pPhysicsObject': local variable is initialized but not referenced
-  (compiling source file '/shared/hl2mp/WEAPON_PHYSGUN.CPP')
-  
+﻿  sv_cmenu.cpp
   NMath.lib(NMath.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
      Creating library .\Release_mod_hl2mp\server.lib and object .\Release_mod_hl2mp\server.exp
   Generating code

@@ -523,6 +523,7 @@ public:
 	virtual void SecondaryAttack();
 	virtual void ItemPostFrame();
 	virtual bool Deploy();
+	bool ApplyMenuSetting(const char* group, const char* value);
 
 private:
 	CBaseEntity* FindEntityInFront();
@@ -531,6 +532,7 @@ private:
 	void ShowDistance(CBaseEntity* pEnt);
 	void ThrowLightWatermelon();
 	void CreateBalloon(CBaseEntity* pTarget);
+	void ApplyExtendedTool(CBaseEntity* pEnt, bool secondary);
 
 	int m_nMultitoolMode;
 	int m_nColorIndex;
@@ -637,13 +639,29 @@ enum MultitoolMode_t
 	MODE_FACEPOSER,
 	MODE_BALLOON,
 	MODE_THRUSTER,
+	MODE_ELASTIC,
+	MODE_HYDRAULIC,
+	MODE_MUSCLE,
+	MODE_WINCH,
+	MODE_MOTOR,
+	MODE_BUOYANCY,
+	MODE_HOVERBALL,
+	MODE_UPRIGHT,
+	MODE_MAGNET,
+	MODE_WEIGHT,
+	MODE_PHYSICAL,
+	MODE_STACKER,
+	MODE_EMITTER,
+	MODE_LAMP,
+	MODE_BUTTON,
+	MODE_DOOR,
 	MODE_MAX
 };
 
 MultitoolMode_t StringToMode(const char* psz)
 {
-	if (!psz)
-		return MODE_REMOVE;
+	if (!psz || !*psz)
+		return MODE_MAX;
 
 	if (!Q_stricmp(psz, "remove")) return MODE_REMOVE;
 	if (!Q_stricmp(psz, "distance")) return MODE_DISTANCE;
@@ -660,8 +678,167 @@ MultitoolMode_t StringToMode(const char* psz)
 	if (!Q_stricmp(psz, "balloon")) return MODE_BALLOON;
 	if (!Q_stricmp(psz, "thruster")) return MODE_THRUSTER;
 
-	return MODE_REMOVE;
+	if (!Q_stricmp(psz, "elastic")) return MODE_ELASTIC;
+	if (!Q_stricmp(psz, "hydraulic")) return MODE_HYDRAULIC;
+	if (!Q_stricmp(psz, "muscle")) return MODE_MUSCLE;
+	if (!Q_stricmp(psz, "winch")) return MODE_WINCH;
+	if (!Q_stricmp(psz, "motor")) return MODE_MOTOR;
+	if (!Q_stricmp(psz, "buoyancy")) return MODE_BUOYANCY;
+	if (!Q_stricmp(psz, "hoverball")) return MODE_HOVERBALL;
+	if (!Q_stricmp(psz, "keepupright")) return MODE_UPRIGHT;
+	if (!Q_stricmp(psz, "magnetise")) return MODE_MAGNET;
+	if (!Q_stricmp(psz, "weight")) return MODE_WEIGHT;
+	if (!Q_stricmp(psz, "physicalproperties")) return MODE_PHYSICAL;
+	if (!Q_stricmp(psz, "stacker")) return MODE_STACKER;
+	if (!Q_stricmp(psz, "emitter")) return MODE_EMITTER;
+	if (!Q_stricmp(psz, "lamp")) return MODE_LAMP;
+	if (!Q_stricmp(psz, "button")) return MODE_BUTTON;
+	if (!Q_stricmp(psz, "door")) return MODE_DOOR;
+
+	return MODE_MAX;
 }
+
+
+bool GabeMultitool_SelectMode(const char* mode)
+{
+	const MultitoolMode_t selected = StringToMode(mode);
+	if (selected == MODE_MAX)
+	{
+		Warning("[Multitool] Unknown mode: '%s'\n", mode ? mode : "(null)");
+		return false;
+	}
+	mtool_mode.SetValue(mode);
+	Msg("[Multitool] Server selected '%s' (ID %d)\n", mode, (int)selected);
+	return true;
+}
+
+// Extended sandbox tools. Each persistent device is an undoable server entity.
+ConVar mtool_weight("mtool_weight", "50", FCVAR_ARCHIVE, "Mass in kg", true, 1, true, 5000);
+ConVar mtool_gravity("mtool_gravity", "1", FCVAR_ARCHIVE, "Gravity for physical properties tool");
+ConVar mtool_damping("mtool_damping", "0.5", FCVAR_ARCHIVE, "Linear/angular damping", true, 0, true, 20);
+ConVar mtool_stack_count("mtool_stack_count", "4", FCVAR_ARCHIVE, "Number of stacked copies", true, 1, true, 12);
+ConVar mtool_stack_gap("mtool_stack_gap", "2", FCVAR_ARCHIVE, "Stack clearance", true, 1, true, 128);
+ConVar mtool_motor_speed("mtool_motor_speed", "180", FCVAR_ARCHIVE, "Motor target angular velocity", true, -720, true, 720);
+ConVar mtool_magnet_radius("mtool_magnet_radius", "256", FCVAR_ARCHIVE, "Magnet radius", true, 32, true, 512);
+ConVar mtool_device_strength("mtool_device_strength", "1", FCVAR_ARCHIVE, "Force device strength", true, 0.1, true, 4);
+
+static bool ExtendedPhysicsTarget(CBaseEntity* e)
+{
+	return e && !e->IsWorld() && !e->IsPlayer() && !e->IsNPC() &&
+		e->GetMoveType() == MOVETYPE_VPHYSICS && e->VPhysicsGetObject();
+}
+
+class CMultitoolDevice : public CBaseEntity
+{
+public:
+	DECLARE_CLASS(CMultitoolDevice, CBaseEntity);
+	DECLARE_DATADESC();
+	EHANDLE m_hA, m_hB, m_hCreator;
+	int m_Mode;
+	float m_Length, m_Height, m_Start;
+	bool m_bReverse;
+	Vector m_LocalA, m_LocalB;
+	QAngle m_Angles;
+	void Spawn() override
+	{
+		SetSolid(SOLID_NONE); SetMoveType(MOVETYPE_NONE);
+		AddEffects(EF_NODRAW);
+		SetThink(&CMultitoolDevice::DeviceThink);
+		SetNextThink(gpGlobals->curtime + 0.05f);
+	}
+	void DeviceThink()
+	{
+		CBaseEntity* a = m_hA.Get(); CBaseEntity* b = m_hB.Get();
+		if (!m_hCreator.Get() || !ExtendedPhysicsTarget(a) ||
+			(m_Mode <= MODE_WINCH && !ExtendedPhysicsTarget(b)))
+		{
+			UTIL_Remove(this); return;
+		}
+		IPhysicsObject* pa = a->VPhysicsGetObject();
+		const float strength = mtool_device_strength.GetFloat();
+		const float mass = pa->GetMass();
+		Vector v; AngularImpulse av; pa->GetVelocity(&v, &av);
+		if (m_Mode <= MODE_WINCH)
+		{
+			IPhysicsObject* pb = b->VPhysicsGetObject();
+			Vector x, y, vb; pa->LocalToWorld(&x, m_LocalA); pb->LocalToWorld(&y, m_LocalB);
+			pb->GetVelocity(&vb, NULL);
+			Vector dir = y - x; float len = VectorNormalize(dir);
+			float rest = m_Length;
+			if (m_Mode == MODE_HYDRAULIC) rest *= m_bReverse ? 1.75f : 0.55f;
+			if (m_Mode == MODE_MUSCLE) rest *= 1.0f + 0.3f * sinf((gpGlobals->curtime - m_Start) * 3.0f);
+			if (m_Mode == MODE_WINCH)
+			{
+				m_Length = clamp(m_Length + (m_bReverse ? 1.5f : -1.5f), 16.0f, 2048.0f);
+				rest = m_Length;
+			}
+			float error = len - rest;
+			if (m_Mode != MODE_WINCH || error > 0)
+			{
+				float reducedMass = mass * pb->GetMass() / MAX(1.0f, mass + pb->GetMass());
+				float force = clamp((error * 18.0f + DotProduct(vb - v, dir) * 5.0f) * reducedMass * strength,
+					-reducedMass * 2500.0f, reducedMass * 2500.0f);
+				pa->ApplyForceOffset(dir * force, x); pb->ApplyForceOffset(-dir * force, y);
+				pa->Wake(); pb->Wake();
+			}
+		}
+		else if (m_Mode == MODE_MOTOR || m_Mode == MODE_UPRIGHT)
+		{
+			QAngle ang; pa->GetPosition(NULL, &ang);
+			Vector torque;
+			if (m_Mode == MODE_MOTOR)
+			{
+				Vector axis; AngleVectors(ang, NULL, NULL, &axis);
+				// Angular velocity is in physics local space; drive local Z.
+				torque = axis * clamp((mtool_motor_speed.GetFloat() - av.z) * mass * strength, -mass * 2000.0f, mass * 2000.0f);
+			}
+			else
+			{
+				Vector up, desiredUp; AngleVectors(ang, NULL, NULL, &up); AngleVectors(m_Angles, NULL, NULL, &desiredUp);
+				Vector axis = CrossProduct(up, desiredUp);
+				Vector worldAV; VectorRotate(av, ang, worldAV);
+				torque = (axis * 1000.0f - worldAV * 2.0f) * mass * strength;
+			}
+			pa->ApplyTorqueCenter(torque); pa->Wake();
+		}
+		else if (m_Mode == MODE_HOVERBALL || m_Mode == MODE_BUOYANCY)
+		{
+			static ConVarRef gravity("sv_gravity");
+			float g = gravity.IsValid() ? gravity.GetFloat() : 600.0f;
+			if (m_Mode == MODE_HOVERBALL || (UTIL_PointContents(a->WorldSpaceCenter()) & CONTENTS_WATER))
+			{
+				float correction = m_Mode == MODE_HOVERBALL ? (m_Height - a->GetAbsOrigin().z) * 12.0f : 150.0f;
+				float lift = clamp(g + correction - v.z * 5.0f, -1500.0f, 2000.0f);
+				pa->ApplyForceCenter(Vector(0, 0, mass * lift * strength)); pa->Wake();
+			}
+		}
+		else if (m_Mode == MODE_MAGNET)
+		{
+			float radius = mtool_magnet_radius.GetFloat();
+			CBaseEntity* e = NULL; int count = 0;
+			while ((e = gEntList.FindEntityInSphere(e, a->WorldSpaceCenter(), radius)) != NULL && count < 32)
+			{
+				if (e == a || !ExtendedPhysicsTarget(e)) continue;
+				IPhysicsObject* phys = e->VPhysicsGetObject();
+				if (!phys->IsMotionEnabled()) continue;
+				Vector dir = a->WorldSpaceCenter() - e->WorldSpaceCenter(); float dist = VectorNormalize(dir);
+				if (dist < 8.0f) continue;
+				phys->ApplyForceCenter(dir * phys->GetMass() * 600.0f * strength * (1.0f - dist / radius));
+				phys->Wake(); ++count;
+			}
+		}
+		SetNextThink(gpGlobals->curtime + 0.05f);
+	}
+};
+LINK_ENTITY_TO_CLASS(gabe_multitool_device, CMultitoolDevice);
+BEGIN_DATADESC(CMultitoolDevice)
+DEFINE_FIELD(m_hA, FIELD_EHANDLE), DEFINE_FIELD(m_hB, FIELD_EHANDLE),
+DEFINE_FIELD(m_hCreator, FIELD_EHANDLE), DEFINE_FIELD(m_Mode, FIELD_INTEGER),
+DEFINE_FIELD(m_Length, FIELD_FLOAT), DEFINE_FIELD(m_Height, FIELD_FLOAT),
+DEFINE_FIELD(m_Start, FIELD_TIME), DEFINE_FIELD(m_bReverse, FIELD_BOOLEAN),
+DEFINE_FIELD(m_LocalA, FIELD_VECTOR), DEFINE_FIELD(m_LocalB, FIELD_VECTOR),
+DEFINE_FIELD(m_Angles, FIELD_VECTOR), DEFINE_THINKFUNC(DeviceThink),
+END_DATADESC()
 
 BEGIN_LIST(g_szModeNames)
 LIST_ENTRY(Remove),
@@ -676,8 +853,24 @@ LIST_ENTRY(Light_Watermelon),
 LIST_ENTRY(Decal),
 LIST_ENTRY(Render_FX),
 LIST_ENTRY(Faceposer_NPCs)
-LIST_ENTRY(Balloon)
-LIST_ENTRY(Thruster)
+LIST_ENTRY(Balloon),
+LIST_ENTRY(Thruster),
+LIST_ENTRY(Elastic),
+LIST_ENTRY(Hydraulics),
+LIST_ENTRY(Muscle),
+LIST_ENTRY(Winch),
+LIST_ENTRY(Motor),
+LIST_ENTRY(Buoyancy),
+LIST_ENTRY(Hover_Ball),
+LIST_ENTRY(Keep_Upright),
+LIST_ENTRY(Magnetise),
+LIST_ENTRY(Weight),
+LIST_ENTRY(Physical_Properties),
+LIST_ENTRY(Stacker),
+LIST_ENTRY(Emitter),
+LIST_ENTRY(Lamp),
+LIST_ENTRY(Buttons),
+LIST_ENTRY(Door)
 END_LIST(g_szModeNames)
 
 BEGIN_LIST(g_szConstraintTypes)
@@ -690,6 +883,7 @@ END_LIST(g_szConstraintTypes)
 
 CBaseEntity* CWeaponMultitool::FindEntityInFront()
 {
+	if (!ToBasePlayer(GetOwner())) return NULL;
 	trace_t tr;
 	Vector start = GetOwner()->EyePosition();
 	Vector forward;
@@ -702,6 +896,9 @@ CBaseEntity* CWeaponMultitool::FindEntityInFront()
 bool CWeaponMultitool::Deploy()
 {
 	bool result = BaseClass::Deploy();
+	MultitoolMode_t selected = StringToMode(mtool_mode.GetString());
+	if (selected != MODE_MAX) m_nMultitoolMode = selected;
+	Msg("[Multitool] Deploy: cvar=%s, ID=%d\n", mtool_mode.GetString(), m_nMultitoolMode);
 	SendHudUpdate();
 	return result;
 }
@@ -791,6 +988,13 @@ void CWeaponMultitool::SecondaryAttack()
 	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
 	if (!pPlayer)
 		return;
+
+	if (m_nMultitoolMode >= MODE_ELASTIC && m_nMultitoolMode < MODE_MAX)
+	{
+		ApplyExtendedTool(FindEntityInFront(), true);
+		m_flNextSecondaryAttack = gpGlobals->curtime + 0.3f;
+		return;
+	}
 
 	if (m_nMultitoolMode == MODE_DUPLICATE)
 	{
@@ -1333,6 +1537,10 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 {
 	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
 	if (!pPlayer) return;
+	if (m_nMultitoolMode >= MODE_ELASTIC && m_nMultitoolMode < MODE_MAX)
+	{
+		ApplyExtendedTool(pEnt, false); return;
+	}
 
 	switch (m_nMultitoolMode)
 	{
@@ -1999,6 +2207,7 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 		}
 
 		pMsg->SetAbsOrigin(spawnPos);
+		pMsg->SetOwnerEntity(pPlayer);
 
 		// Apply keyvalues BEFORE spawn
 		pMsg->KeyValue("targetname", "gabeplus_mtool_pmessage");
@@ -2036,6 +2245,130 @@ void CWeaponMultitool::ApplyToolAction(CBaseEntity* pEnt)
 	}
 }
 
+
+void CWeaponMultitool::ApplyExtendedTool(CBaseEntity* pEnt, bool secondary)
+{
+	CBasePlayer* player = ToBasePlayer(GetOwner());
+	if (!player) return;
+	const int mode = m_nMultitoolMode;
+	Vector forward; player->EyeVectors(&forward);
+	trace_t tr;
+	UTIL_TraceLine(player->EyePosition(), player->EyePosition() + forward * 2000,
+		MASK_SOLID, player, COLLISION_GROUP_NONE, &tr);
+	if (!tr.DidHit() || tr.startsolid || (tr.surface.flags & SURF_SKY)) return;
+	pEnt = tr.m_pEnt;
+	if (!pEnt) return;
+	if (mode == MODE_EMITTER || mode == MODE_LAMP)
+	{
+		if (secondary) return;
+		CBaseEntity* e = CreateEntityByName(mode == MODE_EMITTER ? "env_spark" : "point_spotlight");
+		if (!e) return;
+		e->SetAbsOrigin(tr.endpos + tr.plane.normal * 4);
+		QAngle angle; VectorAngles(tr.plane.normal, angle); e->SetAbsAngles(angle);
+		if (mode == MODE_EMITTER) { e->KeyValue("MaxDelay", "0.5"); e->KeyValue("spawnflags", "64"); }
+		else { e->KeyValue("spotlightlength", "256"); e->KeyValue("spotlightwidth", "48"); e->KeyValue("rendercolor", "255 255 220"); e->KeyValue("spawnflags", "1"); }
+		if (DispatchSpawn(e) < 0) return;
+		e->Activate();
+		GabeUndo_AddEntity(player, e, mode == MODE_EMITTER ? "Emitter" : "Lamp");
+		return;
+	}
+	if (mode == MODE_BUTTON || mode == MODE_DOOR)
+	{
+		if (secondary) return;
+		if (mode == MODE_BUTTON && (FClassnameIs(pEnt, "func_button") || FClassnameIs(pEnt, "func_rot_button")))
+			pEnt->AcceptInput("Press", player, this, variant_t(), 0);
+		else if (mode == MODE_DOOR && (FClassnameIs(pEnt, "func_door") || FClassnameIs(pEnt, "func_door_rotating") || FClassnameIs(pEnt, "prop_door_rotating")))
+			pEnt->AcceptInput("Toggle", player, this, variant_t(), 0);
+		return;
+	}
+	if (!ExtendedPhysicsTarget(pEnt))
+	{
+		CGabeServerFuncs::HudText(player, "Aim at a physics prop.", 255, 100, 100); return;
+	}
+	IPhysicsObject* phys = pEnt->VPhysicsGetObject();
+	if (mode == MODE_WEIGHT)
+	{
+		if (!secondary) phys->SetMass(mtool_weight.GetFloat());
+		CGabeServerFuncs::HudText(player, UTIL_VarArgs("Mass: %.1f kg", phys->GetMass()), 200, 255, 200); return;
+	}
+	if (mode == MODE_PHYSICAL)
+	{
+		if (secondary) phys->EnableGravity(!phys->IsGravityEnabled());
+		else { float damping = mtool_damping.GetFloat(); phys->SetDamping(&damping, &damping); phys->EnableGravity(mtool_gravity.GetBool()); }
+		phys->Wake(); return;
+	}
+	if (mode == MODE_STACKER)
+	{
+		if (secondary || !FClassnameIs(pEnt, "prop_physics") || pEnt->GetModelName() == NULL_STRING) return;
+		Vector mins, maxs; pEnt->CollisionProp()->WorldSpaceAABB(&mins, &maxs);
+		Vector origin = pEnt->GetAbsOrigin();
+		float step = MAX(2.0f, maxs.z - mins.z + mtool_stack_gap.GetFloat());
+		GabeUndo_Begin(player, "Stacker");
+		for (int i = 1; i <= mtool_stack_count.GetInt(); ++i)
+		{
+			Vector pos = origin + Vector(0, 0, step * i);
+			trace_t check;
+			UTIL_TraceHull(pos, pos, mins - origin, maxs - origin, MASK_SOLID, NULL, COLLISION_GROUP_NONE, &check);
+			if (check.startsolid || check.allsolid) break;
+			CBaseEntity* copy = CreateEntityByName("prop_physics"); if (!copy) break;
+			copy->SetModel(STRING(pEnt->GetModelName())); copy->SetAbsOrigin(pos); copy->SetAbsAngles(pEnt->GetAbsAngles());
+			if (DispatchSpawn(copy) < 0) break;
+			copy->Activate();
+			color32 c = pEnt->GetRenderColor(); copy->SetRenderColor(c.r, c.g, c.b, c.a);
+			if (copy->VPhysicsGetObject()) { copy->VPhysicsGetObject()->SetMass(phys->GetMass()); copy->VPhysicsGetObject()->EnableMotion(false); }
+			GabeUndo_Add(copy);
+		}
+		GabeUndo_Finish(); return;
+	}
+	if (mode < MODE_ELASTIC || mode > MODE_MAGNET) return;
+	if (secondary)
+	{
+		m_hConstraintTarget1 = NULL; m_hConstraintTarget2 = NULL;
+		CBaseEntity* e = NULL;
+		while ((e = gEntList.FindEntityByClassname(e, "gabe_multitool_device")) != NULL)
+		{
+			CMultitoolDevice* d = static_cast<CMultitoolDevice*>(e);
+			if (d->m_Mode != mode || d->m_hCreator.Get() != player || (d->m_hA.Get() != pEnt && d->m_hB.Get() != pEnt) || d->IsMarkedForDeletion()) continue;
+			if (mode == MODE_HYDRAULIC || mode == MODE_WINCH) d->m_bReverse = !d->m_bReverse;
+			else UTIL_Remove(d);
+		}
+		return;
+	}
+	CBaseEntity* a = pEnt; CBaseEntity* b = NULL;
+	Vector localA = vec3_origin, localB = vec3_origin;
+	if (mode <= MODE_WINCH)
+	{
+		if (!m_hConstraintTarget1)
+		{
+			m_hConstraintTarget1 = pEnt;
+			phys->WorldToLocal(&m_vecConstraintPos1, tr.endpos);
+			CGabeServerFuncs::HudText(player, "First anchor selected. Select another prop.", 200, 255, 255); return;
+		}
+		a = m_hConstraintTarget1.Get(); b = pEnt; localA = m_vecConstraintPos1;
+		m_hConstraintTarget1 = NULL;
+		if (!ExtendedPhysicsTarget(a) || a == b) return;
+		phys->WorldToLocal(&localB, tr.endpos);
+	}
+	CBaseEntity* e = NULL;
+	while ((e = gEntList.FindEntityByClassname(e, "gabe_multitool_device")) != NULL)
+	{
+		CMultitoolDevice* d = static_cast<CMultitoolDevice*>(e);
+		if (d->m_Mode == mode && !d->IsMarkedForDeletion() && ((d->m_hA.Get() == a && d->m_hB.Get() == b) || (b && d->m_hA.Get() == b && d->m_hB.Get() == a)))
+		{
+			CGabeServerFuncs::HudText(player, "Device already exists.", 255, 150, 100); return;
+		}
+	}
+	CMultitoolDevice* d = static_cast<CMultitoolDevice*>(CreateEntityByName("gabe_multitool_device")); if (!d) return;
+	d->m_hA = a; d->m_hB = b; d->m_hCreator = player; d->m_Mode = mode;
+	d->m_LocalA = localA; d->m_LocalB = localB; d->m_Height = a->GetAbsOrigin().z;
+	d->m_Angles = a->GetAbsAngles(); d->m_Start = gpGlobals->curtime; d->m_bReverse = false; d->m_Length = 0;
+	if (b) { Vector x, y; a->VPhysicsGetObject()->LocalToWorld(&x, localA); b->VPhysicsGetObject()->LocalToWorld(&y, localB); d->m_Length = MAX(16.0f, (y - x).Length()); }
+	if (DispatchSpawn(d) < 0) return;
+	d->Activate();
+	GabeUndo_AddEntity(player, d, g_szModeNames[mode]);
+	CGabeServerFuncs::HudText(player, "Device created.", 150, 255, 150);
+}
+
 void CWeaponMultitool::ShowDistance(CBaseEntity* pEnt)
 {
 	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
@@ -2051,219 +2384,26 @@ void CWeaponMultitool::ItemPostFrame()
 	if (!pPlayer) return;
 
 	MultitoolMode_t newMode = StringToMode(mtool_mode.GetString());
+	if (newMode == MODE_MAX)
+	{
+		static char lastInvalid[256] = "";
+		if (Q_strcmp(lastInvalid, mtool_mode.GetString()))
+		{
+			Warning("[Multitool] Invalid mode '%s'; retaining ID %d\n", mtool_mode.GetString(), m_nMultitoolMode);
+			Q_strncpy(lastInvalid, mtool_mode.GetString(), sizeof(lastInvalid));
+		}
+	}
 
-	if (newMode != m_nMultitoolMode)
+	if (newMode != MODE_MAX && newMode != m_nMultitoolMode)
 	{
 		m_hConstraintTarget1 = NULL;
 		m_hConstraintTarget2 = NULL;
 		m_nMultitoolMode = newMode;
+		Msg("[Multitool] Active mode: %s (ID %d)\n", mtool_mode.GetString(), m_nMultitoolMode);
 		SendHudUpdate();
 	}
 
-	if ((pPlayer->m_nButtons & IN_RELOAD) && (pPlayer->m_afButtonPressed & IN_RELOAD))
-	{
-		if (m_nMultitoolMode == MODE_COLOR || m_nMultitoolMode == MODE_DECAL || m_nMultitoolMode == MODE_THRUSTER)
-		{
-			if (m_nMultitoolMode == MODE_COLOR)
-			{
-				m_nColorIndex = (m_nColorIndex + 1) % g_ColorPresets_COUNT;
-				const char* name = g_ColorPresets[m_nColorIndex].name;
-				CGabeServerFuncs::HudText(pPlayer, UTIL_VarArgs("Color Mode: %s", name), 255, 255, 255);
-				SendHudUpdate();
-			}
-			else if (m_nMultitoolMode == MODE_DECAL)
-			{
-				m_nDecalIndex = (m_nDecalIndex + 1) % DECAL_COUNT;
-				const char* name = g_DecalNames[m_nDecalIndex];
-				CGabeServerFuncs::HudText(pPlayer, UTIL_VarArgs("Decal: %s", name), 255, 255, 255);
-				SendHudUpdate();
-			}
-
-			// -----------------------------------------
-			// Thruster power selection (R)
-			// -----------------------------------------
-			else if (m_nMultitoolMode == MODE_THRUSTER)
-			{
-				// Red -> Green -> Blue -> Red
-				m_nThrusterPower = (m_nThrusterPower + 1) % 3;
-
-				const char* pszPowerNames[] =
-				{
-					"LOW (RED)",
-					"MEDIUM (GREEN)",
-					"HIGH (BLUE)"
-				};
-
-				const int colors[3][3] =
-				{
-					{ 255, 0, 0 },
-					{ 0, 255, 0 },
-					{ 0, 100, 255 }
-				};
-
-				CGabeServerFuncs::HudText(
-					pPlayer,
-					UTIL_VarArgs(
-						"Thruster Power: %s",
-						pszPowerNames[m_nThrusterPower]
-					),
-					colors[m_nThrusterPower][0],
-					colors[m_nThrusterPower][1],
-					colors[m_nThrusterPower][2]
-				);
-
-				SendHudUpdate();
-			}
-		}
-	}
-
-	if (m_nMultitoolMode == MODE_MATERIAL)
-	{
-		if (pPlayer->m_afButtonPressed & IN_RELOAD)
-		{
-			m_nMaterialIndex = (m_nMaterialIndex + 1) % RENDERFX_COUNT;
-
-			CGabeServerFuncs::HudText(
-				pPlayer,
-				UTIL_VarArgs(
-					"RenderFX: %s",
-					g_RenderFxModes[m_nMaterialIndex].name
-				),
-				255, 255, 255
-			);
-
-			SendHudUpdate();
-		}
-	}
-
-	if (m_nMultitoolMode == MODE_BALLOON)
-	{
-		if (pPlayer->m_afButtonPressed & IN_RELOAD)
-		{
-			m_nBalloonLiftIndex++;
-
-			if (m_nBalloonLiftIndex >= 10)
-				m_nBalloonLiftIndex = 0;
-
-			CGabeServerFuncs::HudText(
-				pPlayer,
-				UTIL_VarArgs(
-					"Balloon lift: %.0f",
-					m_BalloonLiftForces[m_nBalloonLiftIndex]
-				),
-				150, 255, 150
-			);
-
-			SendHudUpdate();
-		}
-	}
-
-	if (m_nMultitoolMode == MODE_FACEPOSER)
-	{
-		if (pPlayer->m_afButtonPressed & IN_RELOAD)
-		{
-			m_nFaceIndex = (m_nFaceIndex + 1) % FACE_COUNT;
-
-			CBaseFlex* pSelectedFlex = dynamic_cast<CBaseFlex*>(m_hFaceTarget.Get());
-			if (pSelectedFlex)
-				ApplyFacePreset(pSelectedFlex, m_nFaceIndex, true);
-
-			CGabeServerFuncs::HudText(
-				pPlayer,
-				UTIL_VarArgs("Face: %s", g_FacePresets[m_nFaceIndex].name),
-				255, 255, 255
-			);
-
-			SendHudUpdate();
-		}
-	}
-
-
-	if (m_nMultitoolMode == MODE_CONSTRAINT)
-	{
-		if ((pPlayer->m_nButtons & IN_RELOAD) && (pPlayer->m_afButtonPressed & IN_RELOAD))
-		{
-			m_hConstraintTarget1 = NULL;
-			m_hConstraintTarget2 = NULL;
-			m_nConstraintType = (m_nConstraintType + 1) % g_szConstraintTypes_COUNT;
-			CGabeServerFuncs::HudText(pPlayer, UTIL_VarArgs("Constraint Type: %s", g_szConstraintTypes[m_nConstraintType]), 255, 255, 255);
-
-			SendHudUpdate();
-		}
-
-		if ((pPlayer->m_nButtons & IN_USE) &&
-			(pPlayer->m_afButtonPressed & IN_USE))
-		{
-			int removed = 0;
-
-			// Destroy physics constraints
-			for (int i = 0; i < m_Constraints.Count(); i++)
-			{
-				if (m_Constraints[i])
-				{
-					if (!m_Constraints[i]->IsMarkedForDeletion())
-						UTIL_Remove(m_Constraints[i].Get());
-					removed++;
-				}
-			}
-
-			m_Constraints.RemoveAll();
-			m_hConstraintTarget1 = NULL;
-			m_hConstraintTarget2 = NULL;
-
-
-			CGabeServerFuncs::HudText(pPlayer,
-				UTIL_VarArgs("Removed %d constraints.", removed),
-				255, 100, 100);
-		}
-	}
-
-	if (m_nMultitoolMode == MODE_LIGHT_WATERMELON)
-	{
-		if ((pPlayer->m_afButtonPressed & IN_RELOAD))
-		{
-			m_nLightWatermelonColor =
-				(m_nLightWatermelonColor + 1) % g_ColorPresets_COUNT;
-
-			CGabeServerFuncs::HudText(
-				pPlayer,
-				UTIL_VarArgs(
-					"Watermelon Light Color: %s",
-					g_ColorPresets[m_nLightWatermelonColor].name
-				),
-				255, 255, 255
-			);
-
-			SendHudUpdate();
-		}
-	}
-
-	if (m_nMultitoolMode == MODE_POINTMESSAGE)
-	{
-		if ((pPlayer->m_nButtons & IN_RELOAD) &&
-			(pPlayer->m_afButtonPressed & IN_RELOAD))
-		{
-			int removed = 0;
-
-			CBaseEntity* pEnt = NULL;
-			while ((pEnt = gEntList.NextEnt(pEnt)) != NULL)
-			{
-				if (Q_stricmp(
-					STRING(pEnt->GetEntityName()),
-					"gabeplus_mtool_pmessage"
-				) == 0)
-				{
-					UTIL_Remove(pEnt);
-					removed++;
-				}
-			}
-
-			Msg(
-				"Multitool: removed %d point_message entities named \"gabeplus_mtool_pmessage\".\n",
-				removed
-			);
-		}
-	}
+	// Tool settings are now changed exclusively by the menu command.
 
 	if (m_nMultitoolMode == MODE_FACEPOSER && m_hFaceTarget)
 	{
@@ -2319,4 +2459,199 @@ void CWeaponMultitool::ItemPostFrame()
 	}
 
 	BaseClass::ItemPostFrame();
+}
+
+// Menu values are matched against a fixed whitelist, not executed as commands.
+static bool ToolSettingMatches(const char* name, const char* token)
+{
+	char normalized[128];
+	Q_strncpy(normalized, name, sizeof(normalized));
+	for (char* p = normalized; *p; ++p)
+		if (*p == ' ' || *p == '.') *p = '_';
+	return !Q_stricmp(normalized, token);
+}
+
+bool CWeaponMultitool::ApplyMenuSetting(const char* group, const char* value)
+{
+	CBasePlayer* player = ToBasePlayer(GetOwner());
+	if (!player || !group || !value) return false;
+	bool changed = false;
+	if (!Q_stricmp(group, "color") || !Q_stricmp(group, "lightcolor"))
+	{
+		for (int i = 0; i < g_ColorPresets_COUNT; ++i)
+			if (ToolSettingMatches(g_ColorPresets[i].name, value))
+			{
+				if (!Q_stricmp(group, "color")) m_nColorIndex = i;
+				else m_nLightWatermelonColor = i;
+				changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "constraint"))
+	{
+		const char* names[] = { "ballsocket", "weld", "rope", "slider", "hinge" };
+		for (int i = 0; i < ARRAYSIZE(names); ++i)
+			if (!Q_stricmp(names[i], value))
+			{
+				m_nConstraintType = i;
+				m_hConstraintTarget1 = NULL; m_hConstraintTarget2 = NULL;
+				changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "decal"))
+	{
+		for (int i = 0; i < DECAL_COUNT; ++i)
+			if (ToolSettingMatches(g_DecalNames[i], value))
+			{
+				m_nDecalIndex = i; changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "material"))
+	{
+		for (int i = 0; i < RENDERFX_COUNT; ++i)
+			if (ToolSettingMatches(g_RenderFxModes[i].name, value) ||
+				(g_RenderFxModes[i].fx == kRenderFxGlowShell && !Q_stricmp(value, "glowshell")))
+			{
+				m_nMaterialIndex = i; changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "face"))
+	{
+		for (int i = 0; i < FACE_COUNT; ++i)
+			if (ToolSettingMatches(g_FacePresets[i].name, value))
+			{
+				m_nFaceIndex = i;
+				CBaseFlex* flex = dynamic_cast<CBaseFlex*>(m_hFaceTarget.Get());
+				if (flex) ApplyFacePreset(flex, i, true);
+				changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "balloon"))
+	{
+		for (int i = 0; i < ARRAYSIZE(m_BalloonLiftForces); ++i)
+		{
+			char number[16]; Q_snprintf(number, sizeof(number), "%.0f", m_BalloonLiftForces[i]);
+			if (!Q_strcmp(number, value))
+			{
+				m_nBalloonLiftIndex = i; changed = true; break;
+			}
+		}
+	}
+	else if (!Q_stricmp(group, "thruster"))
+	{
+		const char* names[] = { "low", "medium", "high" };
+		for (int i = 0; i < ARRAYSIZE(names); ++i)
+			if (!Q_stricmp(names[i], value))
+			{
+				m_nThrusterPower = i; changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "strength"))
+	{
+		const char* allowed[] = { "0.5", "1", "2", "4" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_device_strength.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "motor_speed"))
+	{
+		const char* allowed[] = { "-360", "-180", "90", "180", "360", "720" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_motor_speed.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "magnet_radius"))
+	{
+		const char* allowed[] = { "64", "128", "256", "512" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_magnet_radius.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "weight"))
+	{
+		const char* allowed[] = { "1", "10", "50", "100", "500", "1000", "5000" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_weight.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "damping"))
+	{
+		const char* allowed[] = { "0", "0.5", "1", "5", "10", "20" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_damping.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "gravity"))
+	{
+		const char* allowed[] = { "0", "1" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_gravity.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "stack_count"))
+	{
+		const char* allowed[] = { "1", "2", "4", "8", "12" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_stack_count.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "stack_gap"))
+	{
+		const char* allowed[] = { "2", "8", "16", "32" };
+		for (int i = 0; i < ARRAYSIZE(allowed); ++i)
+			if (!Q_strcmp(value, allowed[i]))
+			{
+				mtool_stack_gap.SetValue(value); changed = true; break;
+			}
+	}
+	else if (!Q_stricmp(group, "action"))
+	{
+		if (!Q_stricmp(value, "clearconstraints"))
+		{
+			for (int i = 0; i < m_Constraints.Count(); ++i)
+				if (m_Constraints[i].Get() && !m_Constraints[i]->IsMarkedForDeletion())
+					UTIL_Remove(m_Constraints[i].Get());
+			m_Constraints.RemoveAll();
+			m_hConstraintTarget1 = NULL; m_hConstraintTarget2 = NULL;
+			changed = true;
+		}
+		else if (!Q_stricmp(value, "clearpointmessages"))
+		{
+			CBaseEntity* ent = NULL;
+			while ((ent = gEntList.FindEntityByClassname(ent, "point_message")) != NULL)
+				if (ent->GetOwnerEntity() == player &&
+					!Q_stricmp(STRING(ent->GetEntityName()), "gabeplus_mtool_pmessage"))
+					UTIL_Remove(ent);
+			changed = true;
+		}
+	}
+	if (changed)
+	{
+		SendHudUpdate();
+		CGabeServerFuncs::HudText(player, UTIL_VarArgs("%s: %s", group, value), 150, 255, 150);
+	}
+	return changed;
+}
+
+CON_COMMAND(gabe_mtool_setting, "Set a multitool option: gabe_mtool_setting <group> <value>")
+{
+	CBasePlayer* player = UTIL_GetCommandClient();
+	if (!player || args.ArgC() != 3) return;
+	CWeaponMultitool* tool = dynamic_cast<CWeaponMultitool*>(player->Weapon_OwnsThisType("weapon_multitool"));
+	if (!tool) return;
+	if (!tool->ApplyMenuSetting(args[1], args[2]))
+		Warning("[Multitool] Invalid setting: %s %s\n", args[1], args[2]);
 }

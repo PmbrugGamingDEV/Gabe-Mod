@@ -3814,6 +3814,9 @@
     <ClCompile Include="gamemount.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
+    <ClCompile Include="contextmenu.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

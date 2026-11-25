@@ -1169,6 +1169,7 @@ exit 1
     <ClCompile Include="..\shared\vscript_in_buttons.cpp" />
     <ClCompile Include="..\shared\vscript_think.cpp" />
     <ClCompile Include="cl_camerablur.cpp" />
+    <ClCompile Include="contextmenu.cpp" />
     <ClCompile Include="c_bemod_physgun.cpp" />
     <ClCompile Include="c_envnightfog.cpp" />
     <ClCompile Include="c_env_godrays.cpp" />

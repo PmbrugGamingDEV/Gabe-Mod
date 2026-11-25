@@ -19,6 +19,7 @@ C:\GabeMod\src\game\shared\tf\tf_weapon_fists.cpp;C:\GabeMod\src\game\client\Rel
 C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_in_buttons.obj
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_think.obj
 C:\GabeMod\src\game\client\cl_camerablur.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\cl_camerablur.obj
+C:\GabeMod\src\game\client\contextmenu.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\contextmenu.obj
 C:\GabeMod\src\game\client\c_bemod_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_bemod_physgun.obj
 C:\GabeMod\src\game\client\c_envnightfog.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_envnightfog.obj
 C:\GabeMod\src\game\client\c_env_godrays.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_env_godrays.obj

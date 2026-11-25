@@ -29,7 +29,7 @@
 	"d1_canals_01"		"November 10, 2026 at 6:08 PM"
 	"ep1_c17_00"		"August 11, 2026 at 2:20 PM"
 	"sdk_vehicles"		"October 12, 2026 at 12:34 PM"
-	"gabe_pond"		"November 25, 2026 at 5:48 PM"
+	"gabe_pond"		"November 25, 2026 at 6:43 PM"
 	"1-alpha6"		"October 11, 2026 at 3:38 PM"
 	"gm_construct_v3"		"October 11, 2026 at 3:41 PM"
 	"gm_construct_v4"		"October 11, 2026 at 3:43 PM"
@@ -83,7 +83,7 @@
 	"hs_brickwork"		"November 22, 2026 at 10:56 AM"
 	"d2_coast_10"		"November 25, 2026 at 2:36 PM"
 	"vs_castfield"		"November 25, 2026 at 2:46 PM"
-	"gabe_grasssquare"		"November 25, 2026 at 4:51 PM"
+	"gabe_grasssquare"		"November 25, 2026 at 6:10 PM"
 	"de_nuke"		"November 25, 2026 at 4:35 PM"
 	"c1a0"		"November 25, 2026 at 4:40 PM"
 	"de_cbble"		"November 25, 2026 at 4:37 PM"
@@ -91,4 +91,5 @@
 	"c2a2d"		"November 25, 2026 at 5:06 PM"
 	"d2_coast_07"		"November 25, 2026 at 5:14 PM"
 	"cs_compound"		"November 25, 2026 at 5:26 PM"
+	"d1_canals_01a"		"November 25, 2026 at 6:20 PM"
 }

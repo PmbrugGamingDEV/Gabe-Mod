@@ -243,6 +243,416 @@ public:
     }
 };
 
+
+
+class CToolSettingsPanel : public Panel
+{
+    DECLARE_CLASS_SIMPLE(CToolSettingsPanel, Panel);
+public:
+    struct SettingEntry_t
+    {
+        CSpawnFlatButton* button;
+        char command[128];
+    };
+
+    CToolSettingsPanel(Panel* parent) : BaseClass(parent, "ToolSettings")
+    {
+        SetPaintBackgroundEnabled(true);
+        m_pTitle = new Label(this, "ToolSettingsTitle", "Tool Settings");
+        m_pDesc = new Label(this, "ToolSettingsDesc", "Click a tool on the left to configure it here.");
+        m_pSection = new Label(this, "ToolSettingsSection", "Settings");
+        m_pTitle->SetContentAlignment(Label::a_west);
+        m_pDesc->SetContentAlignment(Label::a_northwest);
+        m_pSection->SetContentAlignment(Label::a_west);
+        m_pDesc->SetWrap(true);
+        m_szToolName[0] = 0;
+        m_szToolCommand[0] = 0;
+    }
+
+    virtual void ApplySchemeSettings(IScheme* pScheme)
+    {
+        BaseClass::ApplySchemeSettings(pScheme);
+        static HFont titleFont = INVALID_FONT;
+        static HFont sectionFont = INVALID_FONT;
+        static HFont textFont = INVALID_FONT;
+        if (titleFont == INVALID_FONT)
+        {
+            titleFont = surface()->CreateFont();
+            surface()->SetFontGlyphSet(titleFont, "Tahoma", 16, 700, 0, 0,
+                ISurface::FONTFLAG_ANTIALIAS | ISurface::FONTFLAG_DROPSHADOW);
+            sectionFont = surface()->CreateFont();
+            surface()->SetFontGlyphSet(sectionFont, "Tahoma", 12, 700, 0, 0,
+                ISurface::FONTFLAG_ANTIALIAS);
+            textFont = surface()->CreateFont();
+            surface()->SetFontGlyphSet(textFont, "Tahoma", 12, 500, 0, 0,
+                ISurface::FONTFLAG_ANTIALIAS);
+        }
+        m_pTitle->SetFont(titleFont);
+        m_pDesc->SetFont(textFont);
+        m_pSection->SetFont(sectionFont);
+        m_pTitle->SetFgColor(Color(255, 255, 255, 255));
+        m_pDesc->SetFgColor(Color(230, 230, 230, 255));
+        m_pSection->SetFgColor(Color(255, 255, 255, 255));
+    }
+
+    virtual void PaintBackground()
+    {
+        surface()->DrawSetColor(48, 48, 48, 245);
+        surface()->DrawFilledRect(0, 0, GetWide(), GetTall());
+        surface()->DrawSetColor(145, 145, 145, 255);
+        surface()->DrawOutlinedRect(0, 0, GetWide(), GetTall());
+        surface()->DrawSetColor(72, 72, 72, 255);
+        surface()->DrawFilledRect(0, 34, GetWide(), 35);
+    }
+
+    void ClearSettings()
+    {
+        for (int i = 0; i < m_Settings.Count(); ++i)
+        {
+            if (m_Settings[i].button)
+            {
+                m_Settings[i].button->SetVisible(false);
+                m_Settings[i].button->MarkForDeletion();
+            }
+        }
+        m_Settings.RemoveAll();
+    }
+
+    void AddSetting(const char* text, const char* command)
+    {
+        SettingEntry_t entry = {};
+        char id[64], cmd[32];
+        Q_snprintf(id, sizeof(id), "ToolSetting_%d", m_Settings.Count());
+        Q_snprintf(cmd, sizeof(cmd), "setting_%d", m_Settings.Count());
+        entry.button = new CSpawnFlatButton(this, id, text, this, cmd);
+        Q_strncpy(entry.command, command ? command : "", sizeof(entry.command));
+        m_Settings.AddToTail(entry);
+    }
+
+    void AddCommonToolButtons(const char* toolCommand)
+    {
+        if (toolCommand && toolCommand[0])
+        {
+            char cmd[192];
+            Q_snprintf(cmd, sizeof(cmd), "gabe_spawn command \"%s\"", toolCommand);
+            AddSetting("Select Tool", cmd);
+        }
+        AddSetting("Undo Last", "gabe_undo");
+    }
+
+    void ShowTool(const char* toolName, const char* toolCommand)
+    {
+        ClearSettings();
+        Q_strncpy(m_szToolName, toolName ? toolName : "Tool Settings", sizeof(m_szToolName));
+        Q_strncpy(m_szToolCommand, toolCommand ? toolCommand : "", sizeof(m_szToolCommand));
+        m_pTitle->SetText(m_szToolName[0] ? m_szToolName : "Tool Settings");
+        m_pSection->SetText("Settings");
+
+        const char* desc = "Choose a tool on the left. Any settings for that tool appear here.";
+        if (!Q_strnicmp(m_szToolCommand, "mtool_mode ", 11))
+        {
+            const char* mode = m_szToolCommand + 11;
+            AddCommonToolButtons(m_szToolCommand);
+            if (!Q_stricmp(mode, "remove"))
+            {
+                desc = "Remove deletes the entity you click. It does not use extra settings.";
+            }
+            else if (!Q_stricmp(mode, "distance"))
+            {
+                desc = "Distance measures how far away the target is. It does not use extra settings.";
+            }
+            else if (!Q_stricmp(mode, "color"))
+            {
+                desc = "Set the color preset used by the Color tool.";
+                AddSetting("Red", "gabe_mtool_setting color red");
+                AddSetting("Orange", "gabe_mtool_setting color orange");
+                AddSetting("Yellow", "gabe_mtool_setting color yellow");
+                AddSetting("Green", "gabe_mtool_setting color green");
+                AddSetting("Blue", "gabe_mtool_setting color blue");
+                AddSetting("Purple", "gabe_mtool_setting color purple");
+                AddSetting("Pink", "gabe_mtool_setting color pink");
+                AddSetting("White", "gabe_mtool_setting color white");
+                AddSetting("Black", "gabe_mtool_setting color black");
+                AddSetting("Rainbow", "gabe_mtool_setting color rainbow");
+            }
+            else if (!Q_stricmp(mode, "constraint"))
+            {
+                desc = "Choose which constraint type the Multitool will create.";
+                AddSetting("Ball Socket", "gabe_mtool_setting constraint ballsocket");
+                AddSetting("Weld", "gabe_mtool_setting constraint weld");
+                AddSetting("Rope", "gabe_mtool_setting constraint rope");
+                AddSetting("Slider", "gabe_mtool_setting constraint slider");
+                AddSetting("Axis", "gabe_mtool_setting constraint hinge");
+                AddSetting("Clear Constraints", "gabe_mtool_setting action clearconstraints");
+            }
+            else if (!Q_stricmp(mode, "ignite"))
+            {
+                desc = "Ignite sets the clicked entity on fire. No extra settings are needed.";
+            }
+            else if (!Q_stricmp(mode, "duplicate"))
+            {
+                desc = "Duplicate copies the targeted entity. No extra settings are needed here.";
+            }
+            else if (!Q_stricmp(mode, "explode"))
+            {
+                desc = "Explode detonates the selected entity. No extra settings are needed.";
+            }
+            else if (!Q_stricmp(mode, "pointmessage"))
+            {
+                desc = "Point Message creates map messages in the world.";
+                AddSetting("Clear Point Messages", "gabe_mtool_setting action clearpointmessages");
+            }
+            else if (!Q_stricmp(mode, "light_watermelon"))
+            {
+                desc = "Choose the light color used when spawning the light watermelon.";
+                AddSetting("Red", "gabe_mtool_setting lightcolor red");
+                AddSetting("Green", "gabe_mtool_setting lightcolor green");
+                AddSetting("Blue", "gabe_mtool_setting lightcolor blue");
+                AddSetting("Yellow", "gabe_mtool_setting lightcolor yellow");
+                AddSetting("Purple", "gabe_mtool_setting lightcolor purple");
+                AddSetting("White", "gabe_mtool_setting lightcolor white");
+                AddSetting("Rainbow", "gabe_mtool_setting lightcolor rainbow");
+            }
+            else if (!Q_stricmp(mode, "decal"))
+            {
+                desc = "Choose which decal the Decal tool places.";
+                AddSetting("Blood", "gabe_mtool_setting decal blood");
+                AddSetting("Scorch", "gabe_mtool_setting decal scorch");
+                AddSetting("Concrete", "gabe_mtool_setting decal impact_concrete");
+                AddSetting("Metal", "gabe_mtool_setting decal impact_metal");
+                AddSetting("Glass", "gabe_mtool_setting decal impact_glass");
+                AddSetting("Sand", "gabe_mtool_setting decal impact_sand");
+                AddSetting("Yellow Blood", "gabe_mtool_setting decal yellowblood");
+            }
+            else if (!Q_stricmp(mode, "material"))
+            {
+                desc = "Choose the render effect used by the Render Effects tool.";
+                AddSetting("None", "gabe_mtool_setting material none");
+                AddSetting("Pulse Slow", "gabe_mtool_setting material pulse_slow");
+                AddSetting("Pulse Fast", "gabe_mtool_setting material pulse_fast");
+                AddSetting("Fade Slow", "gabe_mtool_setting material fade_slow");
+                AddSetting("Fade Fast", "gabe_mtool_setting material fade_fast");
+                AddSetting("Flicker Slow", "gabe_mtool_setting material flicker_slow");
+                AddSetting("Flicker Fast", "gabe_mtool_setting material flicker_fast");
+                AddSetting("Hologram", "gabe_mtool_setting material hologram");
+                AddSetting("Glow Shell", "gabe_mtool_setting material glowshell");
+            }
+            else if (!Q_stricmp(mode, "faceposer"))
+            {
+                desc = "Choose the face preset applied by the Faceposer tool.";
+                AddSetting("Smile", "gabe_mtool_setting face smile");
+                AddSetting("Sad", "gabe_mtool_setting face sad");
+                AddSetting("Angry", "gabe_mtool_setting face angry");
+                AddSetting("Scared", "gabe_mtool_setting face scared");
+                AddSetting("Surprised", "gabe_mtool_setting face surprised");
+                AddSetting("Neutral", "gabe_mtool_setting face neutral");
+            }
+            else if (!Q_stricmp(mode, "balloon"))
+            {
+                desc = "Choose the lift force used by the Balloon tool.";
+                AddSetting("100", "gabe_mtool_setting balloon 100");
+                AddSetting("300", "gabe_mtool_setting balloon 300");
+                AddSetting("500", "gabe_mtool_setting balloon 500");
+                AddSetting("700", "gabe_mtool_setting balloon 700");
+                AddSetting("1000", "gabe_mtool_setting balloon 1000");
+            }
+            else if (!Q_stricmp(mode, "thruster"))
+            {
+                desc = "Choose the power level used by the Thruster tool.";
+                AddSetting("Low", "gabe_mtool_setting thruster low");
+                AddSetting("Medium", "gabe_mtool_setting thruster medium");
+                AddSetting("High", "gabe_mtool_setting thruster high");
+            }
+            else if (!Q_stricmp(mode, "elastic"))
+            {
+                desc = "Spring strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "hydraulic"))
+            {
+                desc = "Hydraulic strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "muscle"))
+            {
+                desc = "Muscle strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "winch"))
+            {
+                desc = "Winch strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "motor"))
+            {
+                desc = "Motor speed in degrees per second.";
+                AddSetting("Motor speed: -360", "gabe_mtool_setting motor_speed -360");
+                AddSetting("Motor speed: -180", "gabe_mtool_setting motor_speed -180");
+                AddSetting("Motor speed: 90", "gabe_mtool_setting motor_speed 90");
+                AddSetting("Motor speed: 180", "gabe_mtool_setting motor_speed 180");
+                AddSetting("Motor speed: 360", "gabe_mtool_setting motor_speed 360");
+                AddSetting("Motor speed: 720", "gabe_mtool_setting motor_speed 720");
+            }
+            else if (!Q_stricmp(mode, "buoyancy"))
+            {
+                desc = "Buoyancy strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "hoverball"))
+            {
+                desc = "Height stabilization strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "keepupright"))
+            {
+                desc = "Orientation stabilization strength.";
+                AddSetting("Strength: 0.5", "gabe_mtool_setting strength 0.5");
+                AddSetting("Strength: 1", "gabe_mtool_setting strength 1");
+                AddSetting("Strength: 2", "gabe_mtool_setting strength 2");
+                AddSetting("Strength: 4", "gabe_mtool_setting strength 4");
+            }
+            else if (!Q_stricmp(mode, "magnetise"))
+            {
+                desc = "Magnet radius in units.";
+                AddSetting("Magnet radius: 64", "gabe_mtool_setting magnet_radius 64");
+                AddSetting("Magnet radius: 128", "gabe_mtool_setting magnet_radius 128");
+                AddSetting("Magnet radius: 256", "gabe_mtool_setting magnet_radius 256");
+                AddSetting("Magnet radius: 512", "gabe_mtool_setting magnet_radius 512");
+            }
+            else if (!Q_stricmp(mode, "weight"))
+            {
+                desc = "Target mass in kilograms.";
+                AddSetting("Weight: 1", "gabe_mtool_setting weight 1");
+                AddSetting("Weight: 10", "gabe_mtool_setting weight 10");
+                AddSetting("Weight: 50", "gabe_mtool_setting weight 50");
+                AddSetting("Weight: 100", "gabe_mtool_setting weight 100");
+                AddSetting("Weight: 500", "gabe_mtool_setting weight 500");
+                AddSetting("Weight: 1000", "gabe_mtool_setting weight 1000");
+                AddSetting("Weight: 5000", "gabe_mtool_setting weight 5000");
+            }
+            else if (!Q_stricmp(mode, "physicalproperties"))
+            {
+                desc = "Gravity and damping.";
+                AddSetting("Damping: 0", "gabe_mtool_setting damping 0");
+                AddSetting("Damping: 0.5", "gabe_mtool_setting damping 0.5");
+                AddSetting("Damping: 1", "gabe_mtool_setting damping 1");
+                AddSetting("Damping: 5", "gabe_mtool_setting damping 5");
+                AddSetting("Damping: 10", "gabe_mtool_setting damping 10");
+                AddSetting("Damping: 20", "gabe_mtool_setting damping 20");
+                AddSetting("Gravity on", "gabe_mtool_setting gravity 1");
+                AddSetting("Gravity off", "gabe_mtool_setting gravity 0");
+            }
+            else if (!Q_stricmp(mode, "stacker"))
+            {
+                desc = "Number of copies and spacing.";
+                AddSetting("Stack count: 1", "gabe_mtool_setting stack_count 1");
+                AddSetting("Stack count: 2", "gabe_mtool_setting stack_count 2");
+                AddSetting("Stack count: 4", "gabe_mtool_setting stack_count 4");
+                AddSetting("Stack count: 8", "gabe_mtool_setting stack_count 8");
+                AddSetting("Stack count: 12", "gabe_mtool_setting stack_count 12");
+                AddSetting("Gap: 2", "gabe_mtool_setting stack_gap 2");
+                AddSetting("Gap: 8", "gabe_mtool_setting stack_gap 8");
+                AddSetting("Gap: 16", "gabe_mtool_setting stack_gap 16");
+                AddSetting("Gap: 32", "gabe_mtool_setting stack_gap 32");
+            }
+            else
+            {
+                desc = "This tool currently has no extra panel settings.";
+            }
+        }
+        else if (!Q_strnicmp(m_szToolCommand, "gabe_glow_color ", 16))
+        {
+            desc = "This glow color command is ready to use. Click Select Tool to apply that color, then use Add Glow or Remove Glow.";
+            AddCommonToolButtons(m_szToolCommand);
+            AddSetting("Add Glow", "gabe_spawn command \"gabe_glowadd\"");
+            AddSetting("Remove Glow", "gabe_spawn command \"gabe_glowremove\"");
+        }
+        else if (!Q_stricmp(m_szToolCommand, "gabe_glowadd") || !Q_stricmp(m_szToolCommand, "gabe_glowremove"))
+        {
+            desc = "Glow functions operate on the entity you are aiming at.";
+            AddCommonToolButtons(m_szToolCommand);
+        }
+        else
+        {
+            AddCommonToolButtons(m_szToolCommand);
+            desc = "This command does not expose extra settings in the panel.";
+        }
+
+        m_pDesc->SetText(desc);
+        InvalidateLayout(true);
+    }
+
+    virtual void OnCommand(const char* command)
+    {
+        if (!Q_strnicmp(command, "setting_", 8))
+        {
+            int index = atoi(command + 8);
+            if (index >= 0 && index < m_Settings.Count())
+            {
+                const char* exec = m_Settings[index].command;
+                if (exec && exec[0])
+                {
+                    char full[160];
+                    Q_snprintf(full, sizeof(full), "%s\n", exec);
+                    engine->ClientCmd_Unrestricted(full);
+                    surface()->PlaySound("ui/buttonclickrelease.wav");
+                }
+            }
+            return;
+        }
+        BaseClass::OnCommand(command);
+    }
+
+    virtual void PerformLayout()
+    {
+        BaseClass::PerformLayout();
+        const int pad = 8;
+        const int w = GetWide();
+        m_pTitle->SetBounds(pad, 8, w - pad * 2, 20);
+        m_pDesc->SetBounds(pad, 40, w - pad * 2, 60);
+        m_pSection->SetBounds(pad, 108, w - pad * 2, 18);
+        int y = 132;
+        int cols = (w >= 300) ? 2 : 1;
+        int gap = 4;
+        int bw = (w - pad * 2 - gap * (cols - 1)) / cols;
+        int bh = 24;
+        for (int i = 0; i < m_Settings.Count(); ++i)
+        {
+            int row = i / cols;
+            int col = i % cols;
+            int bx = pad + col * (bw + gap);
+            int by = y + row * (bh + gap);
+            m_Settings[i].button->SetBounds(bx, by, bw, bh);
+        }
+    }
+
+private:
+    Label* m_pTitle;
+    Label* m_pDesc;
+    Label* m_pSection;
+    CUtlVector<SettingEntry_t> m_Settings;
+    char m_szToolName[128];
+    char m_szToolCommand[256];
+};
+
 // Tool headings are labels, not buttons; they never execute commands.
 class CSpawnToolHeading : public Label
 {
@@ -310,6 +720,7 @@ public:
         Q_strncpy(m_szSpawnType, type, sizeof(m_szSpawnType)); m_szSearch[0] = 0;
         m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; m_iButtonWide = 112; m_iButtonTall = 112; m_iColumnSpacing = 5;
         m_bTools = tools;
+        m_iLastSelectedIndex = -1;
         m_bWeaponList = !Q_stricmp(type, "weapon");
         m_pWeaponName = new Label(this, "WeaponNameHeader", "Name");
         m_pWeaponAuthor = new Label(this, "WeaponAuthorHeader", "Author");
@@ -403,6 +814,13 @@ public:
                     Msg("GabeSpawnMenu: sending %s", command);
                 engine->ClientCmd_Unrestricted(command);
                 surface()->PlaySound("ui/buttonclickrelease.wav");
+                if (m_bTools)
+                {
+                    m_iLastSelectedIndex = index;
+                    InvalidateLayout(true);
+                    if (GetParent())
+                        GetParent()->OnCommand("toolpick");
+                }
             }
             return;
         }
@@ -481,6 +899,7 @@ public:
             }
             else if (e.button)
             {
+                if (m_bTools) e.button->SetSelected(i == m_iLastSelectedIndex);
                 int inset = m_bTools ? 8 : 0;
                 e.button->SetBounds(4 + (pos % cols) * (cellW + gap) + inset,
                     y, MAX(1, cellW - inset), m_bTools ? 22 : cellH);
@@ -502,6 +921,17 @@ public:
         if (m_szSearch[0])return Q_stristr(e.name, m_szSearch) || Q_stristr(e.value, m_szSearch);
         return m_bTools || m_bWeaponList || m_iGroup < 0 || e.group == m_iGroup;
     }
+    bool GetLastSelected(char* outName, int outNameSize, char* outValue, int outValueSize) const
+    {
+        if (m_iLastSelectedIndex < 0 || m_iLastSelectedIndex >= m_Entries.Count())
+            return false;
+        const SpawnEntry_t& e = m_Entries[m_iLastSelectedIndex];
+        if (e.type != ENTRY_BUTTON)
+            return false;
+        if (outName && outNameSize > 0) Q_strncpy(outName, e.name, outNameSize);
+        if (outValue && outValueSize > 0) Q_strncpy(outValue, e.value, outValueSize);
+        return true;
+    }
     void ApplyFilter() { InvalidateLayout(true); }
     void SetSearchText(const char* s) { Q_strncpy(m_szSearch, s ? s : "", sizeof(m_szSearch)); m_iScroll = 0; ApplyFilter(); }
     void SetButtonSize(int w, int h) { m_iButtonWide = MAX(40, w); m_iButtonTall = MAX(40, h); InvalidateLayout(); }
@@ -514,7 +944,7 @@ public:
             if (m_Entries[i].button) { m_Entries[i].button->SetVisible(false); m_Entries[i].button->MarkForDeletion(); }
             if (m_Entries[i].label) { m_Entries[i].label->SetVisible(false); m_Entries[i].label->MarkForDeletion(); }
         }
-        m_Entries.RemoveAll(); m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; InvalidateLayout();
+        m_Entries.RemoveAll(); m_iLastSelectedIndex = -1; m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; InvalidateLayout();
     }
     const char* GetSpawnType() const { return m_szSpawnType; }
 private:
@@ -523,6 +953,7 @@ private:
     int m_iButtonWide, m_iButtonTall, m_iColumnSpacing, m_iGroup, m_iScroll, m_iCategoryScroll;
     bool m_bTools;
     bool m_bWeaponList;
+    int m_iLastSelectedIndex;
     Label* m_pWeaponName;
     Label* m_pWeaponAuthor;
     CSpawnFlatButton* m_pPrev, * m_pNext, * m_pCatPrev, * m_pCatNext;
@@ -561,6 +992,9 @@ public:
         m_iButtonWide = 112; m_iButtonTall = 112; m_iColumnSpacing = 5;
         m_iActiveTool = -1;
         m_pToolTitle = new Label(this, "ToolTitle", "Tools");
+        m_pToolSettings = new CToolSettingsPanel(this);
+        m_pToolSettings->SetVisible(false);
+        m_pToolSettings->ShowTool("Tool Settings", "");
         SetTitleBarVisible(false);
         SetMoveable(false);
         SetProportional(false);
@@ -761,19 +1195,27 @@ public:
     {
         BaseClass::PerformLayout();
         int w = GetWide(), h = GetTall(), left = 8, top = 5, tabH = 23;
-        int split = w * 78 / 100, bodyY = top + tabH + 3;
+        int split = w * 57 / 100, bodyY = top + tabH + 3;
         int leftCount = 0, rightCount = 0;
         for (int i = 0; i < m_Tabs.Count(); ++i) if (m_Tabs[i].panel->IsTools())++rightCount; else ++leftCount;
         int lw = MAX(1, (split - 12) / MAX(1, leftCount));
         int rw = MAX(1, (w - split - 12) / MAX(1, rightCount));
+        int toolAreaX = split + 4;
+        int toolAreaW = w - split - 12;
+        int toolListW = MAX(120, toolAreaW * 38 / 100);
+        if (toolListW > toolAreaW - 80) toolListW = MAX(100, toolAreaW / 2);
+        int toolSettingsX = toolAreaX + toolListW + 6;
+        int toolSettingsW = MAX(1, toolAreaW - toolListW - 6);
         int li = 0, ri = 0;
         for (int i = 0; i < m_Tabs.Count(); ++i)
         {
             bool tool = m_Tabs[i].panel->IsTools();
             m_Tabs[i].button->SetBounds(tool ? split + 4 + ri++ * rw : left + li++ * lw, top, tool ? rw : lw, tabH);
-            m_Tabs[i].panel->SetBounds(tool ? split + 4 : left, bodyY, tool ? w - split - 12 : split - 12, h - bodyY - 8);
+            m_Tabs[i].panel->SetBounds(tool ? toolAreaX : left, bodyY, tool ? toolListW : split - 12, h - bodyY - 8);
         }
-        m_pToolTitle->SetBounds(split + 4, bodyY, w - split - 12, 22);
+        m_pToolSettings->SetBounds(toolSettingsX, bodyY, toolSettingsW, h - bodyY - 8);
+        m_pToolSettings->SetVisible(m_iActiveTool >= 0 && toolSettingsW > 80);
+        m_pToolTitle->SetBounds(split + 4, bodyY, toolAreaW, 22);
         m_pToolTitle->SetVisible(rightCount == 0);
     }
     virtual void OnScreenSizeChanged(int oldWide, int oldTall)
@@ -798,6 +1240,11 @@ public:
                 Msg("GabeSpawnMenu: tab click: %s\n", command);
             SetActiveTab(atoi(command + 4));
             surface()->PlaySound("ui/buttonclickrelease.wav");
+            return;
+        }
+        if (!Q_stricmp(command, "toolpick"))
+        {
+            UpdateToolSettingsFromActivePanel();
             return;
         }
         BaseClass::OnCommand(command);
@@ -883,6 +1330,7 @@ public:
             m_Tabs[i].button->SetVisible(false); m_Tabs[i].button->MarkForDeletion();
         }
         m_Tabs.RemoveAll(); m_iActiveTab = -1; m_iActiveTool = -1;
+        if (m_pToolSettings) m_pToolSettings->ShowTool("Tool Settings", "");
         LoadData(); InvalidateLayout(true);
     }
 
@@ -958,6 +1406,24 @@ public:
     int GetMenuY() { int x, y; GetPos(x, y); return y; }
     void MakeFullscreen() { ResizeToScreen(); }
     void Center() { CenterMenu(); }
+    void UpdateToolSettingsFromActivePanel()
+    {
+        if (!m_pToolSettings)
+            return;
+        if (m_iActiveTool < 0 || m_iActiveTool >= m_Tabs.Count())
+        {
+            m_pToolSettings->ShowTool("Tool Settings", "");
+            return;
+        }
+        char name[128] = "";
+        char value[256] = "";
+        if (!m_Tabs[m_iActiveTool].panel->GetLastSelected(name, sizeof(name), value, sizeof(value)))
+        {
+            m_pToolSettings->ShowTool("Tool Settings", "");
+            return;
+        }
+        m_pToolSettings->ShowTool(name, value);
+    }
     void BringToFront() { MakePopup(); MoveToFront(); }
     int GetTabCount() { return m_Tabs.Count(); }
     void SetActiveTab(int index)
@@ -969,6 +1435,8 @@ public:
             bool active = i == m_iActiveTab || i == m_iActiveTool;
             m_Tabs[i].panel->SetVisible(active); m_Tabs[i].button->SetSelected(active);
         }
+        UpdateToolSettingsFromActivePanel();
+        InvalidateLayout(true);
     }
     int GetActiveTab() { return m_iActiveTab; }
     CSpawnButtonColumns* FindTab(const char* name)
@@ -1038,6 +1506,7 @@ private:
     CUtlVector<SpawnFavorite_t> m_Favorites, m_History;
     int m_iActiveTab, m_iSpawnCount, m_iActiveTool;
     Label* m_pToolTitle;
+    CToolSettingsPanel* m_pToolSettings;
     int m_iButtonWide, m_iButtonTall, m_iColumnSpacing;
     char m_szSearchText[256];
     Color m_Background;

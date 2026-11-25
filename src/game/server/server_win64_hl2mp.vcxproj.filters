@@ -4419,6 +4419,9 @@
     <ClCompile Include="gabe_undo.cpp">
       <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
+    <ClCompile Include="sv_cmenu.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

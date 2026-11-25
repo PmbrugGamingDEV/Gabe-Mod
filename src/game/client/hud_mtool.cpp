@@ -38,7 +38,23 @@ enum
     MODE_MATERIAL,
     MODE_FACEPOSER,
     MODE_BALLOON,
-    MODE_THRUSTER
+    MODE_THRUSTER,
+    MODE_ELASTIC,
+    MODE_HYDRAULIC,
+    MODE_MUSCLE,
+    MODE_WINCH,
+    MODE_MOTOR,
+    MODE_BUOYANCY,
+    MODE_HOVERBALL,
+    MODE_UPRIGHT,
+    MODE_MAGNET,
+    MODE_WEIGHT,
+    MODE_PHYSICAL,
+    MODE_STACKER,
+    MODE_EMITTER,
+    MODE_LAMP,
+    MODE_BUTTON,
+    MODE_DOOR
 };
 
 //=========================================================
@@ -213,7 +229,23 @@ void CHudMultitool::Paint(void)
         { L"Render FX", L"Change the rendering effect of objects." },
         { L"Faceposer", L"Change facial expressions." },
         { L"Balloon", L"Create balloons with adjustable lift." },
-        { L"Thruster", L"Create thrusters with adjustable power." }
+        { L"Thruster", L"Create thrusters with adjustable power." },
+        { L"Elastic", L"Left: select two props. Right: remove link." },
+        { L"Hydraulics", L"Left: select two props. Right: extend or retract." },
+        { L"Muscle", L"Left: select two props. Right: remove link." },
+        { L"Winch", L"Left: select two props. Right: reel in or out." },
+        { L"Motor", L"Left: spin prop around its local Z axis. Right: remove." },
+        { L"Buoyancy", L"Left: add lift in water. Right: remove." },
+        { L"Hover-Ball", L"Left: maintain current height. Right: remove." },
+        { L"Keep Upright", L"Left: stabilize orientation. Right: remove." },
+        { L"Magnetise", L"Left: attract nearby physics props. Right: remove." },
+        { L"Weight", L"Left: set mass. Right: read mass." },
+        { L"Physical Properties", L"Left: set gravity and damping. Right: toggle gravity." },
+        { L"Stacker", L"Left: stack copies above a physics prop." },
+        { L"Emitter", L"Left: place a spark emitter. Undo removes it." },
+        { L"Lamp", L"Left: place a directional spotlight. Undo removes it." },
+        { L"Buttons", L"Left: press an existing map button." },
+        { L"Door", L"Left: toggle an existing map door." }
     };
 
     if (m_iMode < 0 || m_iMode >= ARRAYSIZE(tools))
@@ -294,9 +326,9 @@ void CHudMultitool::Paint(void)
 
     static const wchar_t* powerNames[] =
     {
-        L"Low - Red (500)",
-        L"Medium - Green (1500)",
-        L"High - Blue (4000)"
+        L"Low - Red (5000)",
+        L"Medium - Green (15000)",
+        L"High - Blue (40000)"
     };
 
     // Show only the currently selected option, not the entire list.
