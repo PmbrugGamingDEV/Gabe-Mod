@@ -372,6 +372,7 @@
             "c:\\gabemod\\src\\public\\engine\\ivdebugoverlay.h",
             "c:\\gabemod\\src\\game\\shared\\ieffects.h",
             "c:\\gabemod\\src\\game\\server\\gabe_undo.h",
+            "c:\\gabemod\\src\\game\\shared\\sprite.h",
             "c:\\gabemod\\src\\public\\tier0\\memdbgon.h"
         ],
         "ImportedModules": [],

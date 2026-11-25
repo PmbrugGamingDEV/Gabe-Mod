@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen -secure</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1600 -h 900 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1900 -h 1080 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen -secure|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1900 -h 1080 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1024 -h 768 -fullscreen -secure|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen -secure|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>

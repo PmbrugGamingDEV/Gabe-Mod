@@ -63,7 +63,7 @@ public:
     CSpawnFlatButton(Panel* parent, const char* name,
         const char* text, Panel* target, const char* command,
         bool tab = false)
-        : BaseClass(parent, name, text), m_bTab(tab), m_bSelected(false), m_pTarget(target), m_bTile(false), m_pModel(NULL), m_bModelTried(false)
+        : BaseClass(parent, name, text), m_bTab(tab), m_bSelected(false), m_pTarget(target), m_bTile(false), m_pModel(NULL), m_bModelTried(false), m_pAuthor(NULL)
     {
         m_szModel[0] = 0;
         SetPaintBorderEnabled(false);
@@ -81,11 +81,52 @@ public:
         SetArmedColor(Color(255, 255, 255, 255), Color(255, 255, 255, 255));
     }
 
+    virtual void ApplySchemeSettings(IScheme* pScheme)
+    {
+        BaseClass::ApplySchemeSettings(pScheme);
+        SetPaintBorderEnabled(false);
+
+        const Color white(255, 255, 255, 255);
+        SetFgColor(white);
+        SetDefaultColor(white, white);
+        SetArmedColor(white, white);
+        SetDepressedColor(white, white);
+        SetSelectedColor(white, white);
+        if (!m_bTile) return;
+
+        // Create our own font so no ClientScheme.res changes are required.
+        static HFont tileFont = INVALID_FONT;
+        if (tileFont == INVALID_FONT)
+        {
+            tileFont = surface()->CreateFont();
+            surface()->SetFontGlyphSet(tileFont, "Tahoma", 10, 700, 0, 0,
+                ISurface::FONTFLAG_ANTIALIAS | ISurface::FONTFLAG_DROPSHADOW);
+        }
+        if (tileFont != INVALID_FONT) SetFont(tileFont);
+        UpdateTileAlignment();
+    }
+
+    void SetWeaponAuthor(const char* author)
+    {
+        m_pAuthor = new Label(this, "WeaponAuthor", author);
+        m_pAuthor->SetMouseInputEnabled(false);
+        m_pAuthor->SetKeyBoardInputEnabled(false);
+        m_pAuthor->SetContentAlignment(Label::a_west);
+        InvalidateLayout();
+    }
+
+    void UpdateTileAlignment()
+    {
+        // A tile is text-only until its model preview actually loads.
+        SetContentAlignment(m_pModel ? Label::a_south : Label::a_center);
+        SetTextInset(3, m_pModel ? 4 : 0);
+    }
+
     void SetTile(const char* value)
     {
         m_bTile = true;
-        SetContentAlignment(Label::a_south);
-        SetTextInset(2, 2);
+        UpdateTileAlignment();
+        InvalidateLayout(false, true);
         Q_strncpy(m_szModel, value ? value : "", sizeof(m_szModel));
         const int len = Q_strlen(m_szModel);
         if (len < 5 || Q_stricmp(m_szModel + len - 4, ".mdl") ||
@@ -122,20 +163,28 @@ public:
         m_pModel->SetMDL(handle);
         vgui::MDLCache()->Release(handle);
         m_pModel->SetModelAnglesAndPosition(QAngle(0, 35, 0), vec3_origin);
-        m_pModel->SetBounds(2, 2, MAX(1, GetWide() - 4), MAX(1, GetTall() - 12));
+        m_pModel->SetBounds(3, 3, MAX(1, GetWide() - 6), MAX(1, GetTall() - 28));
         m_pModel->LookAtMDL();
         const float fov = DEG2RAD((float)m_pModel->GetCameraFOV());
         m_pModel->SetCameraFOV(RAD2DEG(2.0f * atanf(tanf(fov * 0.5f) / gabe_spawnicon_zoom.GetFloat())));
         m_pModel->SetLockView(true);
         m_pModel->SetVisible(true);
+        UpdateTileAlignment();
+        InvalidateLayout();
         Repaint();
     }
     virtual void PerformLayout()
     {
         BaseClass::PerformLayout();
+        if (m_pAuthor)
+        {
+            int split = GetWide() * 65 / 100;
+            m_pAuthor->SetBounds(split + 6, 0, MAX(1, GetWide() - split - 8), GetTall());
+            m_pAuthor->SetFgColor(Color(255, 255, 255, 255));
+        }
         if (m_pModel)
         {
-            m_pModel->SetBounds(2, 2, MAX(1, GetWide() - 4), MAX(1, GetTall() - 12));
+            m_pModel->SetBounds(3, 3, MAX(1, GetWide() - 6), MAX(1, GetTall() - 28));
         }
     }
     void SetSelected(bool selected) { m_bSelected = selected; Repaint(); }
@@ -185,12 +234,58 @@ private:
     CMDLPanel* m_pModel;
     bool m_bModelTried;
     char m_szModel[256];
+    Label* m_pAuthor;
 
 public:
     void SetSpawnCommand(const char* command)
     {
         Q_strncpy(m_szCommand, command ? command : "", sizeof(m_szCommand));
     }
+};
+
+// Tool headings are labels, not buttons; they never execute commands.
+class CSpawnToolHeading : public Label
+{
+    DECLARE_CLASS_SIMPLE(CSpawnToolHeading, Label);
+public:
+    CSpawnToolHeading(Panel* parent, const char* name, const char* text)
+        : BaseClass(parent, name, text), m_pOwner(parent)
+    {
+        SetContentAlignment(Label::a_west);
+        SetTextInset(6, 0);
+        SetPaintBackgroundEnabled(true);
+        SetPaintBorderEnabled(false);
+        SetKeyBoardInputEnabled(false);
+        SetMouseInputEnabled(true);
+    }
+    virtual void ApplySchemeSettings(IScheme* scheme)
+    {
+        BaseClass::ApplySchemeSettings(scheme);
+        static HFont font = INVALID_FONT;
+        if (font == INVALID_FONT)
+        {
+            font = surface()->CreateFont();
+            surface()->SetFontGlyphSet(font, "Tahoma", 12, 700, 0, 0,
+                ISurface::FONTFLAG_ANTIALIAS);
+        }
+        if (font != INVALID_FONT) SetFont(font);
+        SetFgColor(Color(255, 255, 255, 255));
+        SetPaintBackgroundEnabled(true);
+        SetPaintBorderEnabled(false);
+    }
+    virtual void PaintBackground()
+    {
+        surface()->DrawSetColor(82, 82, 82, 255);
+        surface()->DrawFilledRect(0, 0, GetWide(), GetTall());
+        surface()->DrawSetColor(150, 150, 150, 255);
+        surface()->DrawFilledRect(0, GetTall() - 2, GetWide(), GetTall());
+    }
+    virtual void OnMouseWheeled(int delta)
+    {
+        if (m_pOwner) m_pOwner->OnMouseWheeled(delta);
+    }
+private:
+    Panel* m_pOwner;
 };
 
 enum EntryType_t { ENTRY_BUTTON, ENTRY_LABEL };
@@ -213,8 +308,13 @@ public:
     CSpawnButtonColumns(Panel* parent, const char* type, bool tools) : BaseClass(parent, "SpawnColumns")
     {
         Q_strncpy(m_szSpawnType, type, sizeof(m_szSpawnType)); m_szSearch[0] = 0;
-        m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; m_iButtonWide = 64; m_iButtonTall = 64; m_iColumnSpacing = 3;
+        m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; m_iButtonWide = 112; m_iButtonTall = 112; m_iColumnSpacing = 5;
         m_bTools = tools;
+        m_bWeaponList = !Q_stricmp(type, "weapon");
+        m_pWeaponName = new Label(this, "WeaponNameHeader", "Name");
+        m_pWeaponAuthor = new Label(this, "WeaponAuthorHeader", "Author");
+        m_pWeaponName->SetVisible(m_bWeaponList);
+        m_pWeaponAuthor->SetVisible(m_bWeaponList);
         m_pCatPrev = new CSpawnFlatButton(this, "CatPrev", "^", this, "catprev");
         m_pCatNext = new CSpawnFlatButton(this, "CatNext", "v", this, "catnext");
         m_pPrev = new CSpawnFlatButton(this, "Prev", "<", this, "prev");
@@ -226,7 +326,7 @@ public:
     virtual void PaintBackground()
     {
         surface()->DrawSetColor(48, 48, 48, 245); surface()->DrawFilledRect(0, 0, GetWide(), GetTall());
-        if (!m_bTools)
+        if (!m_bTools && !m_bWeaponList)
         {
             bool groups = false;
             for (int i = 0; i < m_Entries.Count(); ++i) if (m_Entries[i].type == ENTRY_LABEL && m_Entries[i].button) { groups = true; break; }
@@ -241,18 +341,30 @@ public:
         Q_strncpy(e.spawnType, spawnType ? spawnType : m_szSpawnType, sizeof(e.spawnType));
         int i = m_Entries.Count(); char id[64], cmd[64]; Q_snprintf(id, sizeof(id), "item_%d", i);
         e.group = -1;
-        for (int j = i - 1; j >= 0; --j) if (m_Entries[j].type == ENTRY_LABEL && m_Entries[j].button) { e.group = j; break; }
+        for (int j = i - 1; j >= 0; --j) if (m_Entries[j].type == ENTRY_LABEL && (m_Entries[j].button || m_Entries[j].label)) { e.group = j; break; }
         if (name[0] == '~')
         {
             e.type = ENTRY_LABEL; Q_snprintf(cmd, sizeof(cmd), "group_%d", i);
-            e.button = new CSpawnFlatButton(this, id, name + 1, this, cmd);
-            if (m_iGroup < 0) m_iGroup = i;
+            if (m_bTools)
+                e.label = new CSpawnToolHeading(this, id, name + 1);
+            else
+            {
+                e.button = new CSpawnFlatButton(this, id, name + 1, this, cmd);
+                if (m_iGroup < 0) m_iGroup = i;
+            }
         }
         else
         {
             e.type = ENTRY_BUTTON; Q_snprintf(cmd, sizeof(cmd), "spawn_%d", i);
             e.button = new CSpawnFlatButton(this, id, name, this, cmd);
-            if (!m_bTools) e.button->SetTile(value);
+            if (m_bWeaponList)
+            {
+                const bool custom = !Q_stricmp(value, "weapon_eattach") ||
+                    !Q_stricmp(value, "weapon_stickylauncher") ||
+                    !Q_stricmp(value, "weapon_lasergun");
+                e.button->SetWeaponAuthor(custom ? "PmbrugGaming" : "Valve");
+            }
+            else if (!m_bTools) e.button->SetTile(value);
         }
         m_Entries.AddToTail(e); InvalidateLayout();
     }
@@ -302,7 +414,7 @@ public:
         int x, y; input()->GetCursorPos(x, y); ScreenToLocal(x, y);
         bool hasGroups = false;
         for (int i = 0; i < m_Entries.Count(); ++i) if (m_Entries[i].type == ENTRY_LABEL && m_Entries[i].button) { hasGroups = true; break; }
-        if (!m_bTools && hasGroups && y < MIN(180, GetTall() / 3)) m_iCategoryScroll = MAX(0, m_iCategoryScroll - delta);
+        if (!m_bTools && !m_bWeaponList && hasGroups && y < MIN(180, GetTall() / 3)) m_iCategoryScroll = MAX(0, m_iCategoryScroll - delta);
         else m_iScroll = MAX(0, m_iScroll - delta);
         InvalidateLayout(true);
     }
@@ -310,21 +422,23 @@ public:
     {
         BaseClass::PerformLayout();
         int w = GetWide(), h = GetTall(); if (w < 20 || h < 40)return;
-        int categoryH = m_bTools ? 0 : MIN(180, h / 3);
+        int categoryH = (m_bTools || m_bWeaponList) ? 0 : MIN(180, h / 3);
         int toolW = w;
         int groups = 0, actualGroups = 0;
         for (int k = 0; k < m_Entries.Count(); ++k) if (m_Entries[k].type == ENTRY_LABEL && m_Entries[k].button)++actualGroups;
         int categoryRows = MAX(1, (categoryH - 8) / 18);
         m_iCategoryScroll = clamp(m_iCategoryScroll, 0, MAX(0, actualGroups - categoryRows));
-        m_pCatPrev->SetVisible(!m_bTools && actualGroups > categoryRows);
-        m_pCatNext->SetVisible(!m_bTools && actualGroups > categoryRows);
+        m_pCatPrev->SetVisible(!m_bTools && !m_bWeaponList && actualGroups > categoryRows);
+        m_pCatNext->SetVisible(!m_bTools && !m_bWeaponList && actualGroups > categoryRows);
         m_pCatPrev->SetBounds(w - 23, 4, 19, 18);
         m_pCatNext->SetBounds(w - 23, categoryH - 22, 19, 18);
         for (int i = 0; i < m_Entries.Count(); ++i)
         {
-            SpawnEntry_t& e = m_Entries[i]; if (!e.button)continue;
+            SpawnEntry_t& e = m_Entries[i];
+            if (e.label) e.label->SetVisible(false);
+            if (!e.button) continue;
             e.button->SetVisible(false);
-            if (e.type == ENTRY_LABEL && !m_bTools)
+            if (e.type == ENTRY_LABEL && !m_bTools && !m_bWeaponList)
             {
                 int count = 0; for (int j = 0; j < m_Entries.Count(); ++j) if (m_Entries[j].type == ENTRY_BUTTON && m_Entries[j].button && m_Entries[j].group == i)++count;
                 char text[300]; Q_snprintf(text, sizeof(text), "%s   (%d)", e.name + 1, count); e.button->SetText(text);
@@ -338,10 +452,19 @@ public:
             }
         }
         int top = (!m_bTools && groups) ? categoryH + 4 : 4;
-        int cellW = m_bTools ? toolW - 8 : MAX(40, m_iButtonWide);
-        int cellH = m_bTools ? 20 : MAX(40, m_iButtonTall);
-        int gap = MAX(1, m_iColumnSpacing), cols = MAX(1, (toolW - 8 + gap) / (cellW + gap));
-        if (m_bTools)cols = 1;
+        if (m_bWeaponList)
+        {
+            int split = (w - 8) * 65 / 100;
+            m_pWeaponName->SetBounds(9, 4, MAX(1, split - 5), 22);
+            m_pWeaponAuthor->SetBounds(10 + split, 4, MAX(1, w - split - 14), 22);
+            m_pWeaponName->SetFgColor(Color(255, 255, 255, 255));
+            m_pWeaponAuthor->SetFgColor(Color(255, 255, 255, 255));
+            top = 28;
+        }
+        int cellW = (m_bTools || m_bWeaponList) ? toolW - 8 : MAX(40, m_iButtonWide);
+        int cellH = (m_bWeaponList || m_bTools) ? 24 : MAX(40, m_iButtonTall);
+        int gap = (m_bTools || m_bWeaponList) ? 2 : MAX(1, m_iColumnSpacing), cols = MAX(1, (toolW - 8 + gap) / (cellW + gap));
+        if (m_bTools || m_bWeaponList) cols = 1;
         int rows = MAX(1, (h - top - 28) / (cellH + gap)); int count = 0;
         for (int i = 0; i < m_Entries.Count(); ++i) if (Matches(m_Entries[i])) ++count;
         m_iScroll = clamp(m_iScroll, 0, MAX(0, (count + cols - 1) / cols - rows));
@@ -350,32 +473,58 @@ public:
         {
             SpawnEntry_t& e = m_Entries[i]; if (!Matches(e))continue;
             int pos = n++ - m_iScroll * cols; if (pos < 0 || pos >= rows * cols)continue;
-            e.button->SetBounds(4 + (pos % cols) * (cellW + gap), top + (pos / cols) * (cellH + gap), cellW, cellH);
-            e.button->SetVisible(true);
+            int y = top + (pos / cols) * (cellH + gap);
+            if (e.label)
+            {
+                e.label->SetBounds(4, y + 2, cellW, cellH - 2);
+                e.label->SetVisible(true);
+            }
+            else if (e.button)
+            {
+                int inset = m_bTools ? 8 : 0;
+                e.button->SetBounds(4 + (pos % cols) * (cellW + gap) + inset,
+                    y, MAX(1, cellW - inset), m_bTools ? 22 : cellH);
+                e.button->SetVisible(true);
+            }
         }
         m_pPrev->SetBounds(4, h - 23, 24, 19); m_pNext->SetBounds(toolW - 28, h - 23, 24, 19);
         m_pPage->SetBounds(32, h - 23, MAX(1, toolW - 64), 19);
-        char text[80]; Q_snprintf(text, sizeof(text), "%d items", count); m_pPage->SetText(text);
+        int itemCount = count;
+        if (m_bTools)
+            for (int i = 0; i < m_Entries.Count(); ++i)
+                if (m_Entries[i].type == ENTRY_LABEL && Matches(m_Entries[i])) --itemCount;
+        char text[80]; Q_snprintf(text, sizeof(text), "%d items", itemCount); m_pPage->SetText(text);
     }
     bool Matches(const SpawnEntry_t& e) const
     {
-        if (!e.button)return false;
-        if (e.type == ENTRY_LABEL)return m_bTools && !m_szSearch[0];
+        if (e.type == ENTRY_LABEL) return m_bTools && e.label && !m_szSearch[0];
+        if (!e.button) return false;
         if (m_szSearch[0])return Q_stristr(e.name, m_szSearch) || Q_stristr(e.value, m_szSearch);
-        return m_bTools || m_iGroup < 0 || e.group == m_iGroup;
+        return m_bTools || m_bWeaponList || m_iGroup < 0 || e.group == m_iGroup;
     }
     void ApplyFilter() { InvalidateLayout(true); }
     void SetSearchText(const char* s) { Q_strncpy(m_szSearch, s ? s : "", sizeof(m_szSearch)); m_iScroll = 0; ApplyFilter(); }
     void SetButtonSize(int w, int h) { m_iButtonWide = MAX(40, w); m_iButtonTall = MAX(40, h); InvalidateLayout(); }
     void SetColumnSpacing(int n) { m_iColumnSpacing = MAX(1, n); InvalidateLayout(); }
     bool RemoveItem(const char* name) { for (int i = 0; i < m_Entries.Count(); ++i)if (m_Entries[i].type == ENTRY_BUTTON && m_Entries[i].button && !Q_stricmp(m_Entries[i].name, name)) { m_Entries[i].button->SetVisible(false); m_Entries[i].button->MarkForDeletion(); m_Entries[i].button = NULL; InvalidateLayout(); return true; }return false; }
-    void ClearItems() { for (int i = 0; i < m_Entries.Count(); ++i)if (m_Entries[i].button) { m_Entries[i].button->SetVisible(false); m_Entries[i].button->MarkForDeletion(); }m_Entries.RemoveAll(); m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; InvalidateLayout(); }
+    void ClearItems()
+    {
+        for (int i = 0; i < m_Entries.Count(); ++i)
+        {
+            if (m_Entries[i].button) { m_Entries[i].button->SetVisible(false); m_Entries[i].button->MarkForDeletion(); }
+            if (m_Entries[i].label) { m_Entries[i].label->SetVisible(false); m_Entries[i].label->MarkForDeletion(); }
+        }
+        m_Entries.RemoveAll(); m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; InvalidateLayout();
+    }
     const char* GetSpawnType() const { return m_szSpawnType; }
 private:
     CUtlVector<SpawnEntry_t> m_Entries;
     char m_szSpawnType[32], m_szSearch[256];
     int m_iButtonWide, m_iButtonTall, m_iColumnSpacing, m_iGroup, m_iScroll, m_iCategoryScroll;
     bool m_bTools;
+    bool m_bWeaponList;
+    Label* m_pWeaponName;
+    Label* m_pWeaponAuthor;
     CSpawnFlatButton* m_pPrev, * m_pNext, * m_pCatPrev, * m_pCatNext;
     Label* m_pPage;
 };
@@ -409,7 +558,7 @@ public:
         m_iActiveTab = -1;
         m_iSpawnCount = 0;
         m_szSearchText[0] = 0;
-        m_iButtonWide = 64; m_iButtonTall = 64; m_iColumnSpacing = 3;
+        m_iButtonWide = 112; m_iButtonTall = 112; m_iColumnSpacing = 5;
         m_iActiveTool = -1;
         m_pToolTitle = new Label(this, "ToolTitle", "Tools");
         SetTitleBarVisible(false);
@@ -418,6 +567,187 @@ public:
         m_Background = Color(68, 68, 68, 140);
         ResizeToScreen();
         LoadData();
+    }
+
+    void ScanMountedModels(
+        CSpawnButtonColumns* panel,
+        const char* directory,
+        const char* pathID,
+        const char* gameName,
+        int depth = 0)
+    {
+        if (!panel || depth > 16)
+            return;
+
+        char wildcard[512];
+
+        Q_snprintf(
+            wildcard,
+            sizeof(wildcard),
+            "%s/*",
+            directory
+        );
+
+        FileFindHandle_t handle;
+
+        const char* file = filesystem->FindFirstEx(
+            wildcard,
+            pathID,
+            &handle
+        );
+
+        if (!file)
+            return;
+
+        bool bCreatedCategory = false;
+
+        while (file)
+        {
+            char path[512];
+
+            Q_snprintf(
+                path,
+                sizeof(path),
+                "%s/%s",
+                directory,
+                file
+            );
+
+            if (filesystem->FindIsDirectory(handle))
+            {
+                if (Q_stricmp(file, ".") &&
+                    Q_stricmp(file, ".."))
+                {
+                    ScanMountedModels(
+                        panel,
+                        path,
+                        pathID,
+                        gameName,
+                        depth + 1
+                    );
+                }
+            }
+            else
+            {
+                int len = Q_strlen(file);
+
+                if (len > 4 &&
+                    !Q_stricmp(file + len - 4, ".mdl"))
+                {
+                    // Prefer models with physics data.
+                    char physicsPath[512];
+
+                    Q_strncpy(
+                        physicsPath,
+                        path,
+                        sizeof(physicsPath)
+                    );
+
+                    Q_strncpy(
+                        physicsPath + Q_strlen(physicsPath) - 4,
+                        ".phy",
+                        5
+                    );
+
+                    if (filesystem->FileExists(
+                        physicsPath, pathID))
+                    {
+                        if (!bCreatedCategory)
+                        {
+                            char category[256];
+
+                            Q_snprintf(
+                                category,
+                                sizeof(category),
+                                "~%s - %s",
+                                gameName,
+                                directory
+                            );
+
+                            panel->AddItem(
+                                category, "", "prop");
+
+                            bCreatedCategory = true;
+                        }
+
+                        char label[256];
+
+                        Q_strncpy(
+                            label,
+                            file,
+                            sizeof(label)
+                        );
+
+                        label[Q_strlen(label) - 4] = '\0';
+
+                        panel->AddItem(
+                            label,
+                            path,
+                            "prop"
+                        );
+                    }
+                }
+            }
+
+            file = filesystem->FindNext(handle);
+        }
+
+        filesystem->FindClose(handle);
+    }
+
+    void LoadMountedGames()
+    {
+        CSpawnButtonColumns* panel = FindTab("Props");
+
+        if (!panel)
+            return;
+
+        static const struct
+        {
+            const char* pathID;
+            const char* name;
+        } games[] =
+        {
+            { "HL2",       "Half-Life 2" },
+            { "CSS",       "Counter-Strike Source" },
+            { "HLS",       "Half-Life Source" },
+            { "DODS",      "Day of Defeat Source" },
+            { "LOSTCOAST", "Lost Coast" },
+            { "HL1MP",     "Half-Life Deathmatch" },
+            { "EP1",       "Episode One" },
+            { "PORTAL",    "Portal" },
+            { "EP2",       "Episode Two" },
+            { "TF2",       "Team Fortress 2" }
+        };
+
+        for (int i = 0; i < ARRAYSIZE(games); ++i)
+        {
+            char paths[8192] = {};
+
+            filesystem->GetSearchPath(
+                games[i].pathID,
+                true,
+                paths,
+                sizeof(paths)
+            );
+
+            if (!paths[0])
+                continue;
+
+            Msg(
+                "[SpawnMenu] Loading mounted content: %s\n",
+                games[i].name
+            );
+
+            ScanMountedModels(
+                panel,
+                "models",
+                games[i].pathID,
+                games[i].name
+            );
+        }
+
+        panel->InvalidateLayout(true);
     }
 
     virtual void PaintBackground()
@@ -508,7 +838,8 @@ public:
             KeyValues* entries = section->FindKey("entries");
             if (!type[0] || !entries) continue;
             const char* tab = "Entities";
-            if (!Q_stricmp(type, "prop") || !Q_stricmp(type, "ragdoll")) tab = "Props";
+            if (!Q_stricmp(type, "prop") || !Q_stricmp(type, "ragdoll") ||
+                (!Q_stricmp(type, "effect") && !Q_stricmp(name, "Special Effects"))) tab = "Props";
             else if (!Q_stricmp(name, "NPCs") || !Q_stricmp(type, "npc")) tab = "NPCs";
             else if (!Q_stricmp(type, "weapon")) tab = "Weapons";
             else if (!Q_stricmp(name, "Interactive")) tab = "Vehicles";
@@ -541,6 +872,7 @@ public:
             }
         }
         kv->deleteThis();
+        LoadMountedGames();
         if (m_iActiveTab < 0) for (int i = 0; i < m_Tabs.Count(); ++i) if (!m_Tabs[i].panel->IsTools()) { SetActiveTab(i); break; }
     }
     void Reload()

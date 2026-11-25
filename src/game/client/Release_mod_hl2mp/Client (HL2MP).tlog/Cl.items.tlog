@@ -40,6 +40,7 @@ C:\GabeMod\src\game\client\gabe_newgame.cpp;C:\GabeMod\src\game\client\Release_m
 C:\GabeMod\src\game\client\gabe_spawnmenu.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_spawnmenu.obj
 C:\GabeMod\src\game\client\gabe_thanks.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_thanks.obj
 C:\GabeMod\src\game\client\gabe_tutorials.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_tutorials.obj
+C:\GabeMod\src\game\client\gamemount.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gamemount.obj
 C:\GabeMod\src\game\client\hl1\c_hl1_legacytempents.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_hl1_legacytempents.obj
 C:\GabeMod\src\game\client\hl1\hl1_fx_gauss.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hl1_fx_gauss.obj
 C:\GabeMod\src\game\client\hl1\hl1_fx_gibs.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hl1_fx_gibs.obj

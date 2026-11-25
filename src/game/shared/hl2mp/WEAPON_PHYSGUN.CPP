@@ -65,6 +65,7 @@ static int g_physgunGlow;
 #define	PHYSGUN_SKIN	1
 
 class CWeaponGravityGun;
+static bool PhysgunIsManualEntity(CBaseEntity* pEnt);
 
 ConVar phys_guntogglesound("gabe_physgun_togglesound", "0", FCVAR_REPLICATED); // 
 
@@ -79,6 +80,7 @@ CLIENTEFFECT_REGISTER_END()
 #endif
 IPhysicsObject* GetPhysObjFromPhysicsBone(CBaseEntity* pEntity, short physicsbone)
 {
+	if (!pEntity) return NULL;
 	if (pEntity->IsNPC())
 	{
 		return pEntity->VPhysicsGetObject();
@@ -219,6 +221,10 @@ DEFINE_FIELD(m_bHasRotatedCarryAngles, FIELD_BOOLEAN),
 
 	CGravControllerPoint::CGravControllerPoint(void)
 {
+	m_controller = NULL;
+	m_targetRotation = vec3_angle;
+	m_targetPosition = vec3_origin;
+	m_localPosition = vec3_origin;
 	m_shadow.dampFactor = 0.8;
 	m_shadow.teleportDistance = 0;
 	// make this controller really stiff!
@@ -308,7 +314,7 @@ void CGravControllerPoint::AttachEntity(
 	QAngle angles;
 	pPhys->GetPosition(&position, &angles);
 
-	SetTargetPosition(vGrabPosition, angles);
+	SetTargetPosition(position, angles);
 	m_targetRotation = TransformAnglesToPlayerSpace(angles, pPlayer);
 
 #ifdef ARGG
@@ -333,7 +339,7 @@ void CGravControllerPoint::DetachEntity(void)
 	m_attachedEntity = NULL;
 	m_attachedPhysicsBone = 0;
 
-	if (physenv)
+	if (physenv && m_controller)
 	{
 		physenv->DestroyMotionController(m_controller);
 	}
@@ -616,9 +622,7 @@ private:
 	bool		m_bInWeapon1;
 	bool		m_bInWeapon2;
 
-	MoveType_t  m_oldMoveType;
-	SolidType_t m_oldSolid;
-	bool        m_bRestoreState;
+	bool m_bManualHold;
 
 #ifdef CLIENT_DLL
 	int GetMuzzleAttachment(C_BaseViewModel* pVM);
@@ -714,6 +718,7 @@ BEGIN_DATADESC(CWeaponGravityGun)
 
 DEFINE_FIELD(m_active, FIELD_INTEGER),
 DEFINE_FIELD(m_useDown, FIELD_BOOLEAN),
+DEFINE_FIELD(m_bManualHold, FIELD_BOOLEAN),
 DEFINE_FIELD(m_hObject, FIELD_EHANDLE),
 DEFINE_FIELD(m_physicsBone, FIELD_INTEGER),
 DEFINE_FIELD(m_beamWorldPosition, FIELD_POSITION_VECTOR),
@@ -751,6 +756,7 @@ CWeaponGravityGun::CWeaponGravityGun()
 	m_bInWeapon1 = false;
 	m_bInWeapon2 = false;
 	m_frozenObjects = 0;
+	m_bManualHold = false;
 	m_beamWorldPosition = vec3_origin;
 }
 
@@ -804,7 +810,7 @@ bool CWeaponGravityGun::Deploy()
 bool CGravControllerPoint::UpdateObject(CBasePlayer* pPlayer, CBaseEntity* pEntity)
 {
 	IPhysicsObject* pPhysics = GetPhysObjFromPhysicsBone(pEntity, m_attachedPhysicsBone);
-	if (!pEntity || !pPhysics)
+	if (!pEntity || (!pPhysics && !PhysgunIsManualEntity(pEntity)))
 	{
 		return false;
 	}
@@ -818,7 +824,7 @@ bool CGravControllerPoint::UpdateObject(CBasePlayer* pPlayer, CBaseEntity* pEnti
 #ifdef CLIENT_DLL
 	if (m_bHasRotatedCarryAngles && (pPlayer->m_pCurrentCommand->mousedx || pPlayer->m_pCurrentCommand->mousedy))
 #else
-	if (m_bHasRotatedCarryAngles && (pPlayer->GetCurrentCommand()->mousedx || pPlayer->GetCurrentCommand()->mousedy))
+	if (m_bHasRotatedCarryAngles && pPlayer->GetCurrentCommand() && (pPlayer->GetCurrentCommand()->mousedx || pPlayer->GetCurrentCommand()->mousedy))
 #endif
 	{
 		// method II: relative orientation
@@ -842,8 +848,7 @@ bool CGravControllerPoint::UpdateObject(CBasePlayer* pPlayer, CBaseEntity* pEnti
 	// end adnan
 #endif
 
-	SetTargetPosition(m_targetPosition, m_targetRotation);
-
+	// EffectUpdate computes the actual world-space shadow target.
 	return true;
 }
 
@@ -946,6 +951,20 @@ void CWeaponGravityGun::TraceLine(trace_t* ptr)
 }
 
 
+// Brush movers use engine-driven push movement, not a dynamic rigid body.
+static bool PhysgunIsManualEntity(CBaseEntity* pEnt)
+{
+	if (!pEnt || pEnt->IsPlayer() || pEnt->IsWorld()) return false;
+	return pEnt->IsNPC() || pEnt->GetMoveType() == MOVETYPE_PUSH ||
+		FClassnameIs(pEnt, "func_button") ||
+		FClassnameIs(pEnt, "func_rot_button") ||
+		FClassnameIs(pEnt, "func_door") ||
+		FClassnameIs(pEnt, "func_door_rotating") ||
+		FClassnameIs(pEnt, "prop_door_rotating") ||
+		FClassnameIs(pEnt, "func_movelinear") ||
+		FClassnameIs(pEnt, "func_rotating");
+}
+
 void CWeaponGravityGun::EffectUpdate(void)
 {
 	Vector start, forward, right;
@@ -982,24 +1001,7 @@ void CWeaponGravityGun::EffectUpdate(void)
 #ifndef CLIENT_DLL
 		IPhysicsObject* pPhys = GetPhysObjFromPhysicsBone(pEntity, tr.physicsbone);
 
-		// --------------------------------------------------------
-		// GIVE TEMP PHYSICS IF NEEDED
-		// --------------------------------------------------------
-		if (!pPhys && (pEntity->IsNPC() ||
-			FClassnameIs(pEntity, "func_door") ||
-			FClassnameIs(pEntity, "func_door_rotating") ||
-			FClassnameIs(pEntity, "func_button")))
-		{
-			// NPCs, doors, buttons normally have no physics
-			pEntity->SetMoveType(MOVETYPE_VPHYSICS);
-			pEntity->SetSolid(SOLID_VPHYSICS);
-
-			pEntity->CreateVPhysics();
-
-			pPhys = pEntity->VPhysicsGetObject();
-		}
-
-		if (pPhys)
+		if (pPhys || PhysgunIsManualEntity(pEntity))
 		{
 			AttachObject(
 				pEntity,
@@ -1048,6 +1050,23 @@ void CWeaponGravityGun::EffectUpdate(void)
 		if (pOwner->m_nButtons & IN_WEAPON2)
 			m_distance = Approach(40, m_distance, m_distance * 0.1f);
 
+#ifndef CLIENT_DLL
+		if (m_bManualHold)
+		{
+			// Rotate the original entity-local hit point by the desired angles.
+			Vector offset;
+			Vector localGrab = m_worldPosition;
+			VectorRotate(localGrab, angles, offset);
+			Vector desired = start + forward * m_distance - offset;
+			// Teleport synchronizes the entity and its existing shadow object.
+			// Never replace brush physics or change its move/solid type.
+			Vector zero = vec3_origin;
+			m_movementLength = (desired - pObject->GetAbsOrigin()).Length();
+			pObject->Teleport(&desired, &angles, &zero);
+			m_beamWorldPosition = desired + offset;
+			return;
+		}
+#endif
 		// --------------------------------------------------------
 		// PHYSICS UPDATE
 		// --------------------------------------------------------
@@ -1278,87 +1297,37 @@ void CWeaponGravityGun::EffectDestroy(void)
 void CWeaponGravityGun::UpdateObject(void)
 {
 	CBasePlayer* pPlayer = ToBasePlayer(GetOwner());
-	Assert(pPlayer);
-
 	CBaseEntity* pObject = m_hObject;
-	if (!pObject)
-		return;
-
-	Vector start;
-	Vector forward;
-
-	pPlayer->EyeVectors(&forward);
-	start = pPlayer->Weapon_ShootPosition();
-	Vector end = pObject->GetAbsOrigin();
-	float distance = (start - end).Length();
-
-	// Move + rotate NPCs / doors / buttons manually
-	if (pObject->IsNPC() ||
-		FClassnameIs(pObject, "func_door") ||
-		FClassnameIs(pObject, "func_button") ||
-		FClassnameIs(pObject, "func_door_rotating"))
-	{
-		Vector newPos = start + forward * m_distance;
-
-		QAngle newAngles =
-			m_gravCallback.TransformAnglesFromPlayerSpace(
-				m_gravCallback.m_targetRotation,
-				pPlayer
-			);
-
-		pObject->SetAbsOrigin(newPos);
-		pObject->SetAbsAngles(newAngles);
-
-		return;
-	}
-
-	if (!m_gravCallback.UpdateObject(pPlayer, pObject))
-	{
-		DetachObject();
-		return;
-	}
+	if (!pPlayer || !pObject) return;
+	if (!m_gravCallback.UpdateObject(pPlayer, pObject)) DetachObject();
 }
+
 
 void CWeaponGravityGun::DetachObject(void)
 {
-	if (m_hObject)
+	CBaseEntity* pObject = m_hObject.Get();
+	// Destroy controller even when the held entity has been deleted.
+	m_gravCallback.DetachEntity();
+#ifndef CLIENT_DLL
+	if (pObject)
 	{
-#ifndef CLIENT_DLL
-		CBaseAnimating* pAnim = m_hObject->GetBaseAnimating();
-		if (pAnim)
+		CBaseAnimating* pAnim = pObject->GetBaseAnimating();
+		if (pAnim) pAnim->RemoveGlowEffect();
+		if (!m_bManualHold)
 		{
-			pAnim->RemoveGlowEffect();
+			IPhysicsObject* list[VPHYSICS_MAX_OBJECT_LIST_COUNT];
+			int count = pObject->VPhysicsGetObjectList(list, ARRAYSIZE(list));
+			for (int i = 0; i < count; ++i)
+				if (list[i]) PhysClearGameFlags(list[i], FVPHYSICS_PLAYER_HELD);
+			CBasePlayer* pOwner = ToBasePlayer(GetOwner());
+			if (pOwner) Pickup_OnPhysGunDrop(pObject, pOwner, DROPPED_BY_CANNON);
 		}
-#endif
-#ifndef CLIENT_DLL
-		CBasePlayer* pOwner = ToBasePlayer(GetOwner());
-		Pickup_OnPhysGunDrop(m_hObject, pOwner, DROPPED_BY_CANNON);
-#endif
-
-		IPhysicsObject* pList[VPHYSICS_MAX_OBJECT_LIST_COUNT];
-		int count = m_hObject->VPhysicsGetObjectList(pList, ARRAYSIZE(pList));
-		for (int i = 0; i < count; i++)
-		{
-			PhysClearGameFlags(pList[i], FVPHYSICS_PLAYER_HELD);
-		}
-
-#ifndef CLIENT_DLL
-		if (m_bRestoreState)
-		{
-			m_hObject->VPhysicsDestroyObject();
-
-			m_hObject->SetMoveType(m_oldMoveType);
-			m_hObject->SetSolid(m_oldSolid);
-
-			m_bRestoreState = false;
-		}
-#endif
-
-		m_gravCallback.DetachEntity();
-		m_hObject = NULL;
-		m_physicsBone = 0;
-		m_beamWorldPosition = vec3_origin;
 	}
+#endif
+	m_bManualHold = false;
+	m_hObject = NULL;
+	m_physicsBone = 0;
+	m_beamWorldPosition = vec3_origin;
 }
 
 
@@ -1438,37 +1407,22 @@ void CWeaponGravityGun::AttachObject(
 	if (pBonePhysics)
 		pPhysics = pBonePhysics;
 
-	// --------------------------------------------------
-	// Allowlist by classname
-	// --------------------------------------------------
-	bool bAllowNonVPhysics =
-		pObject->IsNPC() ||
-		FClassnameIs(pObject, "func_door") ||
-		FClassnameIs(pObject, "func_door_rotating") ||
-		FClassnameIs(pObject, "func_button");
-
+	m_bManualHold = false;
 #ifndef CLIENT_DLL
-	// --------------------------------------------------
-	// Create temporary physics if allowed
-	// --------------------------------------------------
-	if (!pPhysics && bAllowNonVPhysics)
+	if (PhysgunIsManualEntity(pObject))
 	{
-		m_oldMoveType = pObject->GetMoveType();
-		m_oldSolid = pObject->GetSolid();
-		m_bRestoreState = true;
-
-		pObject->SetMoveType(MOVETYPE_VPHYSICS);
-		pObject->SetSolid(SOLID_VPHYSICS);
-		pObject->CreateVPhysics();
-
-		pPhysics = pObject->VPhysicsGetObject();
-	}
-	else
-	{
-		m_bRestoreState = false;
+		// Store the actual hit point relative to the entity, not its center.
+		Vector localGrab;
+		VectorITransform(end, pObject->EntityToWorldTransform(), localGrab);
+		m_worldPosition = localGrab;
+		m_beamWorldPosition = end;
+		m_distance = distance;
+		m_originalObjectPosition = pObject->GetAbsOrigin();
+		m_gravCallback.m_targetRotation = m_gravCallback.TransformAnglesToPlayerSpace(pObject->GetAbsAngles(), pOwner);
+		m_bManualHold = true;
+		return;
 	}
 #endif
-
 	if (!pPhysics)
 	{
 		m_hObject = NULL;
@@ -1583,6 +1537,7 @@ void CWeaponGravityGun::SecondaryAttack(void)
 
 	CBaseEntity* pHit = m_hObject;
 	if (!pHit) { return; }
+	if (m_bManualHold) { DetachObject(); return; }
 
 	IPhysicsObject* pPhys = GetPhysObjFromPhysicsBone(
 		pHit,

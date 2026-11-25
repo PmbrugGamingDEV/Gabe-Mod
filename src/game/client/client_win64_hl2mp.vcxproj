@@ -1190,6 +1190,7 @@ exit 1
     <ClCompile Include="gabe_spawnmenu.cpp" />
     <ClCompile Include="gabe_thanks.cpp" />
     <ClCompile Include="gabe_tutorials.cpp" />
+    <ClCompile Include="gamemount.cpp" />
     <ClCompile Include="hl1\c_hl1_legacytempents.cpp" />
     <ClCompile Include="hl1\hl1_fx_gauss.cpp" />
     <ClCompile Include="hl1\hl1_fx_gibs.cpp" />

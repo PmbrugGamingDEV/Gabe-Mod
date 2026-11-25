@@ -137,7 +137,10 @@ static const GabeMenuItem_t g_MenuItems[] =
       "engine gabe_loadscripts", false, false },
 
     { "Web Browser",
-      "engine gabe_showbrowser", false, false }
+      "engine gabe_showbrowser", false, false },
+
+    { "Mount Games",
+      "engine gabe_mountgames", false, false }
 };
 
 static float g_flMenuScale = 1.0f;

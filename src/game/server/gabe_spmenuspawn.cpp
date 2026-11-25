@@ -4,6 +4,8 @@
 #include "util_shared.h"
 #include "ieffects.h"
 #include "gabe_undo.h"
+#include "Sprite.h"
+#include "vphysics_interface.h"
 #include "tier0/memdbgon.h"
 
 static const char* GetNPCUndoName(const char* classname)
@@ -110,32 +112,196 @@ static void StartFadeIn(CBaseEntity* pEnt)
     pEnt->SetRenderColorA(0);
     f->Activate();
 }
-static void FixSpawnPosition(CBaseEntity* pEnt, const Vector& hitPos)
+static bool FixSpawnPosition(
+    CBaseEntity* pEnt,
+    const trace_t& spawnTrace)
 {
-    pEnt->SetAbsOrigin(hitPos);
-    Vector mins, maxs;
-    pEnt->CollisionProp()->WorldSpaceAABB(&mins, &maxs);
-    Vector pos = hitPos;
-    pos.z += hitPos.z - mins.z + 1.0f;
-    pEnt->SetAbsOrigin(pos);
+    if (!pEnt || !spawnTrace.DidHit())
+        return false;
+
+    if (spawnTrace.startsolid || spawnTrace.allsolid)
+        return false;
+
+    // Retrieve the actual collision bounds.
     pEnt->CollisionProp()->UpdatePartition();
+
+    Vector mins, maxs;
+
+    pEnt->CollisionProp()->WorldSpaceAABB(
+        &mins, &maxs);
+
+    // Convert world bounds into offsets from
+    // the entity's origin.
+    Vector origin = pEnt->GetAbsOrigin();
+
+    mins -= origin;
+    maxs -= origin;
+
+    Vector normal = spawnTrace.plane.normal;
+
+    if (VectorNormalize(normal) < 0.001f)
+        normal.Init(0, 0, 1);
+
+    // Find the bounding-box corner closest
+    // to the surface.
+    Vector support;
+
+    support.x = normal.x >= 0.0f ? mins.x : maxs.x;
+    support.y = normal.y >= 0.0f ? mins.y : maxs.y;
+    support.z = normal.z >= 0.0f ? mins.z : maxs.z;
+
+    float offset = -DotProduct(support, normal);
+
+    // Leave a small gap between the prop
+    // and the surface.
+    const float clearance = 2.0f;
+
+    Vector spawnPos =
+        spawnTrace.endpos +
+        normal * (offset + clearance);
+
+    // Search outward from the surface until
+    // there is enough room for the entire prop.
+    for (int i = 0; i <= 32; ++i)
+    {
+        Vector candidate =
+            spawnPos + normal * (i * 4.0f);
+
+        trace_t check;
+
+        UTIL_TraceHull(
+            candidate,
+            candidate,
+            mins,
+            maxs,
+            MASK_SOLID,
+            pEnt,
+            COLLISION_GROUP_NONE,
+            &check
+        );
+
+        if (check.startsolid || check.allsolid)
+            continue;
+
+        // Teleport also updates the physics position.
+        Vector velocity = vec3_origin;
+
+        pEnt->Teleport(
+            &candidate,
+            NULL,
+            &velocity
+        );
+
+        pEnt->CollisionProp()->UpdatePartition();
+
+        IPhysicsObject* pPhysics =
+            pEnt->VPhysicsGetObject();
+
+        if (pPhysics)
+            pPhysics->Wake();
+
+        return true;
+    }
+
+    // No unobstructed position was found.
+    return false;
 }
-static CBaseEntity* SpawnEntity(const char* classname, const char* model, const Vector& pos)
+static CBaseEntity* SpawnEntity(
+    const char* classname,
+    const char* model,
+    const trace_t& tr)
 {
+    if (!tr.DidHit() || tr.startsolid || tr.allsolid)
+        return NULL;
+
+    if (tr.surface.flags & SURF_SKY)
+        return NULL;
+
     CBaseEntity* p = CreateEntityByName(classname);
-    if (!p) return NULL;
-    if (model)
+
+    if (!p)
+        return NULL;
+
+    if (model && model[0])
     {
         p->PrecacheModel(model);
         p->SetModel(model);
     }
-    p->SetAbsOrigin(pos);
-    if (DispatchSpawn(p) < 0) return NULL;
-    FixSpawnPosition(p, pos);
+
+    // Initial position before physics initialization.
+    p->SetAbsOrigin(
+        tr.endpos + tr.plane.normal * 16.0f);
+
+    p->SetAbsAngles(vec3_angle);
+
+    // Initialize model, collision bounds and physics.
+    if (DispatchSpawn(p) < 0)
+        return NULL;
+
+    if (p->IsMarkedForDeletion())
+        return NULL;
+
+    // Find an unobstructed position.
+    if (!FixSpawnPosition(p, tr))
+    {
+        Warning(
+            "[SpawnMenu] No room to spawn %s\n",
+            classname);
+
+        UTIL_Remove(p);
+        return NULL;
+    }
+
     p->Activate();
-    if (p->IsMarkedForDeletion()) return NULL;
+
+    if (p->IsMarkedForDeletion())
+        return NULL;
+
     return p;
 }
+
+static CBaseEntity* CreateEffectHandle(const trace_t& tr)
+{
+    CBaseEntity* pHandle = SpawnEntity(
+        "prop_physics",
+        "models/props_junk/PopCan01a.mdl",
+        tr
+    );
+
+    if (!pHandle)
+        return NULL;
+
+    IPhysicsObject* pPhysics = pHandle->VPhysicsGetObject();
+
+    if (!pPhysics)
+    {
+        UTIL_Remove(pHandle);
+        return NULL;
+    }
+
+    // Hide the physical model.
+    pHandle->AddEffects(EF_NODRAW);
+
+    // Allow movement without gravity.
+    pPhysics->EnableGravity(false);
+    pPhysics->EnableMotion(true);
+    pPhysics->SetMass(5.0f);
+
+    // Prevent excessive drifting and spinning.
+    float damping = 5.0f;
+    float angularDamping = 10.0f;
+
+    pPhysics->SetDamping(&damping, &angularDamping);
+
+    Vector velocity = vec3_origin;
+    AngularImpulse angular = vec3_origin;
+
+    pPhysics->SetVelocity(&velocity, &angular);
+    pPhysics->Sleep();
+
+    return pHandle;
+}
+
 static void SpawnFromCommand(CBasePlayer* pPlayer, const char* type, const char* value)
 {
     if (!pPlayer || !type || !value || !*value) return;
@@ -143,6 +309,26 @@ static void SpawnFromCommand(CBasePlayer* pPlayer, const char* type, const char*
     if (!Q_stricmp(type, "command"))
     {
         if (Q_stristr(value, ";") || Q_stristr(value, "\n") || Q_stristr(value, "\r") || Q_stristr(value, "\"")) return;
+        // Legacy spawnmenu NPC commands must use the undoable path.
+        if (!Q_strnicmp(value, "npc_create ", 11))
+        {
+            const char* npcClass = value + 11;
+            while (*npcClass == ' ' || *npcClass == '\t')
+                ++npcClass;
+
+            char classname[128];
+            Q_strncpy(classname, npcClass, sizeof(classname));
+            int len = Q_strlen(classname);
+            while (len > 0 && (classname[len - 1] == ' ' || classname[len - 1] == '\t'))
+                classname[--len] = '\0';
+
+            if (!len || Q_stristr(classname, " ") || Q_stristr(classname, "\t") ||
+                Q_strlen(npcClass) >= sizeof(classname))
+                return;
+
+            SpawnFromCommand(pPlayer, "npc", classname);
+            return;
+        }
         if (!Q_strnicmp(value, "mtool_mode ", 11))
         {
             CBaseCombatWeapon* w = pPlayer->Weapon_OwnsThisType("weapon_multitool");
@@ -158,26 +344,81 @@ static void SpawnFromCommand(CBasePlayer* pPlayer, const char* type, const char*
     Vector end = start + pPlayer->EyeDirection3D() * 1024.0f;
     UTIL_TraceLine(start, end, MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &tr);
     if (!tr.DidHit()) return;
-    Vector hitPos = tr.endpos;
+    const trace_t& hitPos = tr;
     if (!Q_stricmp(type, "effect"))
     {
-        CBaseEntity* carrier = SpawnEntity("prop_physics", "models/props_junk/cinderblock01a.mdl", hitPos);
-        if (!carrier) return;
+        CBaseEntity* carrier = CreateEffectHandle(tr);
+
+        if (!carrier)
+            return;
+
+        // Create the visible glow handle.
+        const char* spriteMaterial = "sprites/glow01.vmt";
+
+        carrier->PrecacheModel(spriteMaterial);
+
+        CSprite* pGlow = CSprite::SpriteCreate(
+            spriteMaterial,
+            carrier->GetAbsOrigin(),
+            false
+        );
+
+        if (!pGlow)
+        {
+            UTIL_Remove(carrier);
+            return;
+        }
+
+        pGlow->SetTransparency(
+            kRenderGlow,
+            80, 255, 120, 255,
+            kRenderFxNoDissipation
+        );
+
+        pGlow->SetScale(0.25f);
+        pGlow->SetParent(carrier);
+        pGlow->SetLocalOrigin(vec3_origin);
+        pGlow->SetSolid(SOLID_NONE);
+        pGlow->TurnOn();
+
+        // Create the actual effect model.
         CBaseEntity* effect = CreateEntityByName("prop_dynamic");
-        if (!effect) { UTIL_Remove(carrier); return; }
+
+        if (!effect)
+        {
+            UTIL_Remove(pGlow);
+            UTIL_Remove(carrier);
+            return;
+        }
+
         effect->PrecacheModel(value);
         effect->SetModel(value);
         effect->SetAbsOrigin(carrier->GetAbsOrigin());
         effect->KeyValue("solid", "0");
-        if (DispatchSpawn(effect) < 0) { UTIL_Remove(carrier); return; }
+
+        if (DispatchSpawn(effect) < 0)
+        {
+            UTIL_Remove(pGlow);
+            UTIL_Remove(carrier);
+            return;
+        }
+
         effect->SetParent(carrier);
         effect->SetLocalOrigin(vec3_origin);
         effect->SetSolid(SOLID_NONE);
         effect->Activate();
-        StartFadeIn(carrier); StartFadeIn(effect);
+
+        StartFadeIn(effect);
+
+        // Undo removes the entire effect assembly.
         GabeUndo_Begin(pPlayer, "Effect");
-        GabeUndo_Add(carrier); GabeUndo_Add(effect);
+
+        GabeUndo_Add(carrier);
+        GabeUndo_Add(pGlow);
+        GabeUndo_Add(effect);
+
         GabeUndo_Finish();
+
         return;
     }
     const char* classname = value;
@@ -185,14 +426,16 @@ static void SpawnFromCommand(CBasePlayer* pPlayer, const char* type, const char*
     const char* name = "Entity";
     if (!Q_stricmp(type, "prop")) { classname = "prop_physics"; model = value; name = "Prop"; }
     else if (!Q_stricmp(type, "ragdoll")) { classname = "prop_ragdoll"; model = value; name = "Ragdoll"; }
-    else if (!Q_stricmp(type, "npc")) { if (Q_strnicmp(value, "npc_", 4)) return; name = GetNPCUndoName(value); }
+    else if (!Q_stricmp(type, "npc")) { if (Q_strnicmp(value, "npc_", 4) && Q_stricmp(value, "combine_mine")) return; name = GetNPCUndoName(value); }
     else if (!Q_stricmp(type, "weapon")) { if (!Q_strnicmp(value, "item_", 5)) name = "Item"; else if (!Q_strnicmp(value, "weapon_", 7)) name = "Weapon"; else return; }
-    else if (Q_stricmp(type, "debug")) { g_pEffects->Sparks(hitPos, 1, 1, 0); return; }
+    else if (Q_stricmp(type, "debug")) { return; }
     // This preserves the existing debug spawn path. Restrict access on public servers.
     CBaseEntity* pEnt = SpawnEntity(classname, model, hitPos);
     if (!pEnt) { Warning("[SpawnMenu] Failed to spawn %s\n", value); return; }
     StartFadeIn(pEnt);
     GabeUndo_AddEntity(pPlayer, pEnt, name);
+    Msg("[SpawnMenu] Submitted %s (index %d) for undo.\n",
+        pEnt->GetClassname(), pEnt->entindex());
 }
 CON_COMMAND(gabe_spawn, "gabe_spawn <prop|ragdoll|npc|effect|debug|weapon|command> <value>")
 {
