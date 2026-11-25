@@ -29,21 +29,43 @@ static short PHYS_SAVE_RESTORE_VERSION = 5;
 
 struct PhysBlockHeader_t
 {
-	int				nSaved;
-	IPhysicsObject	*pWorldObject;
+    int nSaved;
 
-	inline void Clear()
-	{
-		nSaved = 0;
-		pWorldObject = 0;
-	}
+    // Full 64-bit saved pointer address
+    uint32 pWorldObjectLow;
+    uint32 pWorldObjectHigh;
 
-	DECLARE_SIMPLE_DATADESC();
+    inline void Clear()
+    {
+        nSaved = 0;
+        pWorldObjectLow = 0;
+        pWorldObjectHigh = 0;
+    }
+
+    void SetWorldObject(IPhysicsObject* pObject)
+    {
+        uint64 address = (uint64)(uintptr_t)pObject;
+
+        pWorldObjectLow = (uint32)(address & 0xFFFFFFFFULL);
+        pWorldObjectHigh = (uint32)(address >> 32);
+    }
+
+    IPhysicsObject* GetWorldObject() const
+    {
+        uint64 address =
+            ((uint64)pWorldObjectHigh << 32) |
+            (uint64)pWorldObjectLow;
+
+        return (IPhysicsObject*)(uintptr_t)address;
+    }
+
+    DECLARE_SIMPLE_DATADESC();
 };
-BEGIN_SIMPLE_DATADESC( PhysBlockHeader_t )
-	DEFINE_FIELD( nSaved,	FIELD_INTEGER ),
-	// NOTE: We want to save the actual address here for remapping, so use an integer
-	DEFINE_FIELD( pWorldObject, FIELD_INTEGER ),	
+
+BEGIN_SIMPLE_DATADESC(PhysBlockHeader_t)
+    DEFINE_FIELD(nSaved, FIELD_INTEGER),
+    DEFINE_FIELD(pWorldObjectLow, FIELD_INTEGER),
+    DEFINE_FIELD(pWorldObjectHigh, FIELD_INTEGER),
 END_DATADESC()
 
 #if defined(_STATIC_LINKED) && defined(CLIENT_DLL)
@@ -148,7 +170,7 @@ public:
 
 	virtual void Save( ISave *pSave ) 
 	{
-		m_blockHeader.pWorldObject = g_PhysWorldObject;
+		m_blockHeader.SetWorldObject(g_PhysWorldObject);
 		m_blockHeader.nSaved = m_QueuedSaves.Count();
 
 		while ( m_QueuedSaves.Count() )
@@ -234,7 +256,7 @@ public:
 				physprerestoreparams_t params;
 				params.recreatedObjectCount = 1;
 				params.recreatedObjectList[0].pNewObject = g_PhysWorldObject;
-				params.recreatedObjectList[0].pOldObject = m_blockHeader.pWorldObject;
+				params.recreatedObjectList[0].pOldObject = m_blockHeader.GetWorldObject();
 				physenv->PreRestore( params );
 			}
 
@@ -515,6 +537,28 @@ public:
 		if ( physenv )
 		{
 			physrestoreparams_t params = { pRestore, ppObject, header.type, header.hEntity.Get(), STRING(header.modelName), pCollide, physenv, physgametrace };
+
+			if (!params.pRestore)
+				return;
+
+			if (!params.ppObject)
+				return;
+
+			if (!params.pEnvironment)
+				return;
+
+			if (!params.pGameTrace)
+				return;
+
+			Msg("pRestore: %p\n", (void*)params.pRestore);
+			Msg("ppObject: %p\n", (void*)params.ppObject);
+			Msg("pGameData: %p\n", params.pGameData);
+			Msg("pName: %p\n", (const void*)params.pName);
+			Msg("pCollisionModel: %p\n", (const void*)params.pCollisionModel);
+			Msg("pEnvironment: %p\n", (void*)params.pEnvironment);
+			Msg("pGameTrace: %p\n", (void*)params.pGameTrace);
+			Msg("type: %d\n", (int)params.type);
+
 			physenv->Restore( params );
 		}
 	}

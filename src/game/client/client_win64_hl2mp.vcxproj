@@ -584,6 +584,7 @@ exit 1
     <ClInclude Include="..\shared\predictable_entity.h" />
     <ClInclude Include="..\shared\predictableid.h" />
     <ClInclude Include="..\shared\predictioncopy.h" />
+    <ClInclude Include="..\shared\prophunt_bounds.h" />
     <ClInclude Include="..\shared\ragdoll_shared.h" />
     <ClInclude Include="..\shared\rope_helpers.h" />
     <ClInclude Include="..\shared\saverestore.h" />
@@ -1169,6 +1170,8 @@ exit 1
     <ClCompile Include="..\shared\vscript_think.cpp" />
     <ClCompile Include="cl_camerablur.cpp" />
     <ClCompile Include="c_bemod_physgun.cpp" />
+    <ClCompile Include="c_envnightfog.cpp" />
+    <ClCompile Include="c_env_godrays.cpp" />
     <ClCompile Include="c_gabe_vscript.cpp" />
     <ClCompile Include="c_vehicle_apc.cpp" />
     <ClCompile Include="c_weapon_jb_physgun.cpp" />
@@ -1179,8 +1182,10 @@ exit 1
     <ClCompile Include="episodic\c_weapon_hopwire.cpp" />
     <ClCompile Include="episodic\episodic_screenspaceeffects.cpp" />
     <ClCompile Include="gabe_city17browser.cpp" />
+    <ClCompile Include="gabe_console.cpp" />
     <ClCompile Include="gabe_events.cpp" />
     <ClCompile Include="gabe_friends.cpp" />
+    <ClCompile Include="gabe_mainmenu.cpp" />
     <ClCompile Include="gabe_newgame.cpp" />
     <ClCompile Include="gabe_spawnmenu.cpp" />
     <ClCompile Include="gabe_thanks.cpp" />
@@ -1196,7 +1201,9 @@ exit 1
     <ClCompile Include="hud_gabewm.cpp" />
     <ClCompile Include="hud_killfeed.cpp" />
     <ClCompile Include="hud_mtool.cpp" />
+    <ClCompile Include="hud_rpgmode.cpp" />
     <ClCompile Include="mp3player.cpp" />
+    <ClCompile Include="notifications.cpp" />
     <ClCompile Include="replay\cdll_replay.cpp" />
     <ClCompile Include="replay\replaycamera.cpp" />
     <ClCompile Include="achievement_notification_panel.cpp" />
@@ -1691,6 +1698,7 @@ exit 1
     <ClCompile Include="vgui_slideshow_display_screen.cpp" />
     <ClCompile Include="vgui_video.cpp" />
     <ClCompile Include="vgui_video_player.cpp" />
+    <ClCompile Include="vgui_youtube.cpp" />
     <ClCompile Include="view.cpp" />
     <ClCompile Include="view_beams.cpp" />
     <ClCompile Include="view_effects.cpp" />

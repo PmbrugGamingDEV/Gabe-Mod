@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release\\x64\\mathlib.obj",
+            "outputs": [
+                ".\\Release\\x64\\mathlib.h.obj.dt.module.json",
+                ".\\Release\\x64\\mathlib.h.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}

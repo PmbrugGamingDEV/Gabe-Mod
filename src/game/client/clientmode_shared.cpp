@@ -463,6 +463,19 @@ void ClientModeShared::OverrideView( CViewSetup *pSetup )
 
 	CamBlur_OnOverrideView(pSetup);
 
+	if (pPlayer)
+	{
+		C_BaseCombatWeapon* pWeapon = pPlayer->GetActiveWeapon();
+
+		if (pWeapon && FStrEq(pWeapon->GetClassname(), "weapon_camera"))
+		{
+			C_WeaponCamera* pCamera =
+				static_cast<C_WeaponCamera*>(pWeapon);
+
+			pSetup->angles[ROLL] = pCamera->GetCameraRoll();
+		}
+	}
+
 	if( ::input->CAM_IsThirdPerson() )
 	{
 		const Vector& cam_ofs = g_ThirdPersonManager.GetCameraOffsetAngles();
@@ -854,13 +867,7 @@ vgui::Panel *ClientModeShared::GetMessagePanel()
 // Purpose: The player has started to type a message
 //-----------------------------------------------------------------------------
 void ClientModeShared::StartMessageMode( int iMessageModeType )
-{
-	// Can only show chat UI in multiplayer!!!
-	if ( gpGlobals->maxClients == 1 )
-	{
-		return;
-	}
-	
+{	
 #if defined( TF_CLIENT_DLL )
 	if ( iMessageModeType == MM_SAY || iMessageModeType == MM_SAY_TEAM )
 	{
@@ -1030,7 +1037,9 @@ bool ClientModeShared::OverrideViewAngles(void)
 	if (!pWeapon->OverrideViewAngles())
 		return false;
 
-	engine->SetViewAngles(pPlayer->m_vecUseAngles);
+	QAngle angLocked = pPlayer->m_vecUseAngles;
+	engine->SetViewAngles(angLocked);
+
 	return true;
 }
 // end adnan

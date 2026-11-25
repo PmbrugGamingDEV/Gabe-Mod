@@ -20,6 +20,8 @@ C:\GabeMod\src\game\shared\vscript_in_buttons.cpp;C:\GabeMod\src\game\client\Rel
 C:\GabeMod\src\game\shared\vscript_think.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vscript_think.obj
 C:\GabeMod\src\game\client\cl_camerablur.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\cl_camerablur.obj
 C:\GabeMod\src\game\client\c_bemod_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_bemod_physgun.obj
+C:\GabeMod\src\game\client\c_envnightfog.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_envnightfog.obj
+C:\GabeMod\src\game\client\c_env_godrays.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_env_godrays.obj
 C:\GabeMod\src\game\client\c_gabe_vscript.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_gabe_vscript.obj
 C:\GabeMod\src\game\client\c_vehicle_apc.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_vehicle_apc.obj
 C:\GabeMod\src\game\client\c_weapon_jb_physgun.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_jb_physgun.obj
@@ -30,8 +32,10 @@ C:\GabeMod\src\game\client\episodic\c_vehicle_jeep_episodic.cpp;C:\GabeMod\src\g
 C:\GabeMod\src\game\client\episodic\c_weapon_hopwire.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\c_weapon_hopwire.obj
 C:\GabeMod\src\game\client\episodic\episodic_screenspaceeffects.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\episodic_screenspaceeffects.obj
 C:\GabeMod\src\game\client\gabe_city17browser.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_city17browser.obj
+C:\GabeMod\src\game\client\gabe_console.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_console.obj
 C:\GabeMod\src\game\client\gabe_events.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_events.obj
 C:\GabeMod\src\game\client\gabe_friends.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_friends.obj
+C:\GabeMod\src\game\client\gabe_mainmenu.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_mainmenu.obj
 C:\GabeMod\src\game\client\gabe_newgame.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_newgame.obj
 C:\GabeMod\src\game\client\gabe_spawnmenu.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_spawnmenu.obj
 C:\GabeMod\src\game\client\gabe_thanks.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\gabe_thanks.obj
@@ -47,7 +51,9 @@ C:\GabeMod\src\game\client\hl2\hud_radar.cpp;C:\GabeMod\src\game\client\Release_
 C:\GabeMod\src\game\client\hud_gabewm.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_gabewm.obj
 C:\GabeMod\src\game\client\hud_killfeed.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_killfeed.obj
 C:\GabeMod\src\game\client\hud_mtool.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_mtool.obj
+C:\GabeMod\src\game\client\hud_rpgmode.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\hud_rpgmode.obj
 C:\GabeMod\src\game\client\mp3player.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\mp3player.obj
+C:\GabeMod\src\game\client\notifications.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\notifications.obj
 C:\GabeMod\src\game\client\replay\cdll_replay.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\cdll_replay.obj
 C:\GabeMod\src\game\client\replay\replaycamera.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\replaycamera.obj
 C:\GabeMod\src\game\client\achievement_notification_panel.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\achievement_notification_panel.obj
@@ -382,6 +388,7 @@ C:\GabeMod\src\game\client\vgui_schemevisualizer.cpp;C:\GabeMod\src\game\client\
 C:\GabeMod\src\game\client\vgui_slideshow_display_screen.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_slideshow_display_screen.obj
 C:\GabeMod\src\game\client\vgui_video.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_video.obj
 C:\GabeMod\src\game\client\vgui_video_player.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_video_player.obj
+C:\GabeMod\src\game\client\vgui_youtube.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\vgui_youtube.obj
 C:\GabeMod\src\game\client\view.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\view.obj
 C:\GabeMod\src\game\client\view_beams.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\view_beams.obj
 C:\GabeMod\src\game\client\view_effects.cpp;C:\GabeMod\src\game\client\Release_mod_hl2mp\view_effects.obj

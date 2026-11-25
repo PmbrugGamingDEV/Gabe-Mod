@@ -459,6 +459,8 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 float g_fMaxViewModelLag = 1.5f;
 
 ConVar sv_viewmodel_lag_do_angles( "sv_viewmodel_lag_do_angles", "1", FCVAR_CHEAT | FCVAR_REPLICATED );
+ConVar sv_viewmodel_lag("sv_viewmodel_lag", "1.0", FCVAR_ARCHIVE | FCVAR_REPLICATED,
+	"Viewmodel lag multiplier. 0 = disabled, 1 = normal, 2 = double.");
 
 void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& original_angles )
 {
@@ -489,7 +491,8 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 		VectorMA( m_vecLastFacing, flSpeed * gpGlobals->frametime, vDifference, m_vecLastFacing );
 		// Make sure it doesn't grow out of control!!!
 		VectorNormalize( m_vecLastFacing );
-		VectorMA( origin, 5.0f, vDifference * -1.0f, origin );
+		VectorMA(origin, 5.0f * sv_viewmodel_lag.GetFloat(),
+			vDifference * -1.0f, origin);
 
 		Assert( m_vecLastFacing.IsValid() );
 	}

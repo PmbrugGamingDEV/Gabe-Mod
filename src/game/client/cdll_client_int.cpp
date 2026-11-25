@@ -1128,6 +1128,8 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 		backdoor.SetValue(0);
 	}
 
+	engine->ClientCmd_Unrestricted("gabe_menu_install");
+
 	return true;
 }
 

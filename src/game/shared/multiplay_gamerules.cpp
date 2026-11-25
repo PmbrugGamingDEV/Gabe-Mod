@@ -426,6 +426,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 			for( int iPlayerIndex = 1 ; iPlayerIndex <= MAX_PLAYERS; iPlayerIndex++ )
 			{
 				player_info_t pi;
+
 				if ( !engine->GetPlayerInfo( iPlayerIndex, &pi ) )
 					continue;
 #if defined( REPLAY_ENABLED )

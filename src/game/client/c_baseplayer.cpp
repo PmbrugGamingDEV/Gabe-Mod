@@ -22,6 +22,8 @@
 #include "c_playerresource.h"
 #include "iclientvehicle.h"
 #include "view_shared.h"
+#include "glow_outline_effect.h"
+#include "glow_overlay.h"
 #include "movevars_shared.h"
 #include "prediction.h"
 #include "tier0/vprof.h"
@@ -102,6 +104,8 @@ static ConVar	cl_smoothtime	(
 	true, 0.01,	// min/max is 0.01/2.0
 	true, 2.0
 	 );
+
+static ConVar cl_playerglow("cl_playerglow", "1", FCVAR_ARCHIVE | FCVAR_NOTIFY | FCVAR_REPLICATED, "Enable player glow effect");
 
 #ifdef CSTRIKE_DLL
 ConVar	spec_freeze_time( "spec_freeze_time", "5.0", FCVAR_CHEAT | FCVAR_REPLICATED, "Time spend frozen in observer freeze cam." );
@@ -1127,7 +1131,7 @@ void C_BasePlayer::DetermineVguiInputMode( CUserCmd *pCmd )
 		SetVGuiScreenButtonState( m_pCurrentVguiScreen.Get(), pCmd->buttons );
 
 		// Kill all attack inputs if we're in vgui screen mode
-		pCmd->buttons &= ~(IN_ATTACK | IN_ATTACK2);
+		pCmd->buttons &= ~(IN_ATTACK | IN_ATTACK2 | IN_VALIDVGUIINPUT);
 		return;
 	}
 
@@ -1190,7 +1194,7 @@ void C_BasePlayer::DetermineVguiInputMode( CUserCmd *pCmd )
 		SetVGuiScreenButtonState( m_pCurrentVguiScreen.Get(), pCmd->buttons );
 
 		// Kill all attack inputs if we're in vgui screen mode
-		pCmd->buttons &= ~(IN_ATTACK | IN_ATTACK2);
+		pCmd->buttons &= ~(IN_ATTACK | IN_ATTACK2 | IN_VALIDVGUIINPUT);
 	}
 }
 
@@ -1249,9 +1253,12 @@ bool C_BasePlayer::CreateMove( float flInputSampleTime, CUserCmd *pCmd )
 	}
 
 	m_vecOldViewAngles = pCmd->viewangles;
-	
-	// Check to see if we're in vgui input mode...
-	DetermineVguiInputMode( pCmd );
+
+	if (pCmd->buttons & IN_VALIDVGUIINPUT)
+	{
+		// Check to see if we're in vgui input mode...
+		DetermineVguiInputMode( pCmd );
+	}
 
 	return true;
 }
@@ -2134,6 +2141,24 @@ void C_BasePlayer::PostThink( void )
 		}
 
 		StudioFrameAdvance();
+	}
+
+	if (cl_playerglow.GetBool())
+	{
+		CGlowObject* pGlow = C_BaseAnimating::GetGlowObject();
+
+		if (pGlow)
+		{
+			pGlow->SetEntity(this);
+
+			Vector color = vec3_origin;
+			CBaseAnimating::GetGlowEffectColor(&color[0], &color[1], &color[2]);
+			pGlow->SetColor(color);
+
+			pGlow->SetAlpha(1.0f);
+
+			UpdateGlowEffect();
+		}
 	}
 
 	// Even if dead simulate entities

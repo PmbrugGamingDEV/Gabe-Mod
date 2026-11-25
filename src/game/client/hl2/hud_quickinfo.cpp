@@ -139,6 +139,27 @@ void CHUDQuickInfo::VidInit( void )
 	m_icon_lbe = gHUD.GetIcon( "crosshair_left_empty" );
 	m_icon_rbn = gHUD.GetIcon( "crosshair_right" );
 	m_icon_lbn = gHUD.GetIcon( "crosshair_left" );
+
+	if (!m_icon_c)
+		Warning("Missing HUD icon: crosshair\n");
+
+	if (!m_icon_rb)
+		Warning("Missing HUD icon: crosshair_right_full\n");
+
+	if (!m_icon_lb)
+		Warning("Missing HUD icon: crosshair_left_full\n");
+
+	if (!m_icon_rbe)
+		Warning("Missing HUD icon: crosshair_right_empty\n");
+
+	if (!m_icon_lbe)
+		Warning("Missing HUD icon: crosshair_left_empty\n");
+
+	if(!m_icon_rbn)
+		Warning("Missing HUD icon: crosshair_right\n");
+
+	if (!m_icon_lbn)
+		Warning("Missing HUD icon: crosshair_left\n");
 }
 
 
@@ -174,19 +195,24 @@ void CHUDQuickInfo::DrawWarning( int x, int y, CHudTexture *icon, float &time )
 // costly traversal.  Called per frame, return true if thinking and 
 // painting need to occur.
 //-----------------------------------------------------------------------------
-bool CHUDQuickInfo::ShouldDraw( void )
+bool CHUDQuickInfo::ShouldDraw(void)
 {
-	if ( !m_icon_c || !m_icon_rb || !m_icon_rbe || !m_icon_lb || !m_icon_lbe )
+	if (!m_icon_c || !m_icon_rb || !m_icon_rbe ||
+		!m_icon_lb || !m_icon_lbe)
+	{
+		return false;
+	}
+
+	C_BasePlayer* player = C_BasePlayer::GetLocalPlayer();
+
+	if (!player)
 		return false;
 
-	C_BasePlayer *player = C_BasePlayer::GetLocalPlayer();
-	if ( player == NULL )
+	if (!crosshair.GetBool() && !IsX360())
 		return false;
 
-	if ( !crosshair.GetBool() && !IsX360() )
-		return false;
-
-	return ( CHudElement::ShouldDraw() && !engine->IsDrawingLoadingImage() );
+	return CHudElement::ShouldDraw() &&
+		!engine->IsDrawingLoadingImage();
 }
 
 //-----------------------------------------------------------------------------

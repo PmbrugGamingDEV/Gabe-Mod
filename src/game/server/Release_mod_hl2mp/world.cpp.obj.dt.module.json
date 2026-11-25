@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release_mod_hl2mp\\world.obj",
+            "outputs": [
+                ".\\Release_mod_hl2mp\\world.cpp.obj.dt.module.json",
+                ".\\Release_mod_hl2mp\\world.cpp.obj.dt.d.json",
+                ".\\Release_mod_hl2mp\\server.pch"
+            ],
+            "requires": []
+        }
+    ]
+}

@@ -39,4 +39,16 @@
 		"acceptsinput"  0
 		"resfile"	"scripts/screens/slideshow_display_screen.res"
 	}
+
+"vgui_web_screen"
+{
+    "type"          "vgui_web_panel"
+
+    "pixelswide"    "512"
+    "pixelshigh"    "288"
+
+    "acceptsinput"  "1"
+
+    "url"           "https://www.youtube.com/watch?v=YE7VzlLtp-4"
+}
 }

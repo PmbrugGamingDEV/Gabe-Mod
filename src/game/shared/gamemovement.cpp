@@ -23,6 +23,7 @@
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "prophunt_bounds.h"
 #include "tier0/memdbgon.h"
 
 #define	STOP_EPSILON		0.1
@@ -708,6 +709,10 @@ bool CGameMovement::CheckInterval( IntervalType_t type )
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerMins( bool ducked ) const
 {
+    Vector mins, maxs;
+    if (player && !player->IsObserver() && PropHuntBounds(player->GetModel(), mins, maxs))
+        return mins;
+
 	return ducked ? VEC_DUCK_HULL_MIN_SCALED( player ) : VEC_HULL_MIN_SCALED( player );
 }
 
@@ -717,7 +722,11 @@ Vector CGameMovement::GetPlayerMins( bool ducked ) const
 // Output : const Vector
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerMaxs( bool ducked ) const
-{	
+{
+    Vector mins, maxs;
+    if (player && !player->IsObserver() && PropHuntBounds(player->GetModel(), mins, maxs))
+        return maxs;
+	
 	return ducked ? VEC_DUCK_HULL_MAX_SCALED( player ) : VEC_HULL_MAX_SCALED( player );
 }
 
@@ -728,6 +737,10 @@ Vector CGameMovement::GetPlayerMaxs( bool ducked ) const
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerMins( void ) const
 {
+    Vector mins, maxs;
+    if (player && !player->IsObserver() && PropHuntBounds(player->GetModel(), mins, maxs))
+        return mins;
+
 	if ( player->IsObserver() )
 	{
 		return VEC_OBS_HULL_MIN_SCALED( player );	
@@ -744,7 +757,11 @@ Vector CGameMovement::GetPlayerMins( void ) const
 // Output : const Vector
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerMaxs( void ) const
-{	
+{
+    Vector mins, maxs;
+    if (player && !player->IsObserver() && PropHuntBounds(player->GetModel(), mins, maxs))
+        return maxs;
+	
 	if ( player->IsObserver() )
 	{
 		return VEC_OBS_HULL_MAX_SCALED( player );	
@@ -762,6 +779,10 @@ Vector CGameMovement::GetPlayerMaxs( void ) const
 //-----------------------------------------------------------------------------
 Vector CGameMovement::GetPlayerViewOffset( bool ducked ) const
 {
+    Vector mins, maxs;
+    if (player && !player->IsObserver() && PropHuntBounds(player->GetModel(), mins, maxs))
+        return Vector(0, 0, maxs.z + 4.0f);
+
 	return ducked ? VEC_DUCK_VIEW_SCALED( player ) : VEC_VIEW_SCALED( player );
 }
 
@@ -4343,6 +4364,14 @@ bool CGameMovement::CanUnDuckJump( trace_t &trace )
 //-----------------------------------------------------------------------------
 void CGameMovement::Duck( void )
 {
+    Vector propMins, propMaxs;
+    if (player && !player->IsObserver() && PropHuntBounds(player->GetModel(), propMins, propMaxs))
+    {
+        player->SetCollisionBounds(propMins, propMaxs);
+        player->SetViewOffset(Vector(0, 0, propMaxs.z + 4.0f));
+        return;
+    }
+
 	int buttonsChanged	= ( mv->m_nOldButtons ^ mv->m_nButtons );	// These buttons have changed this frame
 	int buttonsPressed	=  buttonsChanged & mv->m_nButtons;			// The changed ones still down are "pressed"
 	int buttonsReleased	=  buttonsChanged & mv->m_nOldButtons;		// The changed ones which were previously down are "released"

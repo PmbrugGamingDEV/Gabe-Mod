@@ -649,6 +649,11 @@ public:
 	// Run a user command. The default implementation calls ::PlayerRunCommand. In TF, this controls a vehicle if
 	// the player is in one.
 	virtual void			PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper);
+    void UpdatePropHunt(bool forceOff);
+    bool IsPropHunt() const { return m_bPropHunt; }
+    bool m_bPropHunt;
+    string_t m_iszPropOriginalModel;
+    bool m_bPropOriginalViewModel;
 	void					RunNullCommand();
 	CUserCmd *				GetCurrentCommand( void )	{ return m_pCurrentCommand; }
 	float					GetTimeSinceLastUserCommand( void ) { return ( !IsConnected() || IsFakeClient() || IsBot() ) ? 0.f : gpGlobals->curtime - m_flLastUserCommandTime; }

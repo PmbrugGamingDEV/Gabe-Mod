@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release_mod_hl2mp\\in_buttons.obj",
+            "outputs": [
+                ".\\Release_mod_hl2mp\\in_buttons.h.obj.dt.module.json",
+                ".\\Release_mod_hl2mp\\in_buttons.h.obj.dt.d.json",
+                ".\\Release_mod_hl2mp\\server.pch"
+            ],
+            "requires": []
+        }
+    ]
+}

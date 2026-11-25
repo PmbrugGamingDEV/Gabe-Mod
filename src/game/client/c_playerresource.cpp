@@ -18,6 +18,11 @@
 
 const float PLAYER_RESOURCE_THINK_INTERVAL = 0.2f;
 
+CON_COMMAND(gabe_test_playerresource, "Test player resource")
+{
+	Msg("g_PR: %s\n", g_PR ? "Valid" : "NULL");
+}
+
 IMPLEMENT_CLIENTCLASS_DT_NOBASE(C_PlayerResource, DT_PlayerResource, CPlayerResource)
 	RecvPropArray3( RECVINFO_ARRAY(m_iPing), RecvPropInt( RECVINFO(m_iPing[0]))),
 	RecvPropArray3( RECVINFO_ARRAY(m_iScore), RecvPropInt( RECVINFO(m_iScore[0]))),

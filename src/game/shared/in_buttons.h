@@ -35,6 +35,7 @@
 #define IN_WEAPON2		(1 << 21)	// weapon defines these bits
 #define IN_BULLRUSH		(1 << 22)
 #define IN_GRENADE1		(1 << 23)	// grenade 1
+#define IN_VALIDVGUIINPUT (1 << 23) //bitflag for vgui fix
 #define IN_GRENADE2		(1 << 24)	// grenade 2
 #define	IN_ATTACK3		(1 << 25)
 

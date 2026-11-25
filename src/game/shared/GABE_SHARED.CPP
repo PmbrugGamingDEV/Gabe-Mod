@@ -18,7 +18,7 @@
 // =========================
 
 #include "shareddefs.h"
-
+#include "in_buttons.h"
 #include "collisionutils.h"
 
 // =========================
@@ -61,6 +61,10 @@
 
 #include "rope.h"
 #include "rope_helpers.h"
+#include "explode.h"
+#include "te_effect_dispatch.h"
+#include "effects.h"
+#include "eventqueue.h"
 #endif
 
 #define FUNC_REGISTER(name, func, description) ScriptRegisterFunctionNamed(g_pScriptVM, func, name, description)
@@ -1976,9 +1980,863 @@ namespace GabeMod
 
 		UTIL_HudMessage(pPlayer, params, pszText);
 	}
+
+	void GabeMod::CGabeServerFuncs::SetEntityScale(
+		CBaseEntity* pEnt,
+		float scale)
+	{
+		if (!pEnt || scale <= 0.0f)
+			return;
+
+		CBaseAnimating* pAnim = pEnt->GetBaseAnimating();
+
+		if (!pAnim)
+			return;
+
+		// Scale the visible model and its bones.
+		pAnim->SetModelScale(scale);
+
+		// Refresh collision bounds where supported.
+		pAnim->RefreshCollisionBounds();
+
+		// Update the entity's collision state.
+		pEnt->CollisionProp()->MarkSurroundingBoundsDirty();
+	}
+
+	float GabeMod::CGabeServerFuncs::GetEntityScale(
+		CBaseEntity* pEnt)
+	{
+		if (!pEnt)
+			return 1.0f;
+
+		CBaseAnimating* pAnim = pEnt->GetBaseAnimating();
+
+		return pAnim ? pAnim->GetModelScale() : 1.0f;
+	}
+
+	void CGabeServerFuncs::SetEntitySkin(CBaseEntity* pEnt, int skin)
+	{
+		CBaseAnimating* pAnim = pEnt ? pEnt->GetBaseAnimating() : NULL;
+
+		if (pAnim)
+			pAnim->SetSkin(skin);
+	}
+
+	int CGabeServerFuncs::GetEntitySkin(CBaseEntity* pEnt)
+	{
+		CBaseAnimating* pAnim = pEnt ? pEnt->GetBaseAnimating() : NULL;
+		return pAnim ? pAnim->GetSkin() : 0;
+	}
+
+	void CGabeServerFuncs::SetEntityBodygroup(CBaseEntity* pEnt, int group, int value)
+	{
+		CBaseAnimating* pAnim = pEnt ? pEnt->GetBaseAnimating() : NULL;
+
+		if (!pAnim || group < 0 || group >= pAnim->GetNumBodyGroups())
+			return;
+
+		if (value < 0 || value >= pAnim->GetBodygroupCount(group))
+			return;
+
+		pAnim->SetBodygroup(group, value);
+	}
+
+	int CGabeServerFuncs::GetEntityBodygroup(CBaseEntity* pEnt, int group)
+	{
+		CBaseAnimating* pAnim = pEnt ? pEnt->GetBaseAnimating() : NULL;
+
+		if (!pAnim || group < 0 || group >= pAnim->GetNumBodyGroups())
+			return 0;
+
+		return pAnim->GetBodygroup(group);
+	}
+
+	void CGabeServerFuncs::SetEntityModel(CBaseEntity* pEnt, const char* model)
+	{
+		if (pEnt && model && model[0])
+		{
+			pEnt->PrecacheModel(model);
+			pEnt->SetModel(model);
+		}
+	}
+
+	void CGabeServerFuncs::SetEntityGravity(CBaseEntity* pEnt, float gravity)
+	{
+		if (pEnt)
+			pEnt->SetGravity(gravity);
+	}
+
+	void CGabeServerFuncs::SetEntityFriction(CBaseEntity* pEnt, float friction)
+	{
+		if (pEnt)
+			pEnt->SetFriction(MAX(0.0f, friction));
+	}
+
+	void CGabeServerFuncs::EnableEntityMotion(CBaseEntity* pEnt, bool enable)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (!pPhys)
+			return;
+
+		pPhys->EnableMotion(enable);
+
+		if (enable)
+			pPhys->Wake();
+		else
+			pPhys->Sleep();
+	}
+
+	bool CGabeServerFuncs::IsEntityMotionEnabled(CBaseEntity* pEnt)
+	{
+		if (!pEnt)
+			return false;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		return pPhys ? pPhys->IsMotionEnabled() : false;
+	}
+
+
+	void CGabeServerFuncs::SetPhysicsCollisionEnabled(
+		CBaseEntity* pEnt,
+		bool enabled)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhysics = pEnt->VPhysicsGetObject();
+
+		if (!pPhysics)
+			return;
+
+		// Enable or disable collisions for the physics object.
+		pPhysics->EnableCollisions(enabled);
+
+		// Refresh the physics object's simulation state.
+		if (enabled)
+			pPhysics->Wake();
+
+		// Notify the engine that the entity's collision state changed.
+		pEnt->CollisionProp()->MarkSurroundingBoundsDirty();
+	}
+
+
+	void CGabeServerFuncs::FreezeEntity(CBaseEntity* pEnt)
+	{
+		EnableEntityMotion(pEnt, false);
+	}
+
+	void CGabeServerFuncs::UnfreezeEntity(CBaseEntity* pEnt)
+	{
+		EnableEntityMotion(pEnt, true);
+	}
+
+	void CGabeServerFuncs::SetEntityNoDraw(CBaseEntity* pEnt, bool noDraw)
+	{
+		if (!pEnt)
+			return;
+
+		if (noDraw)
+			pEnt->AddEffects(EF_NODRAW);
+		else
+			pEnt->RemoveEffects(EF_NODRAW);
+	}
+
+	bool CGabeServerFuncs::IsEntityOnGround(CBaseEntity* pEnt)
+	{
+		return pEnt && (pEnt->GetFlags() & FL_ONGROUND) != 0;
+	}
+
+	bool CGabeServerFuncs::IsEntityInWater(CBaseEntity* pEnt)
+	{
+		return pEnt && pEnt->GetWaterLevel() > 0;
+	}
+
+	CBaseEntity* CGabeServerFuncs::GetEntityGround(CBaseEntity* pEnt)
+	{
+		return pEnt ? pEnt->GetGroundEntity() : NULL;
+	}
+
+	void CGabeServerFuncs::ApplyForceCenter(
+		CBaseEntity* pEnt,
+		const Vector& force)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys && pPhys->IsMoveable())
+		{
+			pPhys->Wake();
+			pPhys->ApplyForceCenter(force);
+		}
+	}
+
+	void CGabeServerFuncs::ApplyForceOffset(
+		CBaseEntity* pEnt,
+		const Vector& force,
+		const Vector& worldPosition)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys && pPhys->IsMoveable())
+		{
+			pPhys->Wake();
+			pPhys->ApplyForceOffset(force, worldPosition);
+		}
+	}
+
+	void CGabeServerFuncs::ApplyAngularImpulse(
+		CBaseEntity* pEnt,
+		const AngularImpulse& impulse)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys && pPhys->IsMoveable())
+		{
+			pPhys->Wake();
+			pPhys->ApplyTorqueCenter(impulse);
+		}
+	}
+
+	void CGabeServerFuncs::SetPhysicsGravity(
+		CBaseEntity* pEnt,
+		bool enabled)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys)
+		{
+			pPhys->EnableGravity(enabled);
+			pPhys->Wake();
+		}
+	}
+
+	void CGabeServerFuncs::SetPhysicsDrag(
+		CBaseEntity* pEnt,
+		bool enabled)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys)
+			pPhys->EnableDrag(enabled);
+	}
+
+	void CGabeServerFuncs::SetPhysicsDamping(
+		CBaseEntity* pEnt,
+		float linearDamping,
+		float angularDamping)
+	{
+		if (!pEnt)
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys)
+		{
+			pPhys->SetDamping(
+				&linearDamping,
+				&angularDamping
+			);
+		}
+	}
+
+	void CGabeServerFuncs::SetPhysicsMaterial(
+		CBaseEntity* pEnt,
+		const char* material)
+	{
+		if (!pEnt || !material || !material[0])
+			return;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (!pPhys)
+			return;
+
+		int materialIndex = physprops->GetSurfaceIndex(material);
+
+		if (materialIndex >= 0)
+			pPhys->SetMaterialIndex(materialIndex);
+	}
+
+	Vector CGabeServerFuncs::GetPhysicsPosition(CBaseEntity* pEnt)
+	{
+		Vector origin = vec3_origin;
+
+		if (!pEnt)
+			return origin;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys)
+		{
+			QAngle angles;
+			pPhys->GetPosition(&origin, &angles);
+		}
+
+		return origin;
+	}
+
+	QAngle CGabeServerFuncs::GetPhysicsAngles(CBaseEntity* pEnt)
+	{
+		QAngle angles(0, 0, 0);
+
+		if (!pEnt)
+			return angles;
+
+		IPhysicsObject* pPhys = pEnt->VPhysicsGetObject();
+
+		if (pPhys)
+		{
+			Vector origin;
+			pPhys->GetPosition(&origin, &angles);
+		}
+
+		return angles;
+	}
+
+	void GabeMod::CGabeServerFuncs::SetPlayerSpeed(
+		CBasePlayer* pPlayer, float speed)
+	{
+		if (!pPlayer || speed <= 0.0f)
+			return;
+
+		pPlayer->SetMaxSpeed(speed);
+	}
+
+	    void CGabeServerFuncs::SetPlayerMoveType(
+        CBasePlayer* pPlayer,
+        MoveType_t type)
+    {
+        if (pPlayer)
+            pPlayer->SetMoveType(type);
+    }
+
+	bool CGabeServerFuncs::IsPlayerLookingAt(
+		CBasePlayer* pPlayer,
+		CBaseEntity* pTarget)
+	{
+		if (!pPlayer || !pTarget)
+			return false;
+
+		// Get the player's eye position and forward direction.
+		Vector vecStart = pPlayer->EyePosition();
+
+		Vector vecForward;
+		AngleVectors(pPlayer->EyeAngles(), &vecForward);
+
+		// Get direction toward the target's center.
+		Vector vecDirection = pTarget->WorldSpaceCenter() - vecStart;
+
+		if (VectorNormalize(vecDirection) <= 0.0f)
+			return false;
+
+		// Check whether the target is within 10 degrees
+		// of the player's viewing direction.
+		const float flDot = DotProduct(vecForward, vecDirection);
+		const float flThreshold = cosf(DEG2RAD(10.0f));
+
+		if (flDot < flThreshold)
+			return false;
+
+		// Trace to make sure nothing blocks the target.
+		trace_t tr;
+
+		UTIL_TraceLine(
+			vecStart,
+			pTarget->WorldSpaceCenter(),
+			MASK_SHOT,
+			pPlayer,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
+
+		return tr.m_pEnt == pTarget;
+	}
+
+    void CGabeServerFuncs::LaunchPlayer(
+        CBasePlayer* pPlayer,
+        const Vector& velocity)
+    {
+        if (!pPlayer)
+            return;
+
+        pPlayer->SetGroundEntity(NULL);
+        pPlayer->ApplyAbsVelocityImpulse(velocity);
+    }
+
+    bool CGabeServerFuncs::HasWeapon(
+        CBasePlayer* pPlayer,
+        const char* classname)
+    {
+        if (!pPlayer || !classname)
+            return false;
+
+        return pPlayer->Weapon_OwnsThisType(classname) != NULL;
+    }
+
+    void CGabeServerFuncs::RemoveWeapon(
+        CBasePlayer* pPlayer,
+        const char* classname)
+    {
+        if (!pPlayer || !classname)
+            return;
+
+        CBaseCombatWeapon* pWeapon =
+            pPlayer->Weapon_OwnsThisType(classname);
+
+        if (!pWeapon)
+            return;
+
+        if (pPlayer->Weapon_Detach(pWeapon))
+            UTIL_Remove(pWeapon);
+    }
+
+    int CGabeServerFuncs::GetAmmoCount(
+        CBasePlayer* pPlayer,
+        int ammoType)
+    {
+        if (!pPlayer || ammoType < 0)
+            return 0;
+
+        return pPlayer->GetAmmoCount(ammoType);
+    }
+
+    void CGabeServerFuncs::RemoveAllAmmo(CBasePlayer* pPlayer)
+    {
+        if (pPlayer)
+            pPlayer->RemoveAllAmmo();
+    }
+
+    bool CGabeServerFuncs::IsPlayerCrouching(CBasePlayer* pPlayer)
+    {
+        return pPlayer && (pPlayer->GetFlags() & FL_DUCKING) != 0;
+    }
+
+    bool CGabeServerFuncs::IsPlayerSprinting(CBasePlayer* pPlayer)
+    {
+        return pPlayer && pPlayer->m_nButtons & IN_SPEED;
+    }
+
+    bool CGabeServerFuncs::IsPlayerWalking(CBasePlayer* pPlayer)
+    {
+        return pPlayer && pPlayer->m_nButtons & IN_WALK;
+    }
+
+    bool CGabeServerFuncs::IsPlayerUnderwater(CBasePlayer* pPlayer)
+    {
+        return pPlayer && pPlayer->GetWaterLevel() == WL_Eyes;
+    }
+
+    void CGabeServerFuncs::GodMode(
+        CBasePlayer* pPlayer,
+        bool enabled)
+    {
+        if (!pPlayer)
+            return;
+
+        if (enabled)
+            pPlayer->AddFlag(FL_GODMODE);
+        else
+            pPlayer->RemoveFlag(FL_GODMODE);
+    }
+
+    bool CGabeServerFuncs::HasGodMode(CBasePlayer* pPlayer)
+    {
+        return pPlayer && (pPlayer->GetFlags() & FL_GODMODE) != 0;
+    }
+
+	bool CGabeServerFuncs::IsPositionUnderwater(const Vector& position)
+	{
+		return (UTIL_PointContents(position) & MASK_WATER) != 0;
+	}
+
+	int CGabeServerFuncs::GetPointContents(const Vector& position)
+	{
+		return UTIL_PointContents(position);
+	}
+
+
+	void CGabeServerFuncs::SetPlayerFlashlight(
+		CBasePlayer* pPlayer,
+		bool enabled)
+	{
+		if (!pPlayer)
+			return;
+
+		if (enabled)
+		{
+			if (!pPlayer->FlashlightIsOn())
+				pPlayer->FlashlightTurnOn();
+		}
+		else
+		{
+			if (pPlayer->FlashlightIsOn())
+				pPlayer->FlashlightTurnOff();
+		}
+	}
+
+	void CGabeServerFuncs::StripPlayerSuit(
+		CBasePlayer* pPlayer)
+	{
+		if (!pPlayer)
+			return;
+
+		pPlayer->RemoveSuit();
+	}
+
+
+	void GabeMod::CGabeServerFuncs::SpawnExplosion(
+		const Vector& origin,
+		float magnitude,
+		CBaseEntity* pOwner)
+	{
+		if (magnitude <= 0.0f)
+			return;
+
+		ExplosionCreate(
+			origin,
+			QAngle(0, 0, 0),
+			pOwner,
+			static_cast<int>(magnitude),
+			150,
+			true
+		);
+	}
+
+	void CGabeServerFuncs::SpawnSparks(
+		const Vector& origin,
+		int magnitude,
+		int traillength,
+		const Vector* direction)
+	{
+		// Send a spark effect to nearby players.
+		CPVSFilter filter(origin);
+
+		te->Sparks(
+			filter,
+			0.0f,
+			&origin,
+			MAX(0, magnitude),
+			MAX(0, traillength),
+			direction
+		);
+	}
+
+	void CGabeServerFuncs::SpawnBlood(
+		const Vector& origin,
+		const Vector& direction)
+	{
+		UTIL_BloodDrips(
+			origin,
+			direction,
+			BLOOD_COLOR_RED,
+			20
+		);
+	}
+
+	void CGabeServerFuncs::SpawnMuzzleFlash(
+		const Vector& origin,
+		const QAngle& angles)
+	{
+		CEffectData data;
+
+		data.m_vOrigin = origin;
+		data.m_vStart = origin;
+		data.m_vAngles = angles;
+
+		// Dispatch the registered muzzle flash effect.
+		DispatchEffect("MuzzleFlash", data);
+	}
+
+
+	void CGabeServerFuncs::SpawnParticle(
+		const char* particleName,
+		const Vector& origin,
+		const QAngle& angles)
+	{
+		if (!particleName || !particleName[0])
+			return;
+
+		DispatchParticleEffect(
+			particleName,
+			origin,
+			angles
+		);
+	}
+
+
+	void CGabeServerFuncs::SpawnDynamicLight(
+		const Vector& origin,
+		int r, int g, int b,
+		float radius,
+		float lifetime)
+	{
+		if (radius <= 0.0f || lifetime <= 0.0f)
+			return;
+
+		CBaseEntity* pLight = CreateEntityByName("light_dynamic");
+
+		if (!pLight)
+			return;
+
+		char buffer[64];
+
+		// Position
+		pLight->SetAbsOrigin(origin);
+
+		// Color
+		Q_snprintf(
+			buffer,
+			sizeof(buffer),
+			"%d %d %d 255",
+			clamp(r, 0, 255),
+			clamp(g, 0, 255),
+			clamp(b, 0, 255)
+		);
+
+		pLight->KeyValue("_light", buffer);
+
+		// Light radius
+		Q_snprintf(buffer, sizeof(buffer), "%.2f", radius);
+		pLight->KeyValue("distance", buffer);
+
+		// Brightness exponent
+		pLight->KeyValue("brightness", "2");
+
+		// Spawn
+		DispatchSpawn(pLight);
+		pLight->Activate();
+
+		variant_t value;
+
+		pLight->AcceptInput(
+			"TurnOn",
+			pLight,
+			pLight,
+			value,
+			0
+		);
+
+		// Automatically delete after lifetime seconds.
+		g_EventQueue.AddEvent(
+			pLight,
+			"Kill",
+			lifetime,
+			pLight,
+			pLight
+		);
+	}
+
+
+	void CGabeServerFuncs::ScreenShake(
+		const Vector& origin,
+		float amplitude,
+		float frequency,
+		float duration,
+		float radius)
+	{
+		UTIL_ScreenShake(
+			origin,
+			amplitude,
+			frequency,
+			duration,
+			radius,
+			SHAKE_START,
+			true
+		);
+	}
+
+	void CGabeServerFuncs::CreateDecal(
+		const Vector& position,
+		const Vector& normal,
+		const char* decalName)
+	{
+		if (!decalName || !decalName[0])
+			return;
+
+		Vector direction = normal;
+
+		if (VectorNormalize(direction) <= 0.0f)
+			return;
+
+		trace_t tr;
+
+		const Vector start = position + direction * 8.0f;
+		const Vector end = position - direction * 8.0f;
+
+		UTIL_TraceLine(
+			start,
+			end,
+			MASK_SOLID,
+			NULL,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
+
+		if (!tr.DidHit())
+			return;
+
+		UTIL_DecalTrace(&tr, decalName);
+	}
+
+
+	bool CGabeServerFuncs::TraceLine(
+		const Vector& start,
+		const Vector& end,
+		trace_t& result,
+		CBaseEntity* pIgnore)
+	{
+		UTIL_TraceLine(
+			start,
+			end,
+			MASK_SOLID,
+			pIgnore,
+			COLLISION_GROUP_NONE,
+			&result
+		);
+
+		return result.DidHit();
+	}
+
+	bool CGabeServerFuncs::TraceHull(
+		const Vector& start,
+		const Vector& end,
+		const Vector& mins,
+		const Vector& maxs,
+		trace_t& result,
+		CBaseEntity* pIgnore)
+	{
+		UTIL_TraceHull(
+			start,
+			end,
+			mins,
+			maxs,
+			MASK_SOLID,
+			pIgnore,
+			COLLISION_GROUP_NONE,
+			&result
+		);
+
+		return result.DidHit();
+	}
+
+
+	CBaseEntity* CGabeServerFuncs::GetPlayerLookEntity(
+		CBasePlayer* pPlayer,
+		float maxDistance)
+	{
+		if (!pPlayer || maxDistance <= 0.0f)
+			return NULL;
+
+		Vector forward;
+		AngleVectors(pPlayer->EyeAngles(), &forward);
+
+		Vector start = pPlayer->EyePosition();
+		Vector end = start + forward * maxDistance;
+
+		trace_t tr;
+
+		UTIL_TraceLine(
+			start,
+			end,
+			MASK_SHOT,
+			pPlayer,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
+
+		return tr.DidHit() ? tr.m_pEnt : NULL;
+	}
+
+	Vector CGabeServerFuncs::GetPlayerLookPosition(
+		CBasePlayer* pPlayer,
+		float maxDistance)
+	{
+		if (!pPlayer)
+			return vec3_origin;
+
+		Vector forward;
+		AngleVectors(pPlayer->EyeAngles(), &forward);
+
+		Vector start = pPlayer->EyePosition();
+		Vector end = start + forward * MAX(0.0f, maxDistance);
+
+		trace_t tr;
+
+		UTIL_TraceLine(
+			start,
+			end,
+			MASK_SHOT,
+			pPlayer,
+			COLLISION_GROUP_NONE,
+			&tr
+		);
+
+		return tr.endpos;
+	}
+
+
 #endif
 
 #ifdef CLIENT_DLL
+
+	void CGabeClientFuncs::ShowHudElement(const char* name)
+	{
+		if (!name || !name[0])
+			return;
+
+		CHudElement* pElement = gHUD.FindElement(name);
+
+		if (pElement)
+			pElement->SetActive(true);
+	}
+
+	void CGabeClientFuncs::HideHudElement(const char* name)
+	{
+		if (!name || !name[0])
+			return;
+
+		CHudElement* pElement = gHUD.FindElement(name);
+
+		if (pElement)
+			pElement->SetActive(false);
+	}
+
+	bool CGabeClientFuncs::IsHudElementVisible(const char* name)
+	{
+		if (!name || !name[0])
+			return false;
+
+		CHudElement* pElement = gHUD.FindElement(name);
+
+		return pElement ? pElement->IsActive() : false;
+	}
+
+	void CGabeClientFuncs::ShowCrosshair(bool show)
+	{
+		ConVarRef crosshair("crosshair");
+
+		if (crosshair.IsValid())
+			crosshair.SetValue(show ? 1 : 0);
+	}
 
 	bool CGabeClientFuncs::IsPlayerUnderwater()
 	{
@@ -3548,8 +4406,8 @@ public:
 	}
 
 	// ============================================================
-// Render / color
-// ============================================================
+	// Render / color
+	// ============================================================
 
 	void SetColor(
 		HSCRIPT hEnt,

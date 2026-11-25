@@ -77,7 +77,6 @@
 			game				|all_source_engine_paths|hl2
     				game	"ep2"
     				game	"episodic"
-    			game      "D:\Steam\steamapps\common\HL1VPK"
     		game	"D:\Steam\steamapps\common\Half-Life 2\lostcoast\lostcoast"
     game	"D:\Steam\steamapps\common\cstrike_mount"
 			platform			|all_source_engine_paths|platform
@@ -104,7 +103,6 @@
     game	"D:\Steam\steamapps\common\Half-Life 2\hl2"
     game	"D:\Steam\steamapps\common\Half-Life 2\ep2"
     game	"D:\Steam\steamapps\common\Half-Life 2\episodic"
-    game      "D:\Steam\steamapps\common\HL1VPK"
     game	"D:\Steam\steamapps\common\Half-Life 2\lostcoast\lostcoast"
     game	"D:\Steam\steamapps\common\cstrike_mount"
     game        "platform"

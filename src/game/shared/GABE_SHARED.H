@@ -197,6 +197,36 @@ namespace GabeMod
 		static void StartPrecipitation();
 
 		static bool HasScreenOverlay();
+
+		// HUD
+		static void ShowHudElement(const char* name);
+		static void HideHudElement(const char* name);
+
+		static bool IsHudElementVisible(const char* name);
+
+		static void ShowGameMessage(
+			const char* text,
+			float duration
+		);
+
+		// Crosshair
+		static void ShowCrosshair(bool show);
+
+		// Screen effects
+		static void SetScreenFade(
+			int r, int g, int b, int a,
+			float duration,
+			float holdTime
+		);
+
+		// Client effects
+		static void CreateClientBeam(
+			const Vector& start,
+			const Vector& end,
+			const char* material,
+			float width,
+			float lifetime
+		);
 	};
 #endif
 
@@ -657,6 +687,165 @@ namespace GabeMod
 
 			engine->Con_NPrintf(index, "%s", text);
 		}
+
+		// Entity manipulation
+		static void SetEntityScale(CBaseEntity* pEnt, float scale);
+		static float GetEntityScale(CBaseEntity* pEnt);
+		static void SetEntitySkin(CBaseEntity* pEnt, int skin);
+		static int GetEntitySkin(CBaseEntity* pEnt);
+
+		static void SetEntityBodygroup(CBaseEntity* pEnt, int group, int value);
+		static int GetEntityBodygroup(CBaseEntity* pEnt, int group);
+		static void SetEntityModel(CBaseEntity* pEnt, const char* model);
+
+		static void SetEntityGravity(CBaseEntity* pEnt, float gravity);
+		static void SetEntityFriction(CBaseEntity* pEnt, float friction);
+
+		static void EnableEntityMotion(CBaseEntity* pEnt, bool enable);
+		static bool IsEntityMotionEnabled(CBaseEntity* pEnt);
+
+		static void FreezeEntity(CBaseEntity* pEnt);
+		static void UnfreezeEntity(CBaseEntity* pEnt);
+
+		static void SetEntityNoDraw(CBaseEntity* pEnt, bool noDraw);
+
+		static bool IsEntityOnGround(CBaseEntity* pEnt);
+		static bool IsEntityInWater(CBaseEntity* pEnt);
+
+		static CBaseEntity* GetEntityGround(CBaseEntity* pEnt);
+
+		static void ApplyForceCenter(CBaseEntity* pEnt, const Vector& force);
+		static void ApplyForceOffset(
+			CBaseEntity* pEnt,
+			const Vector& force,
+			const Vector& worldPosition
+		);
+
+		static void ApplyAngularImpulse(
+			CBaseEntity* pEnt,
+			const AngularImpulse& impulse
+		);
+
+		static void SetPhysicsGravity(CBaseEntity* pEnt, bool enabled);
+		static void SetPhysicsDrag(CBaseEntity* pEnt, bool enabled);
+
+		static void SetPhysicsDamping(
+			CBaseEntity* pEnt,
+			float linearDamping,
+			float angularDamping
+		);
+
+		static void SetPhysicsMaterial(
+			CBaseEntity* pEnt,
+			const char* material
+		);
+
+		static void SetPhysicsCollisionEnabled(
+			CBaseEntity* pEnt,
+			bool enabled
+		);
+
+		static Vector GetPhysicsPosition(CBaseEntity* pEnt);
+		static QAngle GetPhysicsAngles(CBaseEntity* pEnt);
+
+		// Movement
+		static void SetPlayerSpeed(CBasePlayer* pPlayer, float speed);
+		static void SetPlayerMoveType(CBasePlayer* pPlayer, MoveType_t type);
+
+		static void LaunchPlayer(CBasePlayer* pPlayer, const Vector& velocity);
+
+		// Inventory
+		static bool HasWeapon(CBasePlayer* pPlayer, const char* classname);
+		static void RemoveWeapon(CBasePlayer* pPlayer, const char* classname);
+
+		static int GetAmmoCount(CBasePlayer* pPlayer, int ammoType);
+		static void RemoveAllAmmo(CBasePlayer* pPlayer);
+
+		// State
+		static bool IsPlayerCrouching(CBasePlayer* pPlayer);
+		static bool IsPlayerSprinting(CBasePlayer* pPlayer);
+		static bool IsPlayerWalking(CBasePlayer* pPlayer);
+
+		static bool IsPlayerUnderwater(CBasePlayer* pPlayer);
+		static bool IsPlayerLookingAt(CBasePlayer* pPlayer, CBaseEntity* pTarget);
+
+		// Gameplay
+		static void GodMode(CBasePlayer* pPlayer, bool enabled);
+		static bool HasGodMode(CBasePlayer* pPlayer);
+
+		static void SetPlayerFlashlight(CBasePlayer* pPlayer, bool enabled);
+
+		static void StripPlayerSuit(CBasePlayer* pPlayer);
+
+		// Effects
+		static void SpawnExplosion(
+			const Vector& origin,
+			float magnitude,
+			CBaseEntity* pOwner = nullptr
+		);
+
+		static void SpawnSparks(const Vector& origin, int magnitude, int traillength, const Vector* direction);
+		static void SpawnBlood(const Vector& origin, const Vector& direction);
+		static void SpawnMuzzleFlash(const Vector& origin, const QAngle& angles);
+
+		static void SpawnParticle(
+			const char* particleName,
+			const Vector& origin,
+			const QAngle& angles
+		);
+
+		static void SpawnDynamicLight(
+			const Vector& origin,
+			int r, int g, int b,
+			float radius,
+			float lifetime
+		);
+
+		static void ScreenShake(
+			const Vector& origin,
+			float amplitude,
+			float frequency,
+			float duration,
+			float radius
+		);
+
+		static void CreateDecal(
+			const Vector& position,
+			const Vector& normal,
+			const char* decalName
+		);
+
+		// Tracing
+		static bool TraceLine(
+			const Vector& start,
+			const Vector& end,
+			trace_t& result,
+			CBaseEntity* pIgnore = nullptr
+		);
+
+		static bool TraceHull(
+			const Vector& start,
+			const Vector& end,
+			const Vector& mins,
+			const Vector& maxs,
+			trace_t& result,
+			CBaseEntity* pIgnore = nullptr
+		);
+
+		static CBaseEntity* GetPlayerLookEntity(
+			CBasePlayer* pPlayer,
+			float maxDistance = 8192.0f
+		);
+
+		static Vector GetPlayerLookPosition(
+			CBasePlayer* pPlayer,
+			float maxDistance = 8192.0f
+		);
+
+		static bool IsPositionUnderwater(const Vector& position);
+
+		static int GetPointContents(const Vector& position);
+
 	};
 
 	abstract_class IGabeTool

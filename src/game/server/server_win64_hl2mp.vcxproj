@@ -500,6 +500,7 @@ exit 1
     <ClInclude Include="..\shared\gabe_vscript_shared.h" />
     <ClInclude Include="..\shared\hl1\hl1_baseweapon_shared.h" />
     <ClInclude Include="..\shared\hl2mp\weapon_physgun.h" />
+    <ClInclude Include="..\shared\prophunt_bounds.h" />
     <ClInclude Include="..\shared\sdk\weapon_sdkbase.h" />
     <ClInclude Include="..\shared\tf\tf_weapon_fists.h" />
     <ClInclude Include="..\shared\vscript_in_buttons.h" />
@@ -564,6 +565,7 @@ exit 1
     <ClInclude Include="..\shared\GameEventListener.h" />
     <ClInclude Include="..\shared\gamerules_register.h" />
     <ClInclude Include="..\..\public\gametrace.h" />
+    <ClInclude Include="gabe_undo.h" />
     <ClInclude Include="globals.h" />
     <ClInclude Include="..\..\public\globalvars_base.h" />
     <ClInclude Include="..\shared\groundlink.h" />
@@ -1029,6 +1031,7 @@ exit 1
     <ClInclude Include="WEAPON_LASERGUN.H" />
     <ClInclude Include="weapon_proplauncher.h" />
     <ClInclude Include="weapon_stickylauncher.h" />
+    <ClInclude Include="weapon_thrower.h" />
     <ClInclude Include="world.h" />
     <ClInclude Include="hl2\ai_behavior_actbusy.h" />
     <ClInclude Include="hl2\ai_behavior_functank.h" />
@@ -1209,6 +1212,7 @@ exit 1
     <ClCompile Include="gabe_cmds.cpp" />
     <ClCompile Include="gabe_objects.cpp" />
     <ClCompile Include="gabe_spmenuspawn.cpp" />
+    <ClCompile Include="gabe_undo.cpp" />
     <ClCompile Include="gamedll_replay.cpp" />
     <ClCompile Include="..\shared\achievement_saverestore.cpp" />
     <ClCompile Include="..\shared\achievementmgr.cpp" />
@@ -1410,6 +1414,7 @@ exit 1
     <ClCompile Include="..\shared\func_ladder.cpp" />
     <ClCompile Include="func_ladder_endpoint.cpp" />
     <ClCompile Include="func_lod.cpp" />
+    <ClCompile Include="godrays.cpp" />
     <ClCompile Include="grenade_spit.cpp" />
     <ClCompile Include="hl1\hl1_basegrenade.cpp" />
     <ClCompile Include="hl1\hl1_baseweapon.cpp" />
@@ -1502,6 +1507,7 @@ exit 1
     <ClCompile Include="grenadethrown.cpp" />
     <ClCompile Include="guntarget.cpp" />
     <ClCompile Include="hl2\grenade_brickbat.cpp" />
+    <ClCompile Include="hl2\npc_blob.cpp" />
     <ClCompile Include="hl2\vehicle_jeep.cpp" />
     <ClCompile Include="hl2\weapon_alyxgun.cpp" />
     <ClCompile Include="hl2\weapon_brickbat.cpp" />
@@ -1804,6 +1810,7 @@ exit 1
     <ClCompile Include="..\shared\weapon_proficiency.cpp" />
     <ClCompile Include="weapon_camera.cpp" />
     <ClCompile Include="weapon_eattach.cpp" />
+    <ClCompile Include="weapon_flechettegun.cpp" />
     <ClCompile Include="weapon_fuelcan.cpp" />
     <ClCompile Include="weapon_hax.cpp" />
     <ClCompile Include="weapon_lasergun.cpp" />
@@ -1811,6 +1818,7 @@ exit 1
     <ClCompile Include="weapon_proplauncher.cpp" />
     <ClCompile Include="weapon_stickylauncher.cpp" />
     <ClCompile Include="weapon_supergun.cpp" />
+    <ClCompile Include="weapon_thrower.cpp" />
     <ClCompile Include="weight_button.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="hl2\ai_allymanager.cpp" />

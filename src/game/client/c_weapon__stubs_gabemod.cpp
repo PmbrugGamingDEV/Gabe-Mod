@@ -28,6 +28,8 @@ STUB_WEAPON_CLASS(weapon_proplauncher, WeaponPropLauncher, C_BaseCombatWeapon);
 
 STUB_WEAPON_CLASS(weapon_fuelcan, WeaponFuelCan, C_BaseCombatWeapon);
 
+STUB_WEAPON_CLASS(weapon_flechettegun, WeaponFlechetteGun, C_BaseHLCombatWeapon);
+
 // Half-Life 1
 
 // Row 0

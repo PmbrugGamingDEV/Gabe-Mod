@@ -609,6 +609,49 @@ Scheme
 				"additive"	"1"
 			}
 		}
+		"GabeMenuLarge"
+		{
+			"1"
+			{
+				"name"          "Tahoma"
+				"tall"          "24"
+				"weight"        "600"
+				"antialias"     "1"
+			}
+		}
+
+		"GabeMenuMedium"
+		{
+			"1"
+			{
+				"name"          "Tahoma"
+				"tall"          "18"
+				"weight"        "600"
+				"antialias"     "1"
+			}
+		}
+
+		"GabeMenuSmall"
+		{
+			"1"
+			{
+				"name"          "Tahoma"
+				"tall"          "14"
+				"weight"        "600"
+				"antialias"     "1"
+			}
+		}
+
+		"GabeMenuTiny"
+		{
+			"1"
+			{
+				"name"          "Tahoma"
+				"tall"          "10"
+				"weight"        "600"
+				"antialias"     "1"
+			}
+		}
 		HudSelectionText
 		{
 			"1"
@@ -889,6 +932,27 @@ Scheme
 				"range"		"0x0000 0x007F"	//	Basic Latin
 				"antialias" "1"
 				"additive"	"0"
+			}
+		}
+		"GabeNotificationText"
+		{
+			"1"
+			{
+				"name"          "Tahoma"
+				"tall"          "12"
+				"weight"        "900"
+				"antialias"     "1"
+			}
+		}
+
+		"GabeNotificationIcon"
+		{
+			"1"
+			{
+				"name"          "Tahoma"
+				"tall"          "26"
+				"weight"        "900"
+				"antialias"     "1"
 			}
 		}
 		"HL2MPTypeDeath"

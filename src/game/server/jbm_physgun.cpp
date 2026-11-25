@@ -173,7 +173,8 @@ public:
 
 	IPhysicsConstraint* m_pConstraint;
 	bool				m_isInert;
-	CJBMGravityPellet* m_pPair;
+	CJBMGravityPellet*  m_pPair;
+	EHANDLE			    m_hPhysicsPoint;
 };
 
 LINK_ENTITY_TO_CLASS(jb_gravity_pellet, CJBMGravityPellet);
@@ -1415,6 +1416,28 @@ void CJBMWeaponGravityGun::DeleteActivePellets()
 		pBeam->LiveForTime(0.1);
 		g_pEffects->Sparks(pPellet->GetAbsOrigin());
 
+		// Remove the physics anchor.
+		CBaseEntity* pPoint = pPellet->m_hPhysicsPoint.Get();
+
+		if (pPoint)
+		{
+			// Destroy constraints using this physics object first.
+			if (pPellet->m_pConstraint)
+			{
+				physenv->DestroyConstraint(pPellet->m_pConstraint);
+				pPellet->m_pConstraint = NULL;
+			}
+
+			// Detach pellet from anchor.
+			if (pPellet->GetMoveParent() == pPoint)
+			{
+				pPellet->SetParent(NULL);
+			}
+
+			UTIL_Remove(pPoint);
+			pPellet->m_hPhysicsPoint = NULL;
+		}
+
 		UTIL_Remove(pPellet);
 	}
 	m_pelletCount = 0;
@@ -1549,11 +1572,6 @@ void CJBMWeaponGravityGun::DetachObject(void)
 
 	if (m_hObject)
 	{
-		CBaseAnimating* pAnimating = m_hObject->GetBaseAnimating();
-		if (pAnimating)
-		{
-			pAnimating->RemoveGlowEffect();
-		}
 		CBasePlayer* pOwner = ToBasePlayer(GetOwner());
 		Pickup_OnPhysGunDrop(m_hObject, pOwner, DROPPED_BY_CANNON);
 
@@ -1614,12 +1632,6 @@ void CJBMWeaponGravityGun::AttachObject(CBaseEntity* pObject, const Vector& star
 		SortPelletsForObject(pObject);
 
 		Pickup_OnPhysGunPickup(pObject, pOwner);
-
-		CBaseAnimating* pAnimating = pObject->GetBaseAnimating();
-		if (pAnimating)
-		{
-			pAnimating->AddGlowEffect();
-		}
 	}
 	else
 	{
@@ -1938,6 +1950,44 @@ bool CJBMGravityPellet::MakeConstraint(
 	case CONSTRAINT_ROPE:
 	{
 		Vector posA, posB;
+
+		if (pBond && pBond->GetMoveParent() &&
+			pBond->GetMoveParent()->IsWorld())
+		{
+			CBaseEntity* pPoint = CreateEntityByName("prop_physics");
+
+			if (pPoint)
+			{
+				pPoint->SetModel("models/props_junk/PopCan01a.mdl");
+				pPoint->SetAbsOrigin(pBond->GetAbsOrigin());
+
+				DispatchSpawn(pPoint);
+
+				pPoint->AddEffects(EF_NODRAW);
+				pPoint->SetCollisionGroup(COLLISION_GROUP_DEBRIS);
+				pPoint->SetSolidFlags(FSOLID_NOT_SOLID);
+
+				IPhysicsObject* pPhysics = pPoint->VPhysicsGetObject();
+
+				if (pPhysics)
+				{
+					// No physical collision.
+					pPhysics->EnableCollisions(false);
+
+					// Keep the anchor stationary.
+					pPhysics->EnableMotion(false);
+					pPhysics->Sleep();
+
+					// Use this as physics object 2.
+					pAttached = pPhysics;
+
+					// Attach the pellet to the invisible physics entity.
+					pBond->SetParent(pPoint);
+
+					pBond->m_hPhysicsPoint = pPoint;
+				}
+			}
+		}
 		pReference->GetPosition(&posA, NULL);
 		pAttached->GetPosition(&posB, NULL);
 

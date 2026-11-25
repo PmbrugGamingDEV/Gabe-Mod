@@ -103,6 +103,9 @@
     <Filter Include="Source Files\Gabe Mod Files\Beta Weapons">
       <UniqueIdentifier>{75ebdbb4-ac9a-4674-ab58-f61d2e5325f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Gabe Mod Files\Entities">
+      <UniqueIdentifier>{7d28505e-2856-4431-aac7-878448a819b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\lib\public\x64\choreoobjects.lib">
@@ -2191,6 +2194,13 @@
     </ClInclude>
     <ClInclude Include="..\shared\sdk\weapon_sdkbase.h">
       <Filter>Source Files\Gabe Mod Files\SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="weapon_thrower.h" />
+    <ClInclude Include="..\shared\prophunt_bounds.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gabe_undo.h">
+      <Filter>Source Files\Gabe Mod Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -4395,6 +4405,19 @@
     </ClCompile>
     <ClCompile Include="hl2\weapon_immolator.cpp">
       <Filter>Source Files\Gabe Mod Files\Beta Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="hl2\npc_blob.cpp">
+      <Filter>Source Files\Gabe Mod Files\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="godrays.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
+    </ClCompile>
+    <ClCompile Include="weapon_thrower.cpp" />
+    <ClCompile Include="weapon_flechettegun.cpp">
+      <Filter>Source Files\Gabe Mod Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="gabe_undo.cpp">
+      <Filter>Source Files\Gabe Mod Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup />

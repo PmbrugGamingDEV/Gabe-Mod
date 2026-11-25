@@ -1076,6 +1076,7 @@ bool CServerGameDLL::LevelInit(const char* pMapName, char const* pMapEntities, c
 	// clear any pending autosavedangerous
 	m_fAutoSaveDangerousTime = 0.0f;
 	m_fAutoSaveDangerousMinHealthToCommit = 0.0f;
+
 	return true;
 }
 

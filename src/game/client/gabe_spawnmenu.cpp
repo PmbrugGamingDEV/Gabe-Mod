@@ -1,757 +1,714 @@
+// GabeMod spawn menu: Source SDK Base 2013 (client DLL)
+// Place in game/client/hl2mp/ or another compiled client folder.
 #include "cbase.h"
-
+#include <math.h>
 #include <vgui/IVGui.h>
 #include <vgui/ISurface.h>
+#include <vgui/IInput.h>
+#include <vgui/KeyCode.h>
 #include <vgui_controls/Frame.h>
-#include <vgui_controls/PropertySheet.h>
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/Label.h>
-#include <vgui/iinput.h>
-
+#include <vgui_controls/TextEntry.h>
+#include <vgui_controls/ImagePanel.h>
+#include <vgui/IScheme.h>
+#include <vgui/IPanel.h>
+#include "matsys_controls/mdlpanel.h"
+#include "matsys_controls/matsyscontrols.h"
 #include "filesystem.h"
 #include "ienginevgui.h"
-
+#include "tier1/KeyValues.h"
+#include "tier1/strtools.h"
+#include "tier1/utlvector.h"
 #include "vscript_shared.h"
-
 #include "gabe_spawnmenu.h"
-
 #include "vgui_all.h"
-#include "stdlib.h"
-
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef CLIENT_DLL
 #include "cdll_client_int.h"
 extern IVEngineClient* engine;
 #endif
 
+// memdbgon must be the last include!
+#include "tier0/memdbgon.h"
+
 using namespace vgui;
-
 static bool g_bSpawnMenuOpen = false;
+static ConVar gabe_spawnicon_zoom("gabe_spawnicon_zoom", "1.35", FCVAR_ARCHIVE, "Model icon magnification.", true, 0.5f, true, 2.5f);
+static ConVar gabe_spawnmenu_debug("gabe_spawnmenu_debug", "0", FCVAR_NONE, "Print spawn menu button and tab events.");
 
-// ============================================================
-// Button data (SAFE STORAGE)
-// ============================================================
+#define SPAWNMENU_W 1024
+#define SPAWNMENU_H 768
+#define SPAWNMENU_MAX_TABS 32
 
-struct SpawnButton_t
+// Live 3D icon. Suppress model animation ticks while its tab is hidden.
+class CSpawnModelIcon : public CMDLPanel
 {
-	Button* button;
-	char value[256];
+public:
+    CSpawnModelIcon(Panel* parent, const char* name) : CMDLPanel(parent, name) {}
+    virtual void OnTick()
+    {
+        if (ipanel()->IsFullyVisible(GetVPanel())) CMDLPanel::OnTick();
+    }
 };
 
-// ============================================================
-// COLUMN
-// ============================================================
-
-enum EntryType_t
+// Flat dark-tab / translucent button style from the reference image.
+class CSpawnFlatButton : public Button
 {
-	ENTRY_BUTTON,
-	ENTRY_LABEL
-};
+    DECLARE_CLASS_SIMPLE(CSpawnFlatButton, Button);
+public:
+    CSpawnFlatButton(Panel* parent, const char* name,
+        const char* text, Panel* target, const char* command,
+        bool tab = false)
+        : BaseClass(parent, name, text), m_bTab(tab), m_bSelected(false), m_pTarget(target), m_bTile(false), m_pModel(NULL), m_bModelTried(false)
+    {
+        m_szModel[0] = 0;
+        SetPaintBorderEnabled(false);
+        SetMouseInputEnabled(true);
+        SetEnabled(true);
+        Q_strncpy(m_szCommand, command ? command : "", sizeof(m_szCommand));
+        // The spawn menu performs actions on mouse press. Source VGUI's
+        // default Button requires a complete press/release over the control,
+        // which can fail when the game or another panel changes mouse focus.
+        SetButtonActivationType(ACTIVATE_ONPRESSED);
+        SetUseCaptureMouse(false);
+        SetContentAlignment(Label::a_west);
+        SetTextInset(5, 0);
+        SetDefaultColor(Color(238, 238, 238, 255), Color(238, 238, 238, 255));
+        SetArmedColor(Color(255, 255, 255, 255), Color(255, 255, 255, 255));
+    }
 
-struct SpawnEntry_t
-{
-	EntryType_t type;
+    void SetTile(const char* value)
+    {
+        m_bTile = true;
+        SetContentAlignment(Label::a_south);
+        SetTextInset(2, 2);
+        Q_strncpy(m_szModel, value ? value : "", sizeof(m_szModel));
+        const int len = Q_strlen(m_szModel);
+        if (len < 5 || Q_stricmp(m_szModel + len - 4, ".mdl") ||
+            Q_strnicmp(m_szModel, "models/", 7))
+            m_szModel[0] = 0;
+    }
 
-	Button* button;
-	Label* label;
+    virtual void OnThink()
+    {
+        BaseClass::OnThink();
+        if (!m_bTile || !ipanel()->IsFullyVisible(GetVPanel())) return;
+        if (m_bModelTried) return;
+        // Never construct CMDLPanel before its material interfaces are ready.
+        if (!vgui::MaterialSystem() || !vgui::MDLCache() ||
+            !vgui::StudioRender() || !vgui::MatSystemSurface() ||
+            !vgui::MaterialSystemHardwareConfig()) return;
+        m_bModelTried = true;
+        if (!m_szModel[0] || !filesystem->FileExists(m_szModel, "GAME")) return;
 
-	char name[256];
-	char value[256]; // only used for buttons
-};
+        // Validate the model before handing it to the viewer.
+        MDLHandle_t handle = vgui::MDLCache()->FindMDL(m_szModel);
+        if (handle == MDLHANDLE_INVALID) return;
+        if (vgui::MDLCache()->IsErrorModel(handle))
+        {
+            vgui::MDLCache()->Release(handle);
+            return;
+        }
+        m_pModel = new CSpawnModelIcon(this, "ModelIcon");
+        m_pModel->SetMouseInputEnabled(false);
+        m_pModel->SetKeyBoardInputEnabled(false);
+        m_pModel->SetPaintBorderEnabled(false);
+        m_pModel->SetGroundGrid(false);
+        m_pModel->SetLookAtCamera(false);
+        m_pModel->SetMDL(handle);
+        vgui::MDLCache()->Release(handle);
+        m_pModel->SetModelAnglesAndPosition(QAngle(0, 35, 0), vec3_origin);
+        m_pModel->SetBounds(2, 2, MAX(1, GetWide() - 4), MAX(1, GetTall() - 12));
+        m_pModel->LookAtMDL();
+        const float fov = DEG2RAD((float)m_pModel->GetCameraFOV());
+        m_pModel->SetCameraFOV(RAD2DEG(2.0f * atanf(tanf(fov * 0.5f) / gabe_spawnicon_zoom.GetFloat())));
+        m_pModel->SetLockView(true);
+        m_pModel->SetVisible(true);
+        Repaint();
+    }
+    virtual void PerformLayout()
+    {
+        BaseClass::PerformLayout();
+        if (m_pModel)
+        {
+            m_pModel->SetBounds(2, 2, MAX(1, GetWide() - 4), MAX(1, GetTall() - 12));
+        }
+    }
+    void SetSelected(bool selected) { m_bSelected = selected; Repaint(); }
 
-class CSpawnButtonColumns : public Panel
-{
-	DECLARE_CLASS_SIMPLE(CSpawnButtonColumns, Panel);
+    // Dispatch directly instead of depending on queued VGUI action signals.
+    virtual void OnMouseWheeled(int delta) { char cmd[64]; Q_snprintf(cmd, sizeof(cmd), "wheel_%d", delta); if (m_pTarget) m_pTarget->OnCommand(cmd); }
+    virtual void OnMousePressed(MouseCode code)
+    {
+        if (code != MOUSE_LEFT || !IsEnabled())
+        {
+            BaseClass::OnMousePressed(code);
+            return;
+        }
+
+        if (gabe_spawnmenu_debug.GetBool())
+            Msg("GabeSpawnMenu: pressed %s (%s)\n", GetName(), m_szCommand);
+
+        if (m_pTarget && m_szCommand[0])
+            m_pTarget->OnCommand(m_szCommand);
+    }
+
+    virtual void PaintBackground()
+    {
+        int shade = m_bTile ? 105 : (m_bTab ? 125 : 65);
+        if (m_bSelected) shade = 150;
+        if (IsArmed()) shade += 25;
+        if (IsDepressed()) shade = 75;
+        surface()->DrawSetColor(shade, shade, shade, 255);
+        surface()->DrawFilledRect(0, 0, GetWide(), GetTall());
+        if (m_bTile)
+        {
+            for (int y = 1; y < GetTall() - 1; ++y)
+            {
+                int v = shade + 22 - 44 * y / MAX(1, GetTall());
+                surface()->DrawSetColor(v, v, v, 255);
+                surface()->DrawFilledRect(1, y, GetWide() - 1, y + 1);
+            }
+        }
+        surface()->DrawSetColor(170, 170, 170, 255);
+        surface()->DrawOutlinedRect(0, 0, GetWide(), GetTall());
+    }
+private:
+    bool m_bTab, m_bSelected;
+    Panel* m_pTarget;
+    char m_szCommand[64];
+    bool m_bTile;
+    CMDLPanel* m_pModel;
+    bool m_bModelTried;
+    char m_szModel[256];
 
 public:
-	CSpawnButtonColumns(Panel* parent, const char* spawnType)
-		: BaseClass(parent, "SpawnColumns")
-	{
-		Q_strncpy(m_szSpawnType, spawnType, sizeof(m_szSpawnType));
-
-		SetPaintBackgroundEnabled(true);
-		SetBgColor(Color(60, 60, 60, 220));
-
-		m_szSearch[0] = '\0';
-
-		m_iButtonWide = 140;
-		m_iButtonTall = 20;
-		m_iColumnSpacing = 6;
-	}
-
-	void AddItem(const char* name, const char* value)
-	{
-		if (!name || !value)
-			return;
-
-		SpawnEntry_t entry = {};
-
-		Q_strncpy(entry.name, name, sizeof(entry.name));
-		Q_strncpy(entry.value, value, sizeof(entry.value));
-
-		if (name[0] == '~')
-		{
-			entry.type = ENTRY_LABEL;
-			entry.label = new Label(this, name, name + 1);
-			entry.label->SetFgColor(Color(255, 200, 100, 255));
-		}
-		else
-		{
-			entry.type = ENTRY_BUTTON;
-			entry.button = new Button(this, name, name, this, "spawn");
-			entry.button->SetContentAlignment(Label::a_west);
-		}
-
-		m_Entries.AddToTail(entry);
-
-		SetSearchText(m_szSearch);
-	}
-
-	virtual void PerformLayout()
-	{
-		BaseClass::PerformLayout();
-
-		int w, h;
-		GetSize(w, h);
-
-		const int pad = 6;
-		const int btnW = m_iButtonWide;
-		const int btnH = m_iButtonTall;
-		const int spacing = m_iColumnSpacing;
-
-		int x = pad;
-		int y = pad;
-
-		for (int i = 0; i < m_Entries.Count(); i++)
-		{
-			SpawnEntry_t& e = m_Entries[i];
-
-			if (e.type == ENTRY_BUTTON && !e.button->IsVisible())
-				continue;
-
-			if (e.type == ENTRY_LABEL && !e.label->IsVisible())
-				continue;
-
-			// LABEL = FORCE NEW COLUMN
-			if (e.type == ENTRY_LABEL)
-			{
-				y = pad;                // reset Y
-				if (i != 0)             // don't shift first column
-					x += btnW + spacing;    // move to next column
-
-				e.label->SetPos(x, y);
-				e.label->SetSize(btnW, btnH);
-
-				y += btnH + 4;
-				continue;
-			}
-
-			// BUTTON
-			if (y + btnH > h - 15) // 15px threshold from bottom
-			{
-				y = pad;
-				x += btnW + spacing;
-			}
-
-			e.button->SetPos(x, y);
-			e.button->SetSize(btnW, btnH);
-
-			y += btnH + 2;
-		}
-	}
-
-	virtual void OnCommand(const char* cmd)
-	{
-		if (!Q_stricmp(cmd, "spawn"))
-		{
-#ifdef CLIENT_DLL
-			VPANEL focused = input()->GetFocus();
-
-			for (int i = 0; i < m_Entries.Count(); i++)
-			{
-				if (m_Entries[i].type != ENTRY_BUTTON)
-					continue;
-
-				if (m_Entries[i].button->GetVPanel() == focused)
-				{
-					const char* value = m_Entries[i].value;
-
-					engine->ClientCmd_Unrestricted(
-						VarArgs("gabe_spawn %s \"%s\"\n", m_szSpawnType, value)
-					);
-
-					surface()->PlaySound("ui/buttonclickrelease.wav");
-
-					break;
-				}
-			}
-#endif
-			return;
-		}
-
-		BaseClass::OnCommand(cmd);
-	}
-
-	void SetSearchText(const char* text)
-	{
-		Q_strncpy(
-			m_szSearch,
-			text ? text : "",
-			sizeof(m_szSearch)
-		);
-
-		for (int i = 0; i < m_Entries.Count(); i++)
-		{
-			SpawnEntry_t& entry = m_Entries[i];
-
-			if (entry.type == ENTRY_LABEL)
-			{
-				entry.label->SetVisible(m_szSearch[0] == '\0');
-				continue;
-			}
-
-			bool visible =
-				!m_szSearch[0] ||
-				Q_stristr(entry.name, m_szSearch) != NULL ||
-				Q_stristr(entry.value, m_szSearch) != NULL;
-
-			entry.button->SetVisible(visible);
-		}
-
-		InvalidateLayout(true);
-	}
-
-	void SetButtonSize(int wide, int tall)
-	{
-		m_iButtonWide = MAX(40, wide);
-		m_iButtonTall = MAX(16, tall);
-
-		InvalidateLayout(true);
-	}
-
-	void SetColumnSpacing(int spacing)
-	{
-		m_iColumnSpacing = MAX(0, spacing);
-
-		InvalidateLayout(true);
-	}
-
-	bool RemoveItem(const char* name)
-	{
-		for (int i = 0; i < m_Entries.Count(); i++)
-		{
-			SpawnEntry_t& entry = m_Entries[i];
-
-			if (entry.type != ENTRY_BUTTON)
-				continue;
-
-			if (Q_stricmp(entry.name, name))
-				continue;
-
-			entry.button->MarkForDeletion();
-			m_Entries.Remove(i);
-
-			InvalidateLayout(true);
-			return true;
-		}
-
-		return false;
-	}
-
-	void ClearItems()
-	{
-		for (int i = 0; i < m_Entries.Count(); i++)
-		{
-			SpawnEntry_t& entry = m_Entries[i];
-
-			if (entry.type == ENTRY_BUTTON)
-				entry.button->MarkForDeletion();
-			else if (entry.type == ENTRY_LABEL)
-				entry.label->MarkForDeletion();
-		}
-
-		m_Entries.RemoveAll();
-		InvalidateLayout(true);
-	}
-
-	const char* GetSpawnType() const
-	{
-		return m_szSpawnType;
-	}
-
-private:
-	CUtlVector<SpawnEntry_t> m_Entries;
-
-	char m_szSpawnType[16];
-	char m_szSearch[256];
-
-	int m_iButtonWide;
-	int m_iButtonTall;
-	int m_iColumnSpacing;
+    void SetSpawnCommand(const char* command)
+    {
+        Q_strncpy(m_szCommand, command ? command : "", sizeof(m_szCommand));
+    }
 };
 
-// ============================================================
-// MAIN MENU
-// ============================================================
+enum EntryType_t { ENTRY_BUTTON, ENTRY_LABEL };
+struct SpawnEntry_t
+{
+    EntryType_t type;
+    CSpawnFlatButton* button;
+    Label* label;
+    char name[256];
+    char value[256];
+    int group;
+    char spawnType[32];
+};
+
+// Per-tab content. ~Label entries begin a fresh column.
+class CSpawnButtonColumns : public Panel
+{
+    DECLARE_CLASS_SIMPLE(CSpawnButtonColumns, Panel);
+public:
+    CSpawnButtonColumns(Panel* parent, const char* type, bool tools) : BaseClass(parent, "SpawnColumns")
+    {
+        Q_strncpy(m_szSpawnType, type, sizeof(m_szSpawnType)); m_szSearch[0] = 0;
+        m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; m_iButtonWide = 64; m_iButtonTall = 64; m_iColumnSpacing = 3;
+        m_bTools = tools;
+        m_pCatPrev = new CSpawnFlatButton(this, "CatPrev", "^", this, "catprev");
+        m_pCatNext = new CSpawnFlatButton(this, "CatNext", "v", this, "catnext");
+        m_pPrev = new CSpawnFlatButton(this, "Prev", "<", this, "prev");
+        m_pNext = new CSpawnFlatButton(this, "Next", ">", this, "next");
+        m_pPage = new Label(this, "Page", "");
+        SetPaintBackgroundEnabled(true);
+    }
+    bool IsTools() const { return m_bTools; }
+    virtual void PaintBackground()
+    {
+        surface()->DrawSetColor(48, 48, 48, 245); surface()->DrawFilledRect(0, 0, GetWide(), GetTall());
+        if (!m_bTools)
+        {
+            bool groups = false;
+            for (int i = 0; i < m_Entries.Count(); ++i) if (m_Entries[i].type == ENTRY_LABEL && m_Entries[i].button) { groups = true; break; }
+            if (groups) { int y = MIN(180, GetTall() / 3); surface()->DrawSetColor(145, 145, 145, 255); surface()->DrawFilledRect(0, y, GetWide(), y + 3); }
+        }
+        surface()->DrawSetColor(145, 145, 145, 255); surface()->DrawOutlinedRect(0, 0, GetWide(), GetTall());
+    }
+    void AddItem(const char* name, const char* value, const char* spawnType = NULL)
+    {
+        if (!name || !*name || !value) return;
+        SpawnEntry_t e = {}; Q_strncpy(e.name, name, sizeof(e.name)); Q_strncpy(e.value, value, sizeof(e.value));
+        Q_strncpy(e.spawnType, spawnType ? spawnType : m_szSpawnType, sizeof(e.spawnType));
+        int i = m_Entries.Count(); char id[64], cmd[64]; Q_snprintf(id, sizeof(id), "item_%d", i);
+        e.group = -1;
+        for (int j = i - 1; j >= 0; --j) if (m_Entries[j].type == ENTRY_LABEL && m_Entries[j].button) { e.group = j; break; }
+        if (name[0] == '~')
+        {
+            e.type = ENTRY_LABEL; Q_snprintf(cmd, sizeof(cmd), "group_%d", i);
+            e.button = new CSpawnFlatButton(this, id, name + 1, this, cmd);
+            if (m_iGroup < 0) m_iGroup = i;
+        }
+        else
+        {
+            e.type = ENTRY_BUTTON; Q_snprintf(cmd, sizeof(cmd), "spawn_%d", i);
+            e.button = new CSpawnFlatButton(this, id, name, this, cmd);
+            if (!m_bTools) e.button->SetTile(value);
+        }
+        m_Entries.AddToTail(e); InvalidateLayout();
+    }
+    virtual void OnCommand(const char* cmd)
+    {
+        if (!Q_strnicmp(cmd, "wheel_", 6)) { OnMouseWheeled(atoi(cmd + 6)); return; }
+        if (!Q_strnicmp(cmd, "group_", 6))
+        {
+            if (m_bTools) return;
+            int group = atoi(cmd + 6); m_iGroup = group; m_iScroll = 0; ApplyFilter(); return;
+        }
+        if (!Q_stricmp(cmd, "catprev")) { m_iCategoryScroll = MAX(0, m_iCategoryScroll - 1); InvalidateLayout(true); return; }
+        if (!Q_stricmp(cmd, "catnext")) { ++m_iCategoryScroll; InvalidateLayout(true); return; }
+        if (!Q_stricmp(cmd, "prev")) { m_iScroll = MAX(0, m_iScroll - 1); InvalidateLayout(true); return; }
+        if (!Q_stricmp(cmd, "next")) { ++m_iScroll; InvalidateLayout(true); return; }
+        if (!Q_strnicmp(cmd, "spawn_", 6))
+        {
+            int index = atoi(cmd + 6);
+            if (index >= 0 && index < m_Entries.Count() &&
+                m_Entries[index].type == ENTRY_BUTTON)
+            {
+                char normalized[256];
+                Q_strncpy(normalized, m_Entries[index].value, sizeof(normalized));
+                for (char* c = normalized; *c; ++c) if (*c == '\\') *c = '/';
+                const char* value = normalized;
+                const char* spawnType = m_Entries[index].spawnType;
+                // Only a safe, single quoted argument is accepted.
+                // Server MUST independently validate type/value/permissions.
+                if (strchr(value, '"') || strchr(value, '\\') ||
+                    strchr(value, '\n') || strchr(value, '\r') ||
+                    strchr(value, ';') || strchr(spawnType, '"') ||
+                    strchr(spawnType, ';')) return;
+                char command[512];
+                Q_snprintf(command, sizeof(command), "gabe_spawn %s \"%s\"\n", spawnType, value);
+                if (gabe_spawnmenu_debug.GetBool())
+                    Msg("GabeSpawnMenu: sending %s", command);
+                engine->ClientCmd_Unrestricted(command);
+                surface()->PlaySound("ui/buttonclickrelease.wav");
+            }
+            return;
+        }
+        BaseClass::OnCommand(cmd);
+    }
+
+    virtual void OnMouseWheeled(int delta)
+    {
+        int x, y; input()->GetCursorPos(x, y); ScreenToLocal(x, y);
+        bool hasGroups = false;
+        for (int i = 0; i < m_Entries.Count(); ++i) if (m_Entries[i].type == ENTRY_LABEL && m_Entries[i].button) { hasGroups = true; break; }
+        if (!m_bTools && hasGroups && y < MIN(180, GetTall() / 3)) m_iCategoryScroll = MAX(0, m_iCategoryScroll - delta);
+        else m_iScroll = MAX(0, m_iScroll - delta);
+        InvalidateLayout(true);
+    }
+    virtual void PerformLayout()
+    {
+        BaseClass::PerformLayout();
+        int w = GetWide(), h = GetTall(); if (w < 20 || h < 40)return;
+        int categoryH = m_bTools ? 0 : MIN(180, h / 3);
+        int toolW = w;
+        int groups = 0, actualGroups = 0;
+        for (int k = 0; k < m_Entries.Count(); ++k) if (m_Entries[k].type == ENTRY_LABEL && m_Entries[k].button)++actualGroups;
+        int categoryRows = MAX(1, (categoryH - 8) / 18);
+        m_iCategoryScroll = clamp(m_iCategoryScroll, 0, MAX(0, actualGroups - categoryRows));
+        m_pCatPrev->SetVisible(!m_bTools && actualGroups > categoryRows);
+        m_pCatNext->SetVisible(!m_bTools && actualGroups > categoryRows);
+        m_pCatPrev->SetBounds(w - 23, 4, 19, 18);
+        m_pCatNext->SetBounds(w - 23, categoryH - 22, 19, 18);
+        for (int i = 0; i < m_Entries.Count(); ++i)
+        {
+            SpawnEntry_t& e = m_Entries[i]; if (!e.button)continue;
+            e.button->SetVisible(false);
+            if (e.type == ENTRY_LABEL && !m_bTools)
+            {
+                int count = 0; for (int j = 0; j < m_Entries.Count(); ++j) if (m_Entries[j].type == ENTRY_BUTTON && m_Entries[j].button && m_Entries[j].group == i)++count;
+                char text[300]; Q_snprintf(text, sizeof(text), "%s   (%d)", e.name + 1, count); e.button->SetText(text);
+                int row = groups++ - m_iCategoryScroll;
+                e.button->SetSelected(m_iGroup == i);
+                if (row >= 0 && row < categoryRows)
+                {
+                    e.button->SetBounds(4, 4 + row * 18, w - (actualGroups > categoryRows ? 30 : 8), 17);
+                    e.button->SetVisible(true);
+                }
+            }
+        }
+        int top = (!m_bTools && groups) ? categoryH + 4 : 4;
+        int cellW = m_bTools ? toolW - 8 : MAX(40, m_iButtonWide);
+        int cellH = m_bTools ? 20 : MAX(40, m_iButtonTall);
+        int gap = MAX(1, m_iColumnSpacing), cols = MAX(1, (toolW - 8 + gap) / (cellW + gap));
+        if (m_bTools)cols = 1;
+        int rows = MAX(1, (h - top - 28) / (cellH + gap)); int count = 0;
+        for (int i = 0; i < m_Entries.Count(); ++i) if (Matches(m_Entries[i])) ++count;
+        m_iScroll = clamp(m_iScroll, 0, MAX(0, (count + cols - 1) / cols - rows));
+        int n = 0;
+        for (int i = 0; i < m_Entries.Count(); ++i)
+        {
+            SpawnEntry_t& e = m_Entries[i]; if (!Matches(e))continue;
+            int pos = n++ - m_iScroll * cols; if (pos < 0 || pos >= rows * cols)continue;
+            e.button->SetBounds(4 + (pos % cols) * (cellW + gap), top + (pos / cols) * (cellH + gap), cellW, cellH);
+            e.button->SetVisible(true);
+        }
+        m_pPrev->SetBounds(4, h - 23, 24, 19); m_pNext->SetBounds(toolW - 28, h - 23, 24, 19);
+        m_pPage->SetBounds(32, h - 23, MAX(1, toolW - 64), 19);
+        char text[80]; Q_snprintf(text, sizeof(text), "%d items", count); m_pPage->SetText(text);
+    }
+    bool Matches(const SpawnEntry_t& e) const
+    {
+        if (!e.button)return false;
+        if (e.type == ENTRY_LABEL)return m_bTools && !m_szSearch[0];
+        if (m_szSearch[0])return Q_stristr(e.name, m_szSearch) || Q_stristr(e.value, m_szSearch);
+        return m_bTools || m_iGroup < 0 || e.group == m_iGroup;
+    }
+    void ApplyFilter() { InvalidateLayout(true); }
+    void SetSearchText(const char* s) { Q_strncpy(m_szSearch, s ? s : "", sizeof(m_szSearch)); m_iScroll = 0; ApplyFilter(); }
+    void SetButtonSize(int w, int h) { m_iButtonWide = MAX(40, w); m_iButtonTall = MAX(40, h); InvalidateLayout(); }
+    void SetColumnSpacing(int n) { m_iColumnSpacing = MAX(1, n); InvalidateLayout(); }
+    bool RemoveItem(const char* name) { for (int i = 0; i < m_Entries.Count(); ++i)if (m_Entries[i].type == ENTRY_BUTTON && m_Entries[i].button && !Q_stricmp(m_Entries[i].name, name)) { m_Entries[i].button->SetVisible(false); m_Entries[i].button->MarkForDeletion(); m_Entries[i].button = NULL; InvalidateLayout(); return true; }return false; }
+    void ClearItems() { for (int i = 0; i < m_Entries.Count(); ++i)if (m_Entries[i].button) { m_Entries[i].button->SetVisible(false); m_Entries[i].button->MarkForDeletion(); }m_Entries.RemoveAll(); m_iGroup = -1; m_iScroll = 0; m_iCategoryScroll = 0; InvalidateLayout(); }
+    const char* GetSpawnType() const { return m_szSpawnType; }
+private:
+    CUtlVector<SpawnEntry_t> m_Entries;
+    char m_szSpawnType[32], m_szSearch[256];
+    int m_iButtonWide, m_iButtonTall, m_iColumnSpacing, m_iGroup, m_iScroll, m_iCategoryScroll;
+    bool m_bTools;
+    CSpawnFlatButton* m_pPrev, * m_pNext, * m_pCatPrev, * m_pCatNext;
+    Label* m_pPage;
+};
 
 class CGabeSpawnMenu : public Frame
 {
-	DECLARE_CLASS_SIMPLE(CGabeSpawnMenu, Frame);
-
+    DECLARE_CLASS_SIMPLE(CGabeSpawnMenu, Frame);
 public:
-	CGabeSpawnMenu(VPANEL parent)
-		: BaseClass(NULL, "GabeSpawnMenu")
-	{
-		SetParent(parent);
-
-		SetTitle("Spawn Menu", true);
-		SetMoveable(true);
-		SetCloseButtonVisible(true);
-		SetMouseInputEnabled(true);
-		SetKeyBoardInputEnabled(true);
-		int sw, sh;
-		surface()->GetScreenSize(sw, sh);
-		SetSize(sw, sh);
-
-		m_szSearchText[0] = '\0';
-		m_iSpawnCount = 0;
-
-		m_pTabs = new PropertySheet(this, "Tabs");
-
-		LoadData();
-		CenterMenu();
-	}
-
-	void SetSearchText(const char* text)
-	{
-		Q_strncpy(
-			m_szSearchText,
-			text ? text : "",
-			sizeof(m_szSearchText)
-		);
-
-		for (int i = 0; i < m_Tabs.Count(); i++)
-			m_Tabs[i].panel->SetSearchText(m_szSearchText);
-	}
-
-	void ClearSearch()
-	{
-		SetSearchText("");
-	}
-
-	const char* GetSearchText()
-	{
-		return m_szSearchText;
-	}
-
-	void SetBackgroundColor(int r, int g, int b, int a)
-	{
-		SetBgColor(Color(
-			clamp(r, 0, 255),
-			clamp(g, 0, 255),
-			clamp(b, 0, 255),
-			clamp(a, 0, 255)
-		));
-	}
-
-	void SetButtonSize(int wide, int tall)
-	{
-		for (int i = 0; i < m_Tabs.Count(); i++)
-			m_Tabs[i].panel->SetButtonSize(wide, tall);
-	}
-
-	void SetColumnSpacing(int spacing)
-	{
-		for (int i = 0; i < m_Tabs.Count(); i++)
-			m_Tabs[i].panel->SetColumnSpacing(spacing);
-	}
-
-	void AddFavorite(const char* type, const char* value)
-	{
-		if (!type || !*type || !value || !*value)
-			return;
-
-		for (int i = 0; i < m_Favorites.Count(); i++)
-		{
-			if (!Q_stricmp(m_Favorites[i].type, type) &&
-				!Q_stricmp(m_Favorites[i].value, value))
-				return;
-		}
-
-		SpawnFavorite_t favorite = {};
-
-		Q_strncpy(favorite.type, type, sizeof(favorite.type));
-		Q_strncpy(favorite.value, value, sizeof(favorite.value));
-
-		m_Favorites.AddToTail(favorite);
-	}
-
-	void ClearFavorites()
-	{
-		m_Favorites.RemoveAll();
-	}
-
-	void RecordSpawn(const char* type, const char* value)
-	{
-		if (!type || !value)
-			return;
-
-		++m_iSpawnCount;
-
-		SpawnFavorite_t entry = {};
-
-		Q_strncpy(entry.type, type, sizeof(entry.type));
-		Q_strncpy(entry.value, value, sizeof(entry.value));
-
-		m_History.AddToTail(entry);
-	}
-
-	int GetSpawnCount()
-	{
-		return m_iSpawnCount;
-	}
-
-	void ClearHistory()
-	{
-		m_History.RemoveAll();
-	}
-
-	void ResizeToScreen()
-	{
-		int sw, sh;
-		surface()->GetScreenSize(sw, sh);
-
-		// FULLSCREEN
-		SetPos(0, 0);
-		SetSize(sw, sh);
-
-		InvalidateLayout(true);
-	}
-
-	virtual void PerformLayout()
-	{
-		BaseClass::PerformLayout();
-
-		int w, h;
-		GetSize(w, h);
-
-		m_pTabs->SetPos(10, 30);
-		m_pTabs->SetSize(w, h);
-	}
-
-	virtual void OnScreenSizeChanged(int oldWide, int oldTall)
-	{
-		BaseClass::OnScreenSizeChanged(oldWide, oldTall);
-
-		ResizeToScreen();
-	}
-
-	void LoadData()
-	{
-		KeyValues* kv = new KeyValues("SpawnMenu");
-
-		if (!kv->LoadFromFile(filesystem, "settings/sm_populate.txt", "MOD"))
-		{
-			Warning("FAILED TO LOAD sm_populate.txt\n");
-			kv->deleteThis();
-			return;
-		}
-
-		for (KeyValues* section = kv->GetFirstSubKey();
-			section;
-			section = section->GetNextKey())
-		{
-			const char* tabName = section->GetName();
-			const char* type = section->GetString("_type", "");
-
-			KeyValues* entries = section->FindKey("entries");
-			if (!entries || !type[0])
-				continue;
-
-			CSpawnButtonColumns* panel = new CSpawnButtonColumns(m_pTabs, type);
-			m_pTabs->AddPage(panel, tabName);
-
-			for (KeyValues* item = entries->GetFirstSubKey();
-				item;
-				item = item->GetNextKey())
-			{
-				panel->AddItem(item->GetName(), item->GetString());
-			}
-		}
-
-		kv->deleteThis();
-	}
-
-	void CenterMenu()
-	{
-		int sw, sh;
-		surface()->GetScreenSize(sw, sh);
-
-		int w, h;
-		GetSize(w, h);
-
-		SetPos((sw - w) / 2, (sh - h) / 2);
-	}
-
-	// ============================================================
-	// Script
-	// ============================================================
-
-	void Open()
-	{
-		SetVisible(true);
-		MakePopup();
-		MoveToFront();
-
-		SetMouseInputEnabled(true);
-		SetKeyBoardInputEnabled(true);
-
-		g_bSpawnMenuOpen = true;
-	}
-
-	void Close()
-	{
-		SetVisible(false);
-
-		SetMouseInputEnabled(false);
-		SetKeyBoardInputEnabled(false);
-
-		g_bSpawnMenuOpen = false;
-	}
-
-	void Toggle()
-	{
-		if (g_bSpawnMenuOpen)
-			Close();
-		else
-			Open();
-	}
-
-	bool IsOpen()
-	{
-		return g_bSpawnMenuOpen && IsVisible();
-	}
-
-	void Reload()
-	{
-		if (!m_pTabs)
-			return;
-
-		m_pTabs->RemoveAllPages();
-		m_Tabs.RemoveAll();
-		LoadData();
-
-		InvalidateLayout(true);
-	}
-
-	void SetMenuTitle(const char* title)
-	{
-		if (!title)
-			return;
-
-		SetTitle(title, true);
-	}
-
-	void SetMenuSize(int wide, int tall)
-	{
-		SetSize(wide, tall);
-		InvalidateLayout(true);
-	}
-
-	void SetMenuPos(int x, int y)
-	{
-		SetPos(x, y);
-	}
-
-	int GetMenuWide()
-	{
-		int w, h;
-		GetSize(w, h);
-
-		return w;
-	}
-
-	int GetMenuTall()
-	{
-		int w, h;
-		GetSize(w, h);
-
-		return h;
-	}
-
-	int GetMenuX()
-	{
-		int x, y;
-		GetPos(x, y);
-
-		return x;
-	}
-
-	int GetMenuY()
-	{
-		int x, y;
-		GetPos(x, y);
-
-		return y;
-	}
-
-	void MakeFullscreen()
-	{
-		ResizeToScreen();
-	}
-
-	void Center()
-	{
-		CenterMenu();
-	}
-
-	void BringToFront()
-	{
-		MakePopup();
-		MoveToFront();
-	}
-
-	int GetTabCount()
-	{
-		if (!m_pTabs)
-			return 0;
-
-		return m_pTabs->GetNumPages();
-	}
-
-	void SetActiveTab(int index)
-	{
-		if (!m_pTabs)
-			return;
-
-		if (index < 0 || index >= m_pTabs->GetNumPages())
-			return;
-
-		m_pTabs->SetActivePage(m_pTabs->GetPage(index));
-	}
-
-	int GetActiveTab()
-	{
-		if (!m_pTabs)
-			return -1;
-
-		Panel* active = m_pTabs->GetActivePage();
-
-		if (!active)
-			return -1;
-
-		for (int i = 0; i < m_pTabs->GetNumPages(); i++)
-		{
-			if (m_pTabs->GetPage(i) == active)
-				return i;
-		}
-
-		return -1;
-	}
-
-	struct SpawnTab_t
-	{
-		char name[128];
-		CSpawnButtonColumns* panel;
-	};
-
-	CSpawnButtonColumns* FindTab(const char* name)
-	{
-		for (int i = 0; i < m_Tabs.Count(); i++)
-		{
-			if (!Q_stricmp(m_Tabs[i].name, name))
-				return m_Tabs[i].panel;
-		}
-
-		return NULL;
-	}
-
-	void AddTab(const char* name, const char* type)
-	{
-		if (!name || !*name || !type || !*type)
-			return;
-
-		if (FindTab(name))
-			return;
-
-		CSpawnButtonColumns* panel =
-			new CSpawnButtonColumns(m_pTabs, type);
-
-		m_pTabs->AddPage(panel, name);
-
-		SpawnTab_t tab = {};
-		Q_strncpy(tab.name, name, sizeof(tab.name));
-		tab.panel = panel;
-
-		m_Tabs.AddToTail(tab);
-	}
-
-	void RemoveTab(const char* name)
-	{
-		for (int i = 0; i < m_Tabs.Count(); i++)
-		{
-			if (Q_stricmp(m_Tabs[i].name, name))
-				continue;
-
-			CSpawnButtonColumns* panel = m_Tabs[i].panel;
-
-			m_pTabs->RemovePage(panel);
-			panel->MarkForDeletion();
-
-			m_Tabs.Remove(i);
-			return;
-		}
-	}
-
-	const char* GetTabName(int index)
-	{
-		if (index < 0 || index >= m_Tabs.Count())
-			return "";
-
-		return m_Tabs[index].name;
-	}
-
-	void AddItem(const char* tab, const char* name, const char* value)
-	{
-		CSpawnButtonColumns* panel = FindTab(tab);
-
-		if (panel)
-			panel->AddItem(name, value);
-	}
-
-	void RemoveItem(const char* tab, const char* name)
-	{
-		CSpawnButtonColumns* panel = FindTab(tab);
-
-		if (panel)
-			panel->RemoveItem(name);
-	}
-
-	void ClearTab(const char* tab)
-	{
-		CSpawnButtonColumns* panel = FindTab(tab);
-
-		if (panel)
-			panel->ClearItems();
-	}
-
+    struct SpawnTab_t
+    {
+        char name[128];
+        CSpawnButtonColumns* panel;
+        CSpawnFlatButton* button;
+    };
+    struct SpawnFavorite_t
+    {
+        char type[32], value[256];
+    };
+
+    CGabeSpawnMenu(VPANEL parent)
+        : BaseClass(NULL, "GabeSpawnMenu")
+    {
+        SetParent(parent);
+        SetTitle("GabeMod - Spawn Menu", true);
+        SetMoveable(true);
+        SetSize(SPAWNMENU_W, SPAWNMENU_H);
+        SetCloseButtonVisible(true);
+        SetMouseInputEnabled(true);
+        SetKeyBoardInputEnabled(true);
+        SetVisible(false);
+        m_iActiveTab = -1;
+        m_iSpawnCount = 0;
+        m_szSearchText[0] = 0;
+        m_iButtonWide = 64; m_iButtonTall = 64; m_iColumnSpacing = 3;
+        m_iActiveTool = -1;
+        m_pToolTitle = new Label(this, "ToolTitle", "Tools");
+        SetTitleBarVisible(false);
+        SetMoveable(false);
+        SetProportional(false);
+        m_Background = Color(68, 68, 68, 140);
+        ResizeToScreen();
+        LoadData();
+    }
+
+    virtual void PaintBackground()
+    {
+        surface()->DrawSetColor(m_Background);
+        surface()->DrawFilledRect(0, 0, GetWide(), GetTall());
+        surface()->DrawSetColor(205, 205, 205, 100);
+        surface()->DrawOutlinedRect(0, 0, GetWide(), GetTall());
+    }
+    virtual void PerformLayout()
+    {
+        BaseClass::PerformLayout();
+        int w = GetWide(), h = GetTall(), left = 8, top = 5, tabH = 23;
+        int split = w * 78 / 100, bodyY = top + tabH + 3;
+        int leftCount = 0, rightCount = 0;
+        for (int i = 0; i < m_Tabs.Count(); ++i) if (m_Tabs[i].panel->IsTools())++rightCount; else ++leftCount;
+        int lw = MAX(1, (split - 12) / MAX(1, leftCount));
+        int rw = MAX(1, (w - split - 12) / MAX(1, rightCount));
+        int li = 0, ri = 0;
+        for (int i = 0; i < m_Tabs.Count(); ++i)
+        {
+            bool tool = m_Tabs[i].panel->IsTools();
+            m_Tabs[i].button->SetBounds(tool ? split + 4 + ri++ * rw : left + li++ * lw, top, tool ? rw : lw, tabH);
+            m_Tabs[i].panel->SetBounds(tool ? split + 4 : left, bodyY, tool ? w - split - 12 : split - 12, h - bodyY - 8);
+        }
+        m_pToolTitle->SetBounds(split + 4, bodyY, w - split - 12, 22);
+        m_pToolTitle->SetVisible(rightCount == 0);
+    }
+    virtual void OnScreenSizeChanged(int oldWide, int oldTall)
+    {
+        BaseClass::OnScreenSizeChanged(oldWide, oldTall);
+        ResizeToScreen();
+    }
+    virtual void OnClose()
+    {
+        Close();
+    }
+    virtual void OnKeyCodeTyped(KeyCode code)
+    {
+        if (code == KEY_ESCAPE) { Close(); return; }
+        BaseClass::OnKeyCodeTyped(code);
+    }
+    virtual void OnCommand(const char* command)
+    {
+        if (!Q_strnicmp(command, "tab_", 4))
+        {
+            if (gabe_spawnmenu_debug.GetBool())
+                Msg("GabeSpawnMenu: tab click: %s\n", command);
+            SetActiveTab(atoi(command + 4));
+            surface()->PlaySound("ui/buttonclickrelease.wav");
+            return;
+        }
+        BaseClass::OnCommand(command);
+    }
+
+    void CenterMenu()
+    {
+        int sw, sh; surface()->GetScreenSize(sw, sh);
+        SetPos((sw - GetWide()) / 2, (sh - GetTall()) / 2);
+    }
+    void ResizeToScreen()
+    {
+        int sw, sh; surface()->GetScreenSize(sw, sh);
+        SetSize(MAX(1, sw - 40), MAX(1, sh - 40));
+        CenterMenu(); InvalidateLayout(true);
+    }
+    void LoadData()
+    {
+        KeyValues* kv = new KeyValues("SpawnMenu");
+        if (!kv->LoadFromFile(filesystem, "settings/spawnmenu.txt", "MOD"))
+        {
+            Warning("GabeSpawnMenu: failed to load settings/spawnmenu.txt\n");
+            kv->deleteThis(); return;
+        }
+        // Fixed GMod-style tabs; configuration sections become categories.
+        AddTab("Props", "prop");
+        AddTab("NPCs", "command");
+        AddTab("Weapons", "weapon");
+        AddTab("Vehicles", "command");
+        AddTab("Entities", "debug");
+        AddTab("Tools", "command");
+
+        for (KeyValues* section = kv->GetFirstTrueSubKey(); section;
+            section = section->GetNextTrueSubKey())
+        {
+            const char* name = section->GetName();
+            const char* type = section->GetString("_type", "");
+            KeyValues* entries = section->FindKey("entries");
+            if (!type[0] || !entries) continue;
+            const char* tab = "Entities";
+            if (!Q_stricmp(type, "prop") || !Q_stricmp(type, "ragdoll")) tab = "Props";
+            else if (!Q_stricmp(name, "NPCs") || !Q_stricmp(type, "npc")) tab = "NPCs";
+            else if (!Q_stricmp(type, "weapon")) tab = "Weapons";
+            else if (!Q_stricmp(name, "Interactive")) tab = "Vehicles";
+            else if (!Q_stricmp(name, "Glow")) tab = "Tools";
+            else if (!Q_stricmp(type, "command")) tab = "Tools";
+            CSpawnButtonColumns* panel = FindTab(tab);
+            if (!panel) continue;
+            char group[256];
+            bool needGroup = true;
+            for (KeyValues* item = entries->GetFirstValue(); item; item = item->GetNextValue())
+            {
+                const char* label = item->GetName();
+                if (label[0] == '~')
+                {
+                    if (panel->IsTools())
+                        Q_snprintf(group, sizeof(group), "~%s", label + 1);
+                    else
+                        Q_snprintf(group, sizeof(group), "~%s - %s", name, label + 1);
+                    panel->AddItem(group, "", type);
+                    needGroup = false;
+                    continue;
+                }
+                if (needGroup)
+                {
+                    Q_snprintf(group, sizeof(group), "~%s", name);
+                    panel->AddItem(group, "", type);
+                    needGroup = false;
+                }
+                panel->AddItem(label, item->GetString(), type);
+            }
+        }
+        kv->deleteThis();
+        if (m_iActiveTab < 0) for (int i = 0; i < m_Tabs.Count(); ++i) if (!m_Tabs[i].panel->IsTools()) { SetActiveTab(i); break; }
+    }
+    void Reload()
+    {
+        for (int i = 0; i < m_Tabs.Count(); ++i)
+        {
+            m_Tabs[i].panel->SetVisible(false); m_Tabs[i].panel->MarkForDeletion();
+            m_Tabs[i].button->SetVisible(false); m_Tabs[i].button->MarkForDeletion();
+        }
+        m_Tabs.RemoveAll(); m_iActiveTab = -1; m_iActiveTool = -1;
+        LoadData(); InvalidateLayout(true);
+    }
+
+    void Open()
+    {
+        if (gabe_spawnmenu_debug.GetBool())
+            Msg("GabeSpawnMenu: opening; loaded %d tabs\n", m_Tabs.Count());
+        ResizeToScreen(); SetVisible(true); MakePopup(); MoveToFront();
+        SetMouseInputEnabled(true); SetKeyBoardInputEnabled(true);
+        g_bSpawnMenuOpen = true;
+    }
+    void Close()
+    {
+        SetVisible(false); SetMouseInputEnabled(false);
+        SetKeyBoardInputEnabled(false); g_bSpawnMenuOpen = false;
+    }
+    void Toggle() { if (IsOpen()) Close(); else Open(); }
+    bool IsOpen() { return g_bSpawnMenuOpen && IsVisible(); }
+
+    virtual void OnThink()
+    {
+        BaseClass::OnThink();
+        if (!IsVisible()) return;
+    }
+    void SetSearchText(const char* text)
+    {
+        Q_strncpy(m_szSearchText, text ? text : "", sizeof(m_szSearchText));
+        for (int i = 0; i < m_Tabs.Count(); ++i)
+            if (!m_Tabs[i].panel->IsTools()) m_Tabs[i].panel->SetSearchText(m_szSearchText);
+    }
+    void ClearSearch() { SetSearchText(""); }
+    const char* GetSearchText() { return m_szSearchText; }
+    void SetBackgroundColor(int r, int g, int b, int a)
+    {
+        m_Background = Color(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255), clamp(a, 0, 255)); Repaint();
+    }
+    void SetButtonSize(int wide, int tall)
+    {
+        m_iButtonWide = wide; m_iButtonTall = tall;
+        for (int i = 0; i < m_Tabs.Count(); ++i) m_Tabs[i].panel->SetButtonSize(wide, tall);
+    }
+    void SetColumnSpacing(int spacing)
+    {
+        m_iColumnSpacing = spacing;
+        for (int i = 0; i < m_Tabs.Count(); ++i) m_Tabs[i].panel->SetColumnSpacing(spacing);
+    }
+    void AddFavorite(const char* type, const char* value)
+    {
+        if (!type || !*type || !value || !*value) return;
+        for (int i = 0; i < m_Favorites.Count(); ++i)
+            if (!Q_stricmp(m_Favorites[i].type, type) && !Q_stricmp(m_Favorites[i].value, value)) return;
+        SpawnFavorite_t f = {};
+        Q_strncpy(f.type, type, sizeof(f.type)); Q_strncpy(f.value, value, sizeof(f.value));
+        m_Favorites.AddToTail(f);
+    }
+    void ClearFavorites() { m_Favorites.RemoveAll(); }
+    void RecordSpawn(const char* type, const char* value)
+    {
+        if (!type || !value) return;
+        ++m_iSpawnCount;
+        SpawnFavorite_t f = {}; Q_strncpy(f.type, type, sizeof(f.type));
+        Q_strncpy(f.value, value, sizeof(f.value)); m_History.AddToTail(f);
+    }
+    int GetSpawnCount() { return m_iSpawnCount; }
+    void ClearHistory() { m_History.RemoveAll(); }
+    void SetMenuTitle(const char* title) { if (title) SetTitle(title, true); }
+    // The requested fixed size is maintained even through VScript calls.
+    void SetMenuSize(int, int) { ResizeToScreen(); }
+    void SetMenuPos(int x, int y) { SetPos(x, y); }
+    int GetMenuWide() { return GetWide(); }
+    int GetMenuTall() { return GetTall(); }
+    int GetMenuX() { int x, y; GetPos(x, y); return x; }
+    int GetMenuY() { int x, y; GetPos(x, y); return y; }
+    void MakeFullscreen() { ResizeToScreen(); }
+    void Center() { CenterMenu(); }
+    void BringToFront() { MakePopup(); MoveToFront(); }
+    int GetTabCount() { return m_Tabs.Count(); }
+    void SetActiveTab(int index)
+    {
+        if (index < 0 || index >= m_Tabs.Count()) return;
+        if (m_Tabs[index].panel->IsTools()) m_iActiveTool = index; else m_iActiveTab = index;
+        for (int i = 0; i < m_Tabs.Count(); ++i)
+        {
+            bool active = i == m_iActiveTab || i == m_iActiveTool;
+            m_Tabs[i].panel->SetVisible(active); m_Tabs[i].button->SetSelected(active);
+        }
+    }
+    int GetActiveTab() { return m_iActiveTab; }
+    CSpawnButtonColumns* FindTab(const char* name)
+    {
+        if (!name) return NULL;
+        for (int i = 0; i < m_Tabs.Count(); ++i)
+            if (!Q_stricmp(m_Tabs[i].name, name)) return m_Tabs[i].panel;
+        return NULL;
+    }
+    void AddTab(const char* name, const char* type)
+    {
+        if (!name || !*name || !type || !*type || FindTab(name) ||
+            m_Tabs.Count() >= SPAWNMENU_MAX_TABS) return;
+        SpawnTab_t tab = {};
+        Q_strncpy(tab.name, name, sizeof(tab.name));
+        char id[64], cmd[64];
+        Q_snprintf(id, sizeof(id), "spawn_tab_%d", m_Tabs.Count());
+        Q_snprintf(cmd, sizeof(cmd), "tab_%d", m_Tabs.Count());
+        tab.panel = new CSpawnButtonColumns(this, type, !Q_stricmp(name, "Tools") || (!Q_stricmp(type, "command") && Q_stricmp(name, "NPCs") && Q_stricmp(name, "Vehicles") && Q_stricmp(name, "Entities")));
+        tab.panel->SetButtonSize(m_iButtonWide, m_iButtonTall);
+        tab.panel->SetColumnSpacing(m_iColumnSpacing);
+        tab.panel->SetSearchText(m_szSearchText);
+        tab.button = new CSpawnFlatButton(this, id, name, this, cmd, true);
+        tab.panel->SetVisible(false);
+        m_Tabs.AddToTail(tab);
+        if (tab.panel->IsTools() ? m_iActiveTool < 0 : m_iActiveTab < 0) SetActiveTab(m_Tabs.Count() - 1);
+        InvalidateLayout(true);
+    }
+    void RemoveTab(const char* name)
+    {
+        for (int i = 0; i < m_Tabs.Count(); ++i)
+            if (!Q_stricmp(m_Tabs[i].name, name))
+            {
+                m_Tabs[i].button->SetVisible(false); m_Tabs[i].button->MarkForDeletion();
+                m_Tabs[i].panel->SetVisible(false); m_Tabs[i].panel->MarkForDeletion();
+                m_Tabs.Remove(i);
+                // Rebuild tab commands (indices change).
+                for (int j = 0; j < m_Tabs.Count(); ++j)
+                {
+                    char cmd[64]; Q_snprintf(cmd, sizeof(cmd), "tab_%d", j);
+                    m_Tabs[j].button->SetSpawnCommand(cmd);
+                }
+                m_iActiveTab = -1; m_iActiveTool = -1;
+                for (int k = 0; k < m_Tabs.Count(); ++k) if (m_Tabs[k].panel->IsTools() ? m_iActiveTool < 0 : m_iActiveTab < 0) SetActiveTab(k);
+                InvalidateLayout(true);
+                return;
+            }
+    }
+    const char* GetTabName(int index)
+    {
+        return (index >= 0 && index < m_Tabs.Count()) ? m_Tabs[index].name : "";
+    }
+    void AddItem(const char* tab, const char* name, const char* value)
+    {
+        CSpawnButtonColumns* p = FindTab(tab); if (p)p->AddItem(name, value);
+    }
+    void RemoveItem(const char* tab, const char* name)
+    {
+        CSpawnButtonColumns* p = FindTab(tab); if (p)p->RemoveItem(name);
+    }
+    void ClearTab(const char* tab)
+    {
+        CSpawnButtonColumns* p = FindTab(tab); if (p)p->ClearItems();
+    }
 private:
-	CUtlVector<SpawnTab_t> m_Tabs;
-
-	char m_szSearchText[256];
-	int m_iSpawnCount;
-
-	struct SpawnFavorite_t
-	{
-		char type[32];
-		char value[256];
-	};
-
-	CUtlVector<SpawnFavorite_t> m_Favorites;
-	CUtlVector<SpawnFavorite_t> m_History;
-
-	PropertySheet* m_pTabs;
+    CUtlVector<SpawnTab_t> m_Tabs;
+    CUtlVector<SpawnFavorite_t> m_Favorites, m_History;
+    int m_iActiveTab, m_iSpawnCount, m_iActiveTool;
+    Label* m_pToolTitle;
+    int m_iButtonWide, m_iButtonTall, m_iColumnSpacing;
+    char m_szSearchText[256];
+    Color m_Background;
 };
 
 static CGabeSpawnMenu* g_pSpawnMenu = NULL;
@@ -762,635 +719,621 @@ static CGabeSpawnMenu* g_pSpawnMenu = NULL;
 
 static CGabeSpawnMenu* Script_GetSpawnMenu()
 {
-	return g_pSpawnMenu;
+    return g_pSpawnMenu;
 }
 
 static void Script_SpawnMenuOpen()
 {
-	VPANEL root = enginevgui->GetPanel(PANEL_INGAMESCREENS);
+    VPANEL root = enginevgui->GetPanel(PANEL_INGAMESCREENS);
 
-	if (!root)
-		return;
+    if (!root)
+        return;
 
-	if (!g_pSpawnMenu)
-		g_pSpawnMenu = new CGabeSpawnMenu(root);
+    if (!g_pSpawnMenu)
+        g_pSpawnMenu = new CGabeSpawnMenu(root);
 
-	g_pSpawnMenu->Open();
+    g_pSpawnMenu->Open();
 }
 
 static void Script_SpawnMenuClose()
 {
-	if (!g_pSpawnMenu)
-		return;
+    if (!g_pSpawnMenu)
+        return;
 
-	g_pSpawnMenu->Close();
+    g_pSpawnMenu->Close();
 }
 
 static void Script_SpawnMenuToggle()
 {
-	if (!g_pSpawnMenu)
-	{
-		Script_SpawnMenuOpen();
-		return;
-	}
+    if (!g_pSpawnMenu)
+    {
+        Script_SpawnMenuOpen();
+        return;
+    }
 
-	g_pSpawnMenu->Toggle();
+    g_pSpawnMenu->Toggle();
 }
 
 static bool Script_SpawnMenuIsOpen()
 {
-	return g_pSpawnMenu && g_pSpawnMenu->IsOpen();
+    return g_pSpawnMenu && g_pSpawnMenu->IsOpen();
 }
 
 static bool Script_SpawnMenuExists()
 {
-	return g_pSpawnMenu != NULL;
+    return g_pSpawnMenu != NULL;
 }
 
 static void Script_SpawnMenuReload()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->Reload();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->Reload();
 }
 
 static void Script_SpawnMenuSetTitle(const char* title)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetMenuTitle(title);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetMenuTitle(title);
 }
 
 static void Script_SpawnMenuSetSize(int wide, int tall)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetMenuSize(wide, tall);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetMenuSize(wide, tall);
 }
 
 static void Script_SpawnMenuSetPos(int x, int y)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetMenuPos(x, y);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetMenuPos(x, y);
 }
 
 static int Script_SpawnMenuGetWide()
 {
-	if (!g_pSpawnMenu)
-		return 0;
+    if (!g_pSpawnMenu)
+        return 0;
 
-	return g_pSpawnMenu->GetMenuWide();
+    return g_pSpawnMenu->GetMenuWide();
 }
 
 static int Script_SpawnMenuGetTall()
 {
-	if (!g_pSpawnMenu)
-		return 0;
+    if (!g_pSpawnMenu)
+        return 0;
 
-	return g_pSpawnMenu->GetMenuTall();
+    return g_pSpawnMenu->GetMenuTall();
 }
 
 static int Script_SpawnMenuGetX()
 {
-	if (!g_pSpawnMenu)
-		return 0;
+    if (!g_pSpawnMenu)
+        return 0;
 
-	return g_pSpawnMenu->GetMenuX();
+    return g_pSpawnMenu->GetMenuX();
 }
 
 static int Script_SpawnMenuGetY()
 {
-	if (!g_pSpawnMenu)
-		return 0;
+    if (!g_pSpawnMenu)
+        return 0;
 
-	return g_pSpawnMenu->GetMenuY();
+    return g_pSpawnMenu->GetMenuY();
 }
 
 static void Script_SpawnMenuCenter()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->Center();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->Center();
 }
 
 static void Script_SpawnMenuFullscreen()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->MakeFullscreen();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->MakeFullscreen();
 }
 
 static void Script_SpawnMenuBringToFront()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->BringToFront();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->BringToFront();
 }
 
 static int Script_SpawnMenuGetTabCount()
 {
-	if (!g_pSpawnMenu)
-		return 0;
+    if (!g_pSpawnMenu)
+        return 0;
 
-	return g_pSpawnMenu->GetTabCount();
+    return g_pSpawnMenu->GetTabCount();
 }
 
 static int Script_SpawnMenuGetActiveTab()
 {
-	if (!g_pSpawnMenu)
-		return -1;
+    if (!g_pSpawnMenu)
+        return -1;
 
-	return g_pSpawnMenu->GetActiveTab();
+    return g_pSpawnMenu->GetActiveTab();
 }
 
 static void Script_SpawnMenuSetActiveTab(int index)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetActiveTab(index);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetActiveTab(index);
 }
 
 static void Script_SpawnMenuSpawn(
-	const char* type,
-	const char* value)
+    const char* type,
+    const char* value)
 {
-	if (!type || !*type)
-		return;
+    if (!type || !*type)
+        return;
 
-	if (!value || !*value)
-		return;
+    if (!value || !*value)
+        return;
 
-	engine->ClientCmd_Unrestricted(
-		VarArgs(
-			"gabe_spawn %s \"%s\"\n",
-			type,
-			value
-		)
-	);
+    engine->ClientCmd_Unrestricted(
+        VarArgs(
+            "gabe_spawn %s \"%s\"\n",
+            type,
+            value
+        )
+    );
 }
 
 static void Script_SpawnMenuPlayClickSound()
 {
-	surface()->PlaySound(
-		"ui/buttonclickrelease.wav"
-	);
+    surface()->PlaySound(
+        "ui/buttonclickrelease.wav"
+    );
 }
 
 static void Script_SpawnMenuPlaySound(const char* sound)
 {
-	if (!sound || !*sound)
-		return;
+    if (!sound || !*sound)
+        return;
 
-	surface()->PlaySound(sound);
+    surface()->PlaySound(sound);
 }
 
 static void Script_SpawnMenuEnableMouse(bool enabled)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetMouseInputEnabled(enabled);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetMouseInputEnabled(enabled);
 }
 
 static void Script_SpawnMenuEnableKeyboard(bool enabled)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetKeyBoardInputEnabled(enabled);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetKeyBoardInputEnabled(enabled);
 }
 
 static bool Script_SpawnMenuHasFocus()
 {
-	if (!g_pSpawnMenu)
-		return false;
+    if (!g_pSpawnMenu)
+        return false;
 
-	VPANEL focus = input()->GetFocus();
+    VPANEL focus = input()->GetFocus();
 
-	return focus == g_pSpawnMenu->GetVPanel();
+    return focus == g_pSpawnMenu->GetVPanel();
 }
 
 static void Script_SpawnMenuSetSearchText(const char* text)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetSearchText(text);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetSearchText(text);
 }
 
 static void Script_SpawnMenuClearSearch()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->ClearSearch();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->ClearSearch();
 }
 
 static const char* Script_SpawnMenuGetSearchText()
 {
-	return g_pSpawnMenu ? g_pSpawnMenu->GetSearchText() : "";
+    return g_pSpawnMenu ? g_pSpawnMenu->GetSearchText() : "";
 }
 
 static void Script_SpawnMenuAddTab(
-	const char* name,
-	const char* type)
+    const char* name,
+    const char* type)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->AddTab(name, type);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->AddTab(name, type);
 }
 
 static void Script_SpawnMenuRemoveTab(const char* name)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->RemoveTab(name);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->RemoveTab(name);
 }
 
 static const char* Script_SpawnMenuGetTabName(int index)
 {
-	return g_pSpawnMenu ? g_pSpawnMenu->GetTabName(index) : "";
+    return g_pSpawnMenu ? g_pSpawnMenu->GetTabName(index) : "";
 }
 
 static void Script_SpawnMenuAddItem(
-	const char* tab,
-	const char* name,
-	const char* value)
+    const char* tab,
+    const char* name,
+    const char* value)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->AddItem(tab, name, value);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->AddItem(tab, name, value);
 }
 
 static void Script_SpawnMenuRemoveItem(
-	const char* tab,
-	const char* name)
+    const char* tab,
+    const char* name)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->RemoveItem(tab, name);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->RemoveItem(tab, name);
 }
 
 static void Script_SpawnMenuClearTab(const char* tab)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->ClearTab(tab);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->ClearTab(tab);
 }
 
 static void Script_SpawnMenuSetBackgroundColor(
-	int r, int g, int b, int a)
+    int r, int g, int b, int a)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetBackgroundColor(r, g, b, a);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetBackgroundColor(r, g, b, a);
 }
 
 static void Script_SpawnMenuSetButtonSize(int w, int h)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetButtonSize(w, h);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetButtonSize(w, h);
 }
 
 static void Script_SpawnMenuSetColumnSpacing(int spacing)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->SetColumnSpacing(spacing);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->SetColumnSpacing(spacing);
 }
 
 static void Script_SpawnMenuAddFavorite(
-	const char* type,
-	const char* value)
+    const char* type,
+    const char* value)
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->AddFavorite(type, value);
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->AddFavorite(type, value);
 }
 
 static void Script_SpawnMenuClearFavorites()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->ClearFavorites();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->ClearFavorites();
 }
 
 static int Script_SpawnMenuGetSpawnCount()
 {
-	return g_pSpawnMenu ? g_pSpawnMenu->GetSpawnCount() : 0;
+    return g_pSpawnMenu ? g_pSpawnMenu->GetSpawnCount() : 0;
 }
 
 static void Script_SpawnMenuClearHistory()
 {
-	if (g_pSpawnMenu)
-		g_pSpawnMenu->ClearHistory();
+    if (g_pSpawnMenu)
+        g_pSpawnMenu->ClearHistory();
 }
 
 // ============================================================
 // COMMAND
 // ============================================================
 
-CON_COMMAND(gabe_spawnmenu, "Open spawn menu")
+CON_COMMAND(gabe_spawnmenu, "Toggle the spawn menu")
 {
-	VPANEL root = enginevgui->GetPanel(PANEL_INGAMESCREENS);
-	if (!root)
-		return;
-
-	if (!g_pSpawnMenu)
-		g_pSpawnMenu = new CGabeSpawnMenu(root);
-
-	if (!g_bSpawnMenuOpen)
-	{
-		g_bSpawnMenuOpen = true;
-
-		g_pSpawnMenu->SetVisible(true);
-		g_pSpawnMenu->MakePopup();
-		g_pSpawnMenu->MoveToFront();
-
-		g_pSpawnMenu->SetMouseInputEnabled(true);
-	}
+    VPANEL root = enginevgui->GetPanel(PANEL_INGAMESCREENS);
+    if (!root) return;
+    if (!g_pSpawnMenu) g_pSpawnMenu = new CGabeSpawnMenu(root);
+    g_pSpawnMenu->Toggle();
 }
 
-CON_COMMAND(gabe_closespmenu, "Close spawn menu")
+CON_COMMAND(gabe_closespmenu, "Close the spawn menu")
 {
-	if (g_pSpawnMenu && g_bSpawnMenuOpen)
-	{
-		g_bSpawnMenuOpen = false;
+    if (g_pSpawnMenu) g_pSpawnMenu->Close();
+}
 
-		g_pSpawnMenu->SetVisible(false);
-		g_pSpawnMenu->SetMouseInputEnabled(false);
-	}
+CON_COMMAND(gabe_reloadspawnmenu, "Reload settings/spawnmenu.txt")
+{
+    if (g_pSpawnMenu) g_pSpawnMenu->Reload();
 }
 
 void RegisterSpawnMenuScriptFuncs()
 {
-	if (!g_pScriptVM)
-		return;
+    if (!g_pScriptVM)
+        return;
 
-	g_pScriptVM->Run("CL_SpawnMenu <- {};\n");
+    g_pScriptVM->Run("CL_SpawnMenu <- {};\n");
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuOpen,
-		"SpawnMenu_Open",
-		"Opens the spawn menu."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuOpen,
+        "SpawnMenu_Open",
+        "Opens the spawn menu."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuClose,
-		"SpawnMenu_Close",
-		"Closes the spawn menu."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuClose,
+        "SpawnMenu_Close",
+        "Closes the spawn menu."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuToggle,
-		"SpawnMenu_Toggle",
-		"Toggles the spawn menu."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuToggle,
+        "SpawnMenu_Toggle",
+        "Toggles the spawn menu."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuIsOpen,
-		"SpawnMenu_IsOpen",
-		"Returns whether the spawn menu is open."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuIsOpen,
+        "SpawnMenu_IsOpen",
+        "Returns whether the spawn menu is open."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuExists,
-		"SpawnMenu_Exists",
-		"Returns whether the spawn menu has been created."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuExists,
+        "SpawnMenu_Exists",
+        "Returns whether the spawn menu has been created."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuReload,
-		"SpawnMenu_Reload",
-		"Reloads the spawn menu."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuReload,
+        "SpawnMenu_Reload",
+        "Reloads the spawn menu."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuSetTitle,
-		"SpawnMenu_SetTitle",
-		"Sets the spawn menu title."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuSetTitle,
+        "SpawnMenu_SetTitle",
+        "Sets the spawn menu title."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuSetSize,
-		"SpawnMenu_SetSize",
-		"Sets the spawn menu size."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuSetSize,
+        "SpawnMenu_SetSize",
+        "Sets the spawn menu size."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuSetPos,
-		"SpawnMenu_SetPos",
-		"Sets the spawn menu position."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuSetPos,
+        "SpawnMenu_SetPos",
+        "Sets the spawn menu position."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuGetWide,
-		"SpawnMenu_GetWide",
-		"Returns the menu width."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuGetWide,
+        "SpawnMenu_GetWide",
+        "Returns the menu width."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuGetTall,
-		"SpawnMenu_GetTall",
-		"Returns the menu height."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuGetTall,
+        "SpawnMenu_GetTall",
+        "Returns the menu height."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuGetX,
-		"SpawnMenu_GetX",
-		"Returns the menu X position."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuGetX,
+        "SpawnMenu_GetX",
+        "Returns the menu X position."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuGetY,
-		"SpawnMenu_GetY",
-		"Returns the menu Y position."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuGetY,
+        "SpawnMenu_GetY",
+        "Returns the menu Y position."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuCenter,
-		"SpawnMenu_Center",
-		"Centers the spawn menu."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuCenter,
+        "SpawnMenu_Center",
+        "Centers the spawn menu."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuFullscreen,
-		"SpawnMenu_Fullscreen",
-		"Makes the spawn menu fullscreen."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuFullscreen,
+        "SpawnMenu_Fullscreen",
+        "Makes the spawn menu fullscreen."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuBringToFront,
-		"SpawnMenu_BringToFront",
-		"Brings the spawn menu to the front."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuBringToFront,
+        "SpawnMenu_BringToFront",
+        "Brings the spawn menu to the front."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuGetTabCount,
-		"SpawnMenu_GetTabCount",
-		"Returns the number of tabs."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuGetTabCount,
+        "SpawnMenu_GetTabCount",
+        "Returns the number of tabs."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuGetActiveTab,
-		"SpawnMenu_GetActiveTab",
-		"Returns the active tab index."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuGetActiveTab,
+        "SpawnMenu_GetActiveTab",
+        "Returns the active tab index."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuSetActiveTab,
-		"SpawnMenu_SetActiveTab",
-		"Sets the active tab index."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuSetActiveTab,
+        "SpawnMenu_SetActiveTab",
+        "Sets the active tab index."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuSpawn,
-		"SpawnMenu_Spawn",
-		"Spawns an item using gabe_spawn."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuSpawn,
+        "SpawnMenu_Spawn",
+        "Spawns an item using gabe_spawn."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuPlayClickSound,
-		"SpawnMenu_PlayClickSound",
-		"Plays the spawn menu click sound."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuPlayClickSound,
+        "SpawnMenu_PlayClickSound",
+        "Plays the spawn menu click sound."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuPlaySound,
-		"SpawnMenu_PlaySound",
-		"Plays a VGUI sound."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuPlaySound,
+        "SpawnMenu_PlaySound",
+        "Plays a VGUI sound."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuEnableMouse,
-		"SpawnMenu_EnableMouse",
-		"Enables or disables mouse input."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuEnableMouse,
+        "SpawnMenu_EnableMouse",
+        "Enables or disables mouse input."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuEnableKeyboard,
-		"SpawnMenu_EnableKeyboard",
-		"Enables or disables keyboard input."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuEnableKeyboard,
+        "SpawnMenu_EnableKeyboard",
+        "Enables or disables keyboard input."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuHasFocus,
-		"SpawnMenu_HasFocus",
-		"Returns whether the spawn menu has focus."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuHasFocus,
+        "SpawnMenu_HasFocus",
+        "Returns whether the spawn menu has focus."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuSetSearchText,
-		"SpawnMenu_SetSearchText",
-		"Sets the spawn menu search text."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuSetSearchText,
+        "SpawnMenu_SetSearchText",
+        "Sets the spawn menu search text."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuClearSearch,
-		"SpawnMenu_ClearSearch",
-		"Clears the spawn menu search."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuClearSearch,
+        "SpawnMenu_ClearSearch",
+        "Clears the spawn menu search."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuAddTab,
-		"SpawnMenu_AddTab",
-		"Adds a spawn menu tab."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuAddTab,
+        "SpawnMenu_AddTab",
+        "Adds a spawn menu tab."
+    );
 
-	ScriptRegisterFunctionNamed(
-		g_pScriptVM,
-		Script_SpawnMenuAddItem,
-		"SpawnMenu_AddItem",
-		"Adds an item to a spawn menu tab."
-	);
+    ScriptRegisterFunctionNamed(
+        g_pScriptVM,
+        Script_SpawnMenuAddItem,
+        "SpawnMenu_AddItem",
+        "Adds an item to a spawn menu tab."
+    );
 
-	// ============================================================
-	// CL_SpawnMenu
-	// ============================================================
+    // ============================================================
+    // CL_SpawnMenu
+    // ============================================================
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Open, Open);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Close, Close);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Toggle, Toggle);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Open, Open);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Close, Close);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Toggle, Toggle);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_IsOpen, IsOpen);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Exists, Exists);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_IsOpen, IsOpen);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Exists, Exists);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Reload, Reload);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Reload, Reload);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetTitle, SetTitle);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetTitle, SetTitle);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetSize, SetSize);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetPos, SetPos);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetSize, SetSize);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetPos, SetPos);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetWide, GetWide);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTall, GetTall);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetWide, GetWide);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTall, GetTall);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetX, GetX);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetY, GetY);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetX, GetX);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetY, GetY);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Center, Center);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Fullscreen, Fullscreen);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_BringToFront, BringToFront);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Center, Center);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Fullscreen, Fullscreen);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_BringToFront, BringToFront);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTabCount, GetTabCount);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetActiveTab, GetActiveTab);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetActiveTab, SetActiveTab);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTabCount, GetTabCount);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetActiveTab, GetActiveTab);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetActiveTab, SetActiveTab);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Spawn, Spawn);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_Spawn, Spawn);
 
-	TABLE_FUNC_NAMED(
-		CL_SpawnMenu,
-		SpawnMenu_PlayClickSound,
-		PlayClickSound
-	);
+    TABLE_FUNC_NAMED(
+        CL_SpawnMenu,
+        SpawnMenu_PlayClickSound,
+        PlayClickSound
+    );
 
-	TABLE_FUNC_NAMED(
-		CL_SpawnMenu,
-		SpawnMenu_PlaySound,
-		PlaySound
-	);
+    TABLE_FUNC_NAMED(
+        CL_SpawnMenu,
+        SpawnMenu_PlaySound,
+        PlaySound
+    );
 
-	TABLE_FUNC_NAMED(
-		CL_SpawnMenu,
-		SpawnMenu_EnableMouse,
-		EnableMouse
-	);
+    TABLE_FUNC_NAMED(
+        CL_SpawnMenu,
+        SpawnMenu_EnableMouse,
+        EnableMouse
+    );
 
-	TABLE_FUNC_NAMED(
-		CL_SpawnMenu,
-		SpawnMenu_EnableKeyboard,
-		EnableKeyboard
-	);
+    TABLE_FUNC_NAMED(
+        CL_SpawnMenu,
+        SpawnMenu_EnableKeyboard,
+        EnableKeyboard
+    );
 
-	TABLE_FUNC_NAMED(
-		CL_SpawnMenu,
-		SpawnMenu_HasFocus,
-		HasFocus
-	);
+    TABLE_FUNC_NAMED(
+        CL_SpawnMenu,
+        SpawnMenu_HasFocus,
+        HasFocus
+    );
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetSearchText, SetSearchText);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearSearch, ClearSearch);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetSearchText, GetSearchText);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetSearchText, SetSearchText);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearSearch, ClearSearch);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetSearchText, GetSearchText);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_AddTab, AddTab);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_RemoveTab, RemoveTab);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTabName, GetTabName);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_AddTab, AddTab);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_RemoveTab, RemoveTab);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetTabName, GetTabName);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_AddItem, AddItem);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_RemoveItem, RemoveItem);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearTab, ClearTab);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_AddItem, AddItem);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_RemoveItem, RemoveItem);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearTab, ClearTab);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetBackgroundColor, SetBackgroundColor);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetButtonSize, SetButtonSize);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetColumnSpacing, SetColumnSpacing);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetBackgroundColor, SetBackgroundColor);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetButtonSize, SetButtonSize);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_SetColumnSpacing, SetColumnSpacing);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_AddFavorite, AddFavorite);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearFavorites, ClearFavorites);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_AddFavorite, AddFavorite);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearFavorites, ClearFavorites);
 
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetSpawnCount, GetSpawnCount);
-	TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearHistory, ClearHistory);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_GetSpawnCount, GetSpawnCount);
+    TABLE_FUNC_NAMED(CL_SpawnMenu, SpawnMenu_ClearHistory, ClearHistory);
 }

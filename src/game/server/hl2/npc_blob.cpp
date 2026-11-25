@@ -51,7 +51,7 @@ ConVar npc_blob_use_model( "npc_blob_use_model", "2" );
 ConVar npc_blob_think_interval( "npc_blob_think_interval", "0.025" );
 
 
-#define NPC_BLOB_MODEL "models/headcrab.mdl"
+#define NPC_BLOB_MODEL "models/props_junk/watermelon01.mdl"
 
 //=========================================================
 // Blob movement rules
@@ -138,10 +138,10 @@ END_DATADESC()
 
 const char *pszBlobModels[] =
 {
-	"models/gibs/agibs.mdl",
 	"models/props_junk/watermelon01.mdl",
-	"models/w_squeak.mdl",
-	"models/baby_headcrab.mdl"
+	"models/props_junk/watermelon01.mdl",
+	"models/props_junk/watermelon01.mdl",
+	"models/props_junk/watermelon01.mdl"
 };
 
 const char *GetBlobModelName()

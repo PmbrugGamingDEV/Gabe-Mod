@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release_mod_hl2mp\\memoverride.obj",
+            "outputs": [
+                ".\\Release_mod_hl2mp\\memoverride.cpp.obj.dt.module.json",
+                ".\\Release_mod_hl2mp\\memoverride.cpp.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}

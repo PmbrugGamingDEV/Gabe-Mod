@@ -471,6 +471,7 @@
             "c:\\gabemod\\src\\game\\shared\\effect_dispatch_data.h",
             "c:\\gabemod\\src\\game\\shared\\particle_parse.h",
             "c:\\gabemod\\src\\public\\ifilelist.h",
+            "c:\\gabemod\\src\\game\\server\\gabe_undo.h",
             "c:\\gabemod\\src\\public\\tier0\\memdbgon.h"
         ],
         "ImportedModules": [],

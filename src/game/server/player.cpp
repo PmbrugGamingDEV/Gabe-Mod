@@ -83,6 +83,8 @@
 #include "weapon_physcannon.h"
 #endif
 
+static ConVar gabeplus_prophunt("gabeplus_prophunt", "0", FCVAR_NOTIFY, "Disguise living players as a watermelon.");
+
 ConVar autoaim_max_dist( "autoaim_max_dist", "2160" ); // 2160 = 180 feet
 ConVar autoaim_max_deflect( "autoaim_max_deflect", "0.99" );
 
@@ -104,6 +106,7 @@ ConVar sv_chat_seconds_per_msg_tier2( "sv_chat_seconds_per_msg_tier2", "10", FCV
 static ConVar sv_maxusrcmdprocessticks( "sv_maxusrcmdprocessticks", "24", FCVAR_NOTIFY, "Maximum number of client-issued usrcmd ticks that can be replayed in packet loss conditions, 0 to allow no restrictions" );
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "prophunt_bounds.h"
 #include "tier0/memdbgon.h"
 
 static ConVar old_armor( "player_old_armor", "0" );
@@ -257,6 +260,9 @@ END_DATADESC()
 
 // Global Savedata for player
 BEGIN_DATADESC( CBasePlayer )
+    DEFINE_FIELD(m_bPropHunt, FIELD_BOOLEAN),
+    DEFINE_FIELD(m_iszPropOriginalModel, FIELD_STRING),
+    DEFINE_FIELD(m_bPropOriginalViewModel, FIELD_BOOLEAN),
 
 	DEFINE_EMBEDDED( m_Local ),
 #if defined USES_ECON_ITEMS
@@ -557,6 +563,9 @@ CBasePlayer *CBasePlayer::CreatePlayer( const char *className, edict_t *ed )
 //-----------------------------------------------------------------------------
 CBasePlayer::CBasePlayer( )
 {
+    m_bPropHunt = false;
+    m_iszPropOriginalModel = NULL_STRING;
+    m_bPropOriginalViewModel = true;
 	AddEFlags( EFL_NO_AUTO_EDICT_ATTACH );
 
 #ifdef _DEBUG
@@ -1674,6 +1683,7 @@ int CBasePlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 
 void CBasePlayer::Event_Killed( const CTakeDamageInfo &info )
 {
+    UpdatePropHunt(true);
 	CSound *pSound;
 
 	if ( Hints() )
@@ -2093,100 +2103,36 @@ void CBasePlayer::ShowViewPortPanel( const char * name, bool bShow, KeyValues *d
 }
 
 
+ConVar sv_respawn_delay("gabe_respawn_delay", "0.0",
+	FCVAR_NOTIFY,
+	"Minimum time in seconds before a player can respawn. Set to 0.0 for no time limit.");
+
 void CBasePlayer::PlayerDeathThink(void)
 {
-	float flForward;
+	SetNextThink(gpGlobals->curtime + 0.1f);
 
-	SetNextThink( gpGlobals->curtime + 0.1f );
+	// Wait until the respawn delay has passed.
+	if (sv_respawn_delay.GetFloat() > 0.0 && gpGlobals->curtime < m_flDeathTime + sv_respawn_delay.GetFloat())
+		return;
 
-	if (GetFlags() & FL_ONGROUND)
-	{
-		flForward = GetAbsVelocity().Length() - 20;
-		if (flForward <= 0)
-		{
-			SetAbsVelocity( vec3_origin );
-		}
-		else
-		{
-			Vector vecNewVelocity = GetAbsVelocity();
-			VectorNormalize( vecNewVelocity );
-			vecNewVelocity *= flForward;
-			SetAbsVelocity( vecNewVelocity );
-		}
-	}
+	// Ignore the scoreboard button.
+	int fAnyButtonDown = m_afButtonPressed & ~IN_SCORE;
 
-	if ( HasWeapons() )
-	{
-		// we drop the guns here because weapons that have an area effect and can kill their user
-		// will sometimes crash coming back from CBasePlayer::Killed() if they kill their owner because the
-		// player class sometimes is freed. It's safer to manipulate the weapons once we know
-		// we aren't calling into any of their code anymore through the player pointer.
-		PackDeadPlayerItems();
-	}
-
-	if (GetModelIndex() && (!IsSequenceFinished()) && (m_lifeState == LIFE_DYING))
-	{
-		StudioFrameAdvance( );
-
-		m_iRespawnFrames++;
-		if ( m_iRespawnFrames < 60 )  // animations should be no longer than this
-			return;
-	}
-
-	if (m_lifeState == LIFE_DYING)
-	{
-		m_lifeState = LIFE_DEAD;
-		m_flDeathAnimTime = gpGlobals->curtime;
-	}
-	
-	StopAnimation();
-
-	IncrementInterpolationFrame();
-	m_flPlaybackRate = 0.0;
-	
-	int fAnyButtonDown = (m_nButtons & ~IN_SCORE);
-	
-	// Strip out the duck key from this check if it's toggled
-	if ( (fAnyButtonDown & IN_DUCK) && GetToggledDuckState())
+	// Ignore duck if toggle crouch is enabled.				
+	if ((fAnyButtonDown & IN_DUCK) && GetToggledDuckState())
 	{
 		fAnyButtonDown &= ~IN_DUCK;
 	}
 
-	// wait for all buttons released
-	if (m_lifeState == LIFE_DEAD)
-	{
-		if (fAnyButtonDown)
-			return;
-
-		if ( g_pGameRules->FPlayerCanRespawn( this ) )
-		{
-			m_lifeState = LIFE_RESPAWNABLE;
-		}
-		
-		return;
-	}
-
-// if the player has been dead for one second longer than allowed by forcerespawn, 
-// forcerespawn isn't on. Send the player off to an intermission camera until they 
-// choose to respawn.
-	if ( g_pGameRules->IsMultiplayer() && ( gpGlobals->curtime > (m_flDeathTime + DEATH_ANIMATION_TIME) ) && !IsObserver() )
-	{
-		// go to dead camera. 
-		StartObserverMode( m_iObserverLastMode );
-	}
-	
-// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if (!fAnyButtonDown 
-		&& !( g_pGameRules->IsMultiplayer() && forcerespawn.GetInt() > 0 && (gpGlobals->curtime > (m_flDeathTime + 5))) )
+	// Wait for any other button to be pressed.
+	if (!fAnyButtonDown)
 		return;
 
 	m_nButtons = 0;
 	m_iRespawnFrames = 0;
 
-	//Msg( "Respawn\n");
-
-	respawn( this, !IsObserver() );// don't copy a corpse if we're in deathcam.
-	SetNextThink( TICK_NEVER_THINK );
+	respawn(this, false);
+	SetNextThink(TICK_NEVER_THINK);
 }
 
 /*
@@ -3775,8 +3721,67 @@ ConVar xc_crouch_debounce( "xc_crouch_debounce", "0", FCVAR_NONE );
 // Input  : *ucmd - 
 //			*moveHelper - 
 //-----------------------------------------------------------------------------
+void CBasePlayer::UpdatePropHunt(bool forceOff)
+{
+    const bool want = !forceOff && gabeplus_prophunt.GetBool() && IsAlive() && !IsObserver() && !IsInAVehicle();
+    if (want == m_bPropHunt)
+        return;
+    if (want && (IsDucked() || IsDucking() || (GetFlags() & FL_DUCKING)))
+        return;
+
+    Vector mins, maxs;
+    if (want)
+    {
+        const model_t *prop = modelinfo->GetModel(PrecacheModel(PROPHUNT_MODEL));
+        if (!PropHuntBounds(prop, mins, maxs))
+            return;
+    }
+    else
+    {
+        mins = (GetFlags() & FL_DUCKING) ? VEC_DUCK_HULL_MIN_SCALED(this) : VEC_HULL_MIN_SCALED(this);
+        maxs = (GetFlags() & FL_DUCKING) ? VEC_DUCK_HULL_MAX_SCALED(this) : VEC_HULL_MAX_SCALED(this);
+    }
+
+    // Keep the bottom of the collision hull at the same height.
+    Vector oldMins, oldMaxs;
+    if (!PropHuntBounds(GetModel(), oldMins, oldMaxs))
+        oldMins = CollisionProp()->OBBMins();
+    Vector origin = GetAbsOrigin();
+    origin.z += oldMins.z - mins.z;
+    trace_t tr;
+    UTIL_TraceHull(origin, origin, mins, maxs, MASK_PLAYERSOLID, this,
+        COLLISION_GROUP_PLAYER_MOVEMENT, &tr);
+    if (!forceOff && (tr.startsolid || tr.allsolid))
+        return; // Retry later; never grow into a wall or ceiling.
+
+    if (want)
+    {
+        m_iszPropOriginalModel = GetModelName();
+        m_bPropOriginalViewModel = m_Local.m_bDrawViewmodel;
+        SetModel(PROPHUNT_MODEL);
+        SetSequence(0);
+        ShowViewModel(false);
+    }
+    else
+    {
+        if (m_iszPropOriginalModel != NULL_STRING)
+            SetModel(STRING(m_iszPropOriginalModel));
+        ShowViewModel(m_bPropOriginalViewModel);
+        m_iszPropOriginalModel = NULL_STRING;
+    }
+    m_bPropHunt = want;
+    SetAbsOrigin(origin);
+    SetCollisionBounds(mins, maxs);
+    SetViewOffset(want ? Vector(0, 0, maxs.z + 4.0f) :
+        ((GetFlags() & FL_DUCKING) ? VEC_DUCK_VIEW_SCALED(this) : VEC_VIEW_SCALED(this)));
+    InitVCollision(GetAbsOrigin(), GetAbsVelocity());
+}
+
 void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
+    UpdatePropHunt(false);
+    if (m_bPropHunt)
+        ucmd->buttons &= ~(IN_ATTACK | IN_ATTACK2 | IN_RELOAD | IN_DUCK);
 	m_touchedPhysObject = false;
 
 	if ( pl.fixangle == FIXANGLE_NONE)
@@ -3816,6 +3821,8 @@ void CBasePlayer::PlayerRunCommand(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		}
 	}
 	
+	if (m_bPropHunt)
+        ucmd->buttons &= ~(IN_ATTACK | IN_ATTACK2 | IN_RELOAD | IN_DUCK);
 	PlayerMove()->RunCommand(this, ucmd, moveHelper);
 }
 
@@ -4661,7 +4668,13 @@ void CBasePlayer::PostThink()
 			/* End Gabe Mod*/
 			// set correct collision bounds (may have changed in player movement code)
 			VPROF_SCOPE_BEGIN( "CBasePlayer::PostThink-Bounds" );
-			if ( GetFlags() & FL_DUCKING )
+			Vector propMins, propMaxs;
+            if (m_bPropHunt && PropHuntBounds(GetModel(), propMins, propMaxs))
+            {
+                SetCollisionBounds(propMins, propMaxs);
+                SetViewOffset(Vector(0, 0, propMaxs.z + 4.0f));
+            }
+            else if ( GetFlags() & FL_DUCKING )
 			{
 				SetCollisionBounds( VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX );
 			}
@@ -4712,7 +4725,9 @@ void CBasePlayer::PostThink()
 			// select the proper animation for the player character	
 			VPROF( "CBasePlayer::PostThink-Animation" );
 			// If he's in a vehicle, sit down
-			if ( IsInAVehicle() )
+			if (m_bPropHunt)
+                SetSequence(0);
+            else if ( IsInAVehicle() )
 				SetAnimation( PLAYER_IN_VEHICLE );
 			else if (!GetAbsVelocity().x && !GetAbsVelocity().y)
 				SetAnimation( PLAYER_IDLE );
@@ -4758,6 +4773,46 @@ void CBasePlayer::PostThink()
 		VPROF_SCOPE_BEGIN( "CBasePlayer::PostThink-PostThinkVPhysics" );
 		PostThinkVPhysics();
 		VPROF_SCOPE_END();
+	}
+
+	trace_t tr;
+
+	Vector vecStart = EyePosition();
+	Vector vecForward;
+	AngleVectors(EyeAngles(), &vecForward);
+
+	Vector vecEnd = vecStart + vecForward * 4096;
+
+	UTIL_TraceLine(
+		vecStart,
+		vecEnd,
+		MASK_SHOT,
+		this,
+		COLLISION_GROUP_NONE,
+		&tr
+	);
+
+	if (tr.m_pEnt)
+	{
+		const char* classname;
+
+		if (tr.DidHitWorld())
+		{
+			classname = "";
+		}
+		else
+		{
+			classname = tr.m_pEnt->GetClassname();
+		}
+
+		NDebugOverlay::ScreenText(
+			0.5f,     // X (center)
+			0.05f,    // Y (top)
+			classname,
+			255, 255, 255,
+			255,
+			0.0f      // duration (0 = one frame, perfect for PostThink)
+		);
 	}
 
 #if !defined( NO_ENTITY_PREDICTION )
@@ -5036,6 +5091,7 @@ void CBasePlayer::InitialSpawn( void )
 //-----------------------------------------------------------------------------
 void CBasePlayer::Spawn( void )
 {
+    UpdatePropHunt(true);
 	// Needs to be done before weapons are given
 	if ( Hints() )
 	{
@@ -5216,6 +5272,7 @@ void CBasePlayer::Activate( void )
 
 void CBasePlayer::Precache( void )
 {
+    PrecacheModel(PROPHUNT_MODEL);
 	BaseClass::Precache();
 
 
@@ -8629,8 +8686,10 @@ void CBasePlayer::InitVCollision( const Vector &vecAbsOrigin, const Vector &vecA
 	if ( sv_turbophysics.GetBool() )
 		return;
 	
-	CPhysCollide *pModel = PhysCreateBbox( VEC_HULL_MIN_SCALED( this ), VEC_HULL_MAX_SCALED( this ) );
-	CPhysCollide *pCrouchModel = PhysCreateBbox( VEC_DUCK_HULL_MIN_SCALED( this ), VEC_DUCK_HULL_MAX_SCALED( this ) );
+	Vector propMins, propMaxs;
+    const bool prop = m_bPropHunt && PropHuntBounds(GetModel(), propMins, propMaxs);
+    CPhysCollide *pModel = PhysCreateBbox(prop ? propMins : VEC_HULL_MIN_SCALED(this), prop ? propMaxs : VEC_HULL_MAX_SCALED(this));
+    CPhysCollide *pCrouchModel = PhysCreateBbox(prop ? propMins : VEC_DUCK_HULL_MIN_SCALED(this), prop ? propMaxs : VEC_DUCK_HULL_MAX_SCALED(this));
 
 	SetupVPhysicsShadow( vecAbsOrigin, vecAbsVelocity, pModel, "player_stand", pCrouchModel, "player_crouch" );
 }

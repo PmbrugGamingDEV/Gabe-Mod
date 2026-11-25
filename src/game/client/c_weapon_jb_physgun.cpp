@@ -266,63 +266,17 @@ int C_JBMBeamQuadratic::DrawModel(int flags)
 	if (!pEnt)
 		return 0;
 
-	pEnt->GetAttachment(
-		1,
-		points[0],
-		tmpAngle
-	);
+	pEnt->GetAttachment(1, points[0], tmpAngle);
+
+	// Original beam curvature
+	points[1] = 0.5f * (m_targetPosition + points[0]);
 
 	points[2] = m_worldPosition;
 
-	Vector dir =
-		points[2] - points[0];
-
-	float distance =
-		VectorNormalize(dir);
-
-	Vector right, up;
-	VectorVectors(dir, right, up);
-
-	float t = gpGlobals->curtime;
-
-	points[1] =
-		points[0] +
-		dir * (distance * 0.5f);
-
-	float curveScale =
-		clamp(
-			distance * 0.08f,
-			12.0f,
-			80.0f
-		);
-
-	points[1].z -=
-		curveScale * 0.4f;
-
-	points[1] +=
-		right *
-		sin(t * 6.0f) *
-		(curveScale * 0.5f);
-
-	points[1] +=
-		up *
-		cos(t * 7.0f) *
-		(curveScale * 0.35f);
-
-	points[1].x +=
-		sin(t * 18.0f) * 3.0f;
-
-	points[1].y +=
-		cos(t * 15.0f) * 3.0f;
-
-	points[1].z +=
-		sin(t * 12.0f) * 4.0f;
-
-	IMaterial* pMat =
-		materials->FindMaterial(
-			"sprites/physbeam",
-			TEXTURE_GROUP_CLIENT_EFFECTS
-		);
+	IMaterial* pMat = materials->FindMaterial(
+		"sprites/physbeam",
+		TEXTURE_GROUP_CLIENT_EFFECTS
+	);
 
 	if (!pMat)
 		return 0;
@@ -331,14 +285,12 @@ int C_JBMBeamQuadratic::DrawModel(int flags)
 
 	if (m_glueTouching)
 	{
-		color.Init(
-			1.0f,
-			0.0f,
-			0.0f
-		);
+		// Original red color when touching glue
+		color.Init(1.0f, 0.0f, 0.0f);
 	}
 	else
 	{
+		// Customizable physgun beam color
 		int ir = 255;
 		int ig = 255;
 		int ib = 255;
@@ -365,129 +317,23 @@ int C_JBMBeamQuadratic::DrawModel(int flags)
 		);
 	}
 
+	// Original scrolling texture
 	float scrollOffset =
 		gpGlobals->curtime -
 		(int)gpGlobals->curtime;
 
-	float width =
-		13.0f +
-		sin(
-			gpGlobals->curtime *
-			20.0f
-		) * 2.0f;
-
 	CMatRenderContextPtr pRenderContext(materials);
-
 	pRenderContext->Bind(pMat);
 
-	// Main beam
+	// Original Source Engine beam
 	DrawBeamQuadratic(
 		points[0],
 		points[1],
 		points[2],
-		width,
+		13.0f,
 		color,
 		scrollOffset
 	);
-
-	// Inner bright beam
-	Vector innerColor;
-	innerColor.Init(1.0f, 1.0f, 1.0f);
-
-	DrawBeamQuadratic(
-		points[0],
-		points[1],
-		points[2],
-		width * 0.35f,
-		innerColor,
-		-scrollOffset
-	);
-
-	// Electric arc beams
-	for (int i = 0; i < 3; i++)
-	{
-		Vector arcMid =
-			points[1];
-
-		arcMid +=
-			right *
-			random->RandomFloat(
-				-12.0f,
-				12.0f
-			);
-
-		arcMid +=
-			up *
-			random->RandomFloat(
-				-12.0f,
-				12.0f
-			);
-
-		arcMid +=
-			dir *
-			random->RandomFloat(
-				-8.0f,
-				8.0f
-			);
-
-		DrawBeamQuadratic(
-			points[0],
-			arcMid,
-			points[2],
-			2.0f,
-			color,
-			scrollOffset + i
-		);
-	}
-
-	IMaterial* pGlow =
-		materials->FindMaterial(
-			"sprites/physglow",
-			TEXTURE_GROUP_CLIENT_EFFECTS
-		);
-
-	if (pGlow)
-	{
-		pRenderContext->Bind(pGlow);
-
-		color32 spriteClr;
-
-		spriteClr.r =
-			(unsigned char)(color.x * 255.0f);
-
-		spriteClr.g =
-			(unsigned char)(color.y * 255.0f);
-
-		spriteClr.b =
-			(unsigned char)(color.z * 255.0f);
-
-		spriteClr.a = 255;
-
-		float scale =
-			random->RandomFloat(
-				3.0f,
-				5.0f
-			) * 5.0f;
-
-		// Impact glow
-		for (int i = 0; i < 3; i++)
-		{
-			DrawSprite(
-				points[2],
-				scale,
-				scale,
-				spriteClr
-			);
-		}
-
-		// Muzzle glow
-		DrawSprite(
-			points[0],
-			scale * 0.7f,
-			scale * 0.7f,
-			spriteClr
-		);
-	}
 
 	return 1;
 }

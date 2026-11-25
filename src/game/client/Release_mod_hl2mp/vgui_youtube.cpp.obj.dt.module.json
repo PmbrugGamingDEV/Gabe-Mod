@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": ".\\Release_mod_hl2mp\\vgui_youtube.obj",
+            "outputs": [
+                ".\\Release_mod_hl2mp\\vgui_youtube.cpp.obj.dt.module.json",
+                ".\\Release_mod_hl2mp\\vgui_youtube.cpp.obj.dt.d.json",
+                ".\\Release_mod_hl2mp\\/client.pch"
+            ],
+            "requires": []
+        }
+    ]
+}

@@ -21,6 +21,8 @@ PRECACHE_WEAPON_REGISTER(weapon_camera);
 
 IMPLEMENT_SERVERCLASS_ST(CWeaponCamera, DT_WeaponCamera)
 SendPropBool(SENDINFO(m_bViewLocked)),
+SendPropBool(SENDINFO(m_bAttack2Held)),
+SendPropFloat(SENDINFO(m_flRollAngle), 0, SPROP_NOSCALE),
 END_SEND_TABLE()
 
 BEGIN_DATADESC(CWeaponCamera)
@@ -30,6 +32,8 @@ CWeaponCamera::CWeaponCamera()
 {
     m_iBlurMode = 2; // start at no blur
 	m_bViewLocked = false;
+	m_bAttack2Held = false;
+	m_flRollAngle = 0.0f;
 }
 
 void CWeaponCamera::Precache(void)
@@ -64,8 +68,12 @@ bool CWeaponCamera::Holster(CBaseCombatWeapon* pSwitchingTo)
         CBasePlayer* pOwner = ToBasePlayer(GetOwner());
         if (pOwner)
         {
+            m_bAttack2Held = false;
+            m_bZooming = false;
             m_bViewLocked = false;
             pOwner->ShowViewModel(true);
+            m_flRollAngle = 0.0f;
+			pOwner->SetFOV(this, 0); // Reset FOV to default
         }
     }
 
@@ -89,18 +97,21 @@ void CWeaponCamera::SecondaryAttack()
     if (!cmd)
         return;
 
-    // Initialize zoom when right-click begins.
     if (!m_bZooming)
     {
         m_flZoomFOV = pPlayer->GetFOV();
+        m_flRollAngle = 0.0f;
         m_bZooming = true;
     }
 
-    // Mouse up = zoom in
-    // Mouse down = zoom out
+    // Vertical mouse = zoom
     m_flZoomFOV += cmd->mousedy * 0.1f;
 
+    // Horizontal mouse = camera roll
+    m_flRollAngle += cmd->mousedx * 0.1f;
+
     m_flZoomFOV = clamp(m_flZoomFOV, 10.0f, 140.0f);
+    m_flRollAngle = clamp(m_flRollAngle, -180.0f, 180.0f);
 
     pPlayer->SetFOV(this, m_flZoomFOV);
 
@@ -143,8 +154,8 @@ void CWeaponCamera::ItemPostFrame()
         // Reset the FOV to the default value (90 degrees) if R is pressed
         if (pPlayer->m_afButtonPressed & IN_RELOAD)  // Pressing R
         {
-            float defaultFOV = 90.0f;
-            pPlayer->SetFOV(this, defaultFOV);
+            pPlayer->SetFOV(this, 0);
+			m_flRollAngle = 0.0f;
         }
     }
 
@@ -164,6 +175,8 @@ void CWeaponCamera::ItemPostFrame()
         WRITE_BYTE(m_iBlurMode);
         MessageEnd();
     }
+
+    m_bAttack2Held = (pPlayer->m_nButtons & IN_ATTACK2) != 0;
 
     BaseClass::ItemPostFrame();
 }

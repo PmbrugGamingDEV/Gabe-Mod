@@ -84,7 +84,7 @@ IPhysicsObject* GetPhysObjFromPhysicsBone(CBaseEntity* pEntity, short physicsbon
 		return pEntity->VPhysicsGetObject();
 	}
 
-	CBaseAnimating* pModel = static_cast<CBaseAnimating*>(pEntity);
+	CBaseAnimating* pModel = pEntity->GetBaseAnimating();
 	if (pModel != NULL)
 	{
 		IPhysicsObject* pPhysicsObject = NULL;
@@ -590,7 +590,8 @@ private:
 	int			m_soundState;
 	Vector		m_originalObjectPosition;
 	CNetworkVector(m_targetPosition);
-	CNetworkVector(m_worldPosition);
+	CNetworkVector(m_worldPosition);  // bone-local grab point
+	CNetworkVector(m_beamWorldPosition); // world-space endpoint for both beam views
 
 #ifdef ARGG
 	// adnan
@@ -635,6 +636,7 @@ RecvPropEHandle(RECVINFO(m_hObject)),
 RecvPropInt(RECVINFO(m_physicsBone)),
 RecvPropVector(RECVINFO(m_targetPosition)),
 RecvPropVector(RECVINFO(m_worldPosition)),
+RecvPropVector(RECVINFO(m_beamWorldPosition)),
 RecvPropInt(RECVINFO(m_active)),
 #ifdef ARGG
 // adnan
@@ -647,6 +649,7 @@ SendPropEHandle(SENDINFO(m_hObject)),
 SendPropInt(SENDINFO(m_physicsBone)),
 SendPropVector(SENDINFO(m_targetPosition), -1, SPROP_COORD),
 SendPropVector(SENDINFO(m_worldPosition), -1, SPROP_COORD),
+SendPropVector(SENDINFO(m_beamWorldPosition), -1, SPROP_COORD),
 SendPropInt(SENDINFO(m_active), 1, SPROP_UNSIGNED),
 #ifdef ARGG
 // adnan
@@ -713,6 +716,7 @@ DEFINE_FIELD(m_active, FIELD_INTEGER),
 DEFINE_FIELD(m_useDown, FIELD_BOOLEAN),
 DEFINE_FIELD(m_hObject, FIELD_EHANDLE),
 DEFINE_FIELD(m_physicsBone, FIELD_INTEGER),
+DEFINE_FIELD(m_beamWorldPosition, FIELD_POSITION_VECTOR),
 DEFINE_FIELD(m_distance, FIELD_FLOAT),
 DEFINE_FIELD(m_movementLength, FIELD_FLOAT),
 DEFINE_FIELD(m_soundState, FIELD_INTEGER),
@@ -747,6 +751,7 @@ CWeaponGravityGun::CWeaponGravityGun()
 	m_bInWeapon1 = false;
 	m_bInWeapon2 = false;
 	m_frozenObjects = 0;
+	m_beamWorldPosition = vec3_origin;
 }
 
 #ifdef CLIENT_DLL
@@ -975,12 +980,15 @@ void CWeaponGravityGun::EffectUpdate(void)
 			return;
 
 #ifndef CLIENT_DLL
-		IPhysicsObject* pPhys = pEntity->VPhysicsGetObject();
+		IPhysicsObject* pPhys = GetPhysObjFromPhysicsBone(pEntity, tr.physicsbone);
 
 		// --------------------------------------------------------
 		// GIVE TEMP PHYSICS IF NEEDED
 		// --------------------------------------------------------
-		if (!pPhys)
+		if (!pPhys && (pEntity->IsNPC() ||
+			FClassnameIs(pEntity, "func_door") ||
+			FClassnameIs(pEntity, "func_door_rotating") ||
+			FClassnameIs(pEntity, "func_button")))
 		{
 			// NPCs, doors, buttons normally have no physics
 			pEntity->SetMoveType(MOVETYPE_VPHYSICS);
@@ -1055,6 +1063,10 @@ void CWeaponGravityGun::EffectUpdate(void)
 
 			Vector offset;
 			pPhys->LocalToWorld(&offset, m_worldPosition);
+#ifndef CLIENT_DLL
+			// Position of the originally clicked point on this moving bone.
+			m_beamWorldPosition = offset;
+#endif
 
 			Vector vecOrigin;
 			pPhys->GetPosition(&vecOrigin, NULL);
@@ -1064,13 +1076,16 @@ void CWeaponGravityGun::EffectUpdate(void)
 				angles
 			);
 
-			Vector dir = newPosition - pObject->GetLocalOrigin();
+			Vector dir = newPosition - offset;
 			m_movementLength = dir.Length();
 		}
 	}
 	else
 	{
 		m_targetPosition = end;
+#ifndef CLIENT_DLL
+		m_beamWorldPosition = end;
+#endif
 	}
 }
 
@@ -1342,6 +1357,7 @@ void CWeaponGravityGun::DetachObject(void)
 		m_gravCallback.DetachEntity();
 		m_hObject = NULL;
 		m_physicsBone = 0;
+		m_beamWorldPosition = vec3_origin;
 	}
 }
 
@@ -1416,6 +1432,12 @@ void CWeaponGravityGun::AttachObject(
 	m_physicsBone = physicsbone;
 	m_useDown = false;
 
+	// Ragdoll traces return the struck physics-bone index. Select that
+	// physics solid BEFORE calculating the grab point in local coordinates.
+	IPhysicsObject* pBonePhysics = GetPhysObjFromPhysicsBone(pObject, physicsbone);
+	if (pBonePhysics)
+		pPhysics = pBonePhysics;
+
 	// --------------------------------------------------
 	// Allowlist by classname
 	// --------------------------------------------------
@@ -1467,6 +1489,7 @@ void CWeaponGravityGun::AttachObject(
 	Vector worldPosition;
 	pPhysics->WorldToLocal(&worldPosition, end);
 	m_worldPosition = worldPosition;
+	m_beamWorldPosition = end;
 
 	Vector vecOrigin;
 	pPhysics->GetPosition(&vecOrigin, NULL);
@@ -1476,7 +1499,7 @@ void CWeaponGravityGun::AttachObject(
 		pObject,
 		pPhysics,
 		physicsbone,
-		vecOrigin
+		end // Real surface hit, not the bone center.
 	);
 
 	m_originalObjectPosition = vecOrigin;
@@ -1506,15 +1529,15 @@ void CWeaponGravityGun::AttachObject(
 
 
 #ifndef CLIENT_DLL
-		Pickup_OnPhysGunPickup(pObject, pOwner);
+	Pickup_OnPhysGunPickup(pObject, pOwner);
 #endif
 
 #ifndef CLIENT_DLL
-		CBaseAnimating* pAnim = pObject->GetBaseAnimating();
-		if (pAnim)
-		{
-			pAnim->AddGlowEffect();
-		}
+	CBaseAnimating* pAnim = pObject->GetBaseAnimating();
+	if (pAnim)
+	{
+		pAnim->AddGlowEffect();
+	}
 #endif
 }
 
@@ -1700,20 +1723,8 @@ int CWeaponGravityGun::DrawModel(int flags)
 		}
 		else
 		{
-			IPhysicsObject* pPhys = GetPhysObjFromPhysicsBone(pObject, m_physicsBone);
-
-			if (pPhys)
-			{
-				Vector pos;
-				QAngle ang;
-				pPhys->GetPosition(&pos, &ang);
-
-				points[2] = pos;
-			}
-			else
-			{
-				points[2] = pObject->GetAbsOrigin();
-			}
+			// Server-tracked exact impact point, even for multi-bone ragdolls.
+			points[2] = m_beamWorldPosition;
 		}
 
 		Vector forward;
@@ -1799,7 +1810,8 @@ void CWeaponGravityGun::ViewModelDrawn(C_BaseViewModel* pBaseViewModel)
 	}
 	else
 	{
-		pObject->EntityToWorldSpace(m_worldPosition, &points[2]);
+		// Bone-local point is not entity-local on ragdolls.
+		points[2] = m_beamWorldPosition;
 	}
 
 	Vector forward;

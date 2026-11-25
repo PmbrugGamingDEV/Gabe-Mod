@@ -314,22 +314,6 @@
 				"width"		"40"
 				"height"	"40"
 		}
-		"crosshair_left"
-		{
-				"file"		"sprites/qi_center"
-				"x"			"0"
-				"y"			"40"
-				"width"		"28"
-				"height"	"50"
-		}
-		"crosshair_right"
-		{
-				"file"		"sprites/qi_center"
-				"x"			"28"
-				"y"			"40"
-				"width"		"28"
-				"height"	"50"
-		}
 		"viewhair"
 		{
 				"file"		"sprites/hud/v_crosshair2"
@@ -660,6 +644,36 @@
 				"y"			"0"
 				"width"		"96"
 				"height"	"96"
+		}
+		"crosshair_left"
+		{
+				"font"		"QuickInfo"
+				"character"	"("
+		}
+		"crosshair_right"
+		{
+				"font"		"QuickInfo"
+				"character"	")"
+		}
+		"crosshair_left_full"
+		{
+				"font"		"QuickInfo"
+				"character"	"["
+		}
+		"crosshair_right_full"
+		{
+				"font"		"QuickInfo"
+				"character"	"]"
+		}
+		"crosshair_left_empty"
+		{
+				"font"		"QuickInfo"
+				"character"	"{"
+		}
+		"crosshair_right_empty"
+		{
+				"font"		"QuickInfo"
+				"character"	"}"
 		}
 	}	
 }

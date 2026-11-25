@@ -214,6 +214,10 @@ public:
 	void SetIgnorePitch( bool bIgnore ) { m_bIgnoreRelativePitch = bIgnore; }
 	QAngle TransformAnglesToPlayerSpace( const QAngle &anglesIn, CBasePlayer *pPlayer );
 	QAngle TransformAnglesFromPlayerSpace( const QAngle &anglesIn, CBasePlayer *pPlayer );
+	bool GetHasRotatedCarryAngles() { return m_bHasRotatedCarryAngles; }
+	void SetHasRotatedCarryAngles(bool bHasRotatedCarryAngles) { m_bHasRotatedCarryAngles = bHasRotatedCarryAngles; }
+	void SetRotatedCarryAngles(QAngle vecRotatedCarryAngles) { m_vecRotatedCarryAngles = vecRotatedCarryAngles; }
+	QAngle GetRotatedCarryAngles() { return m_vecRotatedCarryAngles; }
 
 	CBaseEntity *GetAttached() { return (CBaseEntity *)m_attachedEntity; }
 
@@ -243,6 +247,8 @@ private:
 	QAngle			m_vecPreferredCarryAngles;
 	bool			m_bHasPreferredCarryAngles;
 
+	QAngle			m_vecRotatedCarryAngles;
+	bool			m_bHasRotatedCarryAngles;
 
 	IPhysicsMotionController *m_controller;
 	int				m_frameCount;
@@ -369,6 +375,11 @@ protected:
 	void	Physgun_OnPhysGunPickup( CBaseEntity *pEntity, CBasePlayer *pOwner, PhysGunPickup_t reason );
 #endif	// !CLIENT_DLL
 
+	// this is where we override the mouse input when orbiting
+	void OverrideMouseInput(float* x, float* y);
+	// this is where we override the setting of viewangles when orbiting
+	bool OverrideViewAngles(void);
+
 #ifdef CLIENT_DLL
 
 	enum EffectType_t
@@ -431,6 +442,12 @@ protected:
 	CNetworkVar( bool,	m_bActive );
 	CNetworkVar( int,	m_EffectState );		// Current state of the effects on the gun
 	CNetworkVar( bool,	m_bOpen );
+
+
+	// this is how we tell the client that we are indeed holding something
+	CNetworkVar(bool, m_bIsCurrentlyHolding);
+	// this is how we tell if we're rotating what we're holding
+	CNetworkVar(bool, m_bIsCurrentlyRotating);
 
 	bool	m_bResetOwnerEntity;
 	

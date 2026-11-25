@@ -28,6 +28,7 @@ C:\GabeMod\src\game\server\gabemod_client.cpp;C:\GabeMod\src\game\server\Release
 C:\GabeMod\src\game\server\gabe_cmds.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_cmds.obj
 C:\GabeMod\src\game\server\gabe_objects.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_objects.obj
 C:\GabeMod\src\game\server\gabe_spmenuspawn.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_spmenuspawn.obj
+C:\GabeMod\src\game\server\gabe_undo.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gabe_undo.obj
 C:\GabeMod\src\game\server\gamedll_replay.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\gamedll_replay.obj
 C:\GabeMod\src\game\shared\achievement_saverestore.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\achievement_saverestore.obj
 C:\GabeMod\src\game\shared\achievementmgr.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\achievementmgr.obj
@@ -194,6 +195,7 @@ C:\GabeMod\src\game\server\func_dust.cpp;C:\GabeMod\src\game\server\Release_mod_
 C:\GabeMod\src\game\shared\func_ladder.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_ladder.obj
 C:\GabeMod\src\game\server\func_ladder_endpoint.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_ladder_endpoint.obj
 C:\GabeMod\src\game\server\func_lod.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\func_lod.obj
+C:\GabeMod\src\game\server\godrays.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\godrays.obj
 C:\GabeMod\src\game\server\grenade_spit.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\grenade_spit.obj
 C:\GabeMod\src\game\server\hl1\hl1_basegrenade.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl1_basegrenade.obj
 C:\GabeMod\src\game\server\hl1\hl1_baseweapon.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\hl1_baseweapon.obj
@@ -276,6 +278,7 @@ C:\GabeMod\src\game\server\globalstate.cpp;C:\GabeMod\src\game\server\Release_mo
 C:\GabeMod\src\game\server\grenadethrown.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\grenadethrown.obj
 C:\GabeMod\src\game\server\guntarget.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\guntarget.obj
 C:\GabeMod\src\game\server\hl2\grenade_brickbat.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\grenade_brickbat.obj
+C:\GabeMod\src\game\server\hl2\npc_blob.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\npc_blob.obj
 C:\GabeMod\src\game\server\hl2\vehicle_jeep.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\vehicle_jeep.obj
 C:\GabeMod\src\game\server\hl2\weapon_alyxgun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_alyxgun.obj
 C:\GabeMod\src\game\server\hl2\weapon_brickbat.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_brickbat.obj
@@ -478,6 +481,7 @@ C:\GabeMod\src\game\shared\weapon_parse.cpp;C:\GabeMod\src\game\server\Release_m
 C:\GabeMod\src\game\shared\weapon_proficiency.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_proficiency.obj
 C:\GabeMod\src\game\server\weapon_camera.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_camera.obj
 C:\GabeMod\src\game\server\weapon_eattach.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_eattach.obj
+C:\GabeMod\src\game\server\weapon_flechettegun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_flechettegun.obj
 C:\GabeMod\src\game\server\weapon_fuelcan.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_fuelcan.obj
 C:\GabeMod\src\game\server\weapon_hax.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_hax.obj
 C:\GabeMod\src\game\server\weapon_lasergun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_lasergun.obj
@@ -485,6 +489,7 @@ C:\GabeMod\src\game\server\weapon_multitool.cpp;C:\GabeMod\src\game\server\Relea
 C:\GabeMod\src\game\server\weapon_proplauncher.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_proplauncher.obj
 C:\GabeMod\src\game\server\weapon_stickylauncher.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_stickylauncher.obj
 C:\GabeMod\src\game\server\weapon_supergun.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_supergun.obj
+C:\GabeMod\src\game\server\weapon_thrower.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weapon_thrower.obj
 C:\GabeMod\src\game\server\weight_button.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\weight_button.obj
 C:\GabeMod\src\game\server\world.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\world.obj
 C:\GabeMod\src\game\server\hl2\ai_allymanager.cpp;C:\GabeMod\src\game\server\Release_mod_hl2mp\ai_allymanager.obj

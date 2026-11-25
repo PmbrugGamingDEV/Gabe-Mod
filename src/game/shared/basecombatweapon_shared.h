@@ -474,6 +474,8 @@ public:
 
 	virtual void			RestartParticleEffect(void) {}
 
+	virtual void UpdateViewAngleInput(CUserCmd* cmd) {}
+
 	virtual void			Redraw(void);
 	virtual void			ViewModelDrawn(CBaseViewModel* pViewModel);
 	// Get the position that bullets are seen coming out. Note: the returned values are different

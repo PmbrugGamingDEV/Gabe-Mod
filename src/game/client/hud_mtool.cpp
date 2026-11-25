@@ -53,11 +53,16 @@ public:
     virtual void ApplySchemeSettings(IScheme* pScheme);
     virtual bool ShouldDraw(void);
     virtual void Paint(void);
+    virtual void OnScreenSizeChanged(int oldWide, int oldTall);
 
     void MsgFunc_MultitoolHUD(bf_read& msg);
 
 private:
+    HFont m_hTitleFont;
     HFont m_hFont;
+    void DrawLine(HFont font, int x, int y, const wchar_t* text, Color color);
+    void DrawSelection(int x, int& y, const wchar_t* label,
+        const wchar_t* const* names, int count, int index);
 
     int m_iMode;
     int m_iColor;
@@ -79,7 +84,11 @@ CHudMultitool::CHudMultitool(const char* pElementName)
     : CHudElement(pElementName), Panel(NULL, "HudMultitool")
 {
     SetParent(g_pClientMode->GetViewport());
-    SetHiddenBits(0);
+    SetHiddenBits(HIDEHUD_PLAYERDEAD);
+    SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
+    m_hTitleFont = INVALID_FONT;
+    m_hFont = INVALID_FONT;
     SetPaintBackgroundEnabled(false);
 
     HOOK_HUD_MESSAGE(CHudMultitool, MultitoolHUD);
@@ -101,16 +110,17 @@ void CHudMultitool::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_hFont = surface()->CreateFont();
-    surface()->SetFontGlyphSet(
-        m_hFont,
-        "Consolas",
-        18,
-        400,
-        0,
-        0,
-        0
-    );
+    // Use scheme fonts so video mode changes do not invalidate custom glyphs.
+    m_hTitleFont = pScheme->GetFont("Trebuchet24", true);
+    if (m_hTitleFont == INVALID_FONT)
+        m_hTitleFont = pScheme->GetFont("DefaultLarge", true);
+    m_hFont = pScheme->GetFont("DefaultSmall", true);
+    if (m_hFont == INVALID_FONT)
+        m_hFont = pScheme->GetFont("Default", true);
+    if (m_hTitleFont == INVALID_FONT)
+        m_hTitleFont = m_hFont;
+    SetPaintBackgroundEnabled(false);
+    SetPaintBorderEnabled(false);
 
     int w, h;
     surface()->GetScreenSize(w, h);
@@ -122,6 +132,9 @@ void CHudMultitool::ApplySchemeSettings(IScheme* pScheme)
 
 bool CHudMultitool::ShouldDraw(void)
 {
+    if (!CHudElement::ShouldDraw())
+        return false;
+
     C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
     if (!pPlayer)
         return false;
@@ -153,280 +166,161 @@ void CHudMultitool::MsgFunc_MultitoolHUD(bf_read& msg)
 
 //=========================================================
 
+void CHudMultitool::DrawLine(HFont font, int x, int y,
+    const wchar_t* text, Color color)
+{
+    if (font == INVALID_FONT || !text || !text[0])
+        return;
+    surface()->DrawSetTextFont(font);
+    surface()->DrawSetTextColor(0, 0, 0, 210);
+    surface()->DrawSetTextPos(x + 1, y + 1);
+    surface()->DrawPrintText(text, wcslen(text));
+    surface()->DrawSetTextColor(color.r(), color.g(), color.b(), color.a());
+    surface()->DrawSetTextPos(x, y);
+    surface()->DrawPrintText(text, wcslen(text));
+}
+
+void CHudMultitool::DrawSelection(int x, int& y, const wchar_t* label,
+    const wchar_t* const* names, int count, int index)
+{
+    DrawLine(m_hFont, x, y, label, Color(230, 230, 230, 255));
+    int labelW, labelH;
+    surface()->GetTextSize(m_hFont, label, labelW, labelH);
+    DrawLine(m_hFont, x + labelW + 6, y,
+        (index >= 0 && index < count) ? names[index] : L"Unknown",
+        Color(255, 255, 255, 255));
+    y += surface()->GetFontTall(m_hFont) + 3;
+}
+
 void CHudMultitool::Paint(void)
 {
-    int sw, sh;
-    surface()->GetScreenSize(sw, sh);
+    if (m_hFont == INVALID_FONT || m_hTitleFont == INVALID_FONT)
+        return;
 
-    const int padding = 8;
-    const int boxWidth = 300;
-    const int boxHeight = 420;
-
-    int boxX = sw - boxWidth - 40;
-    int boxY = (sh / 2) - (boxHeight / 2);
-
-    // Background
-    surface()->DrawSetColor(0, 0, 0, 140);
-    surface()->DrawFilledRect(boxX, boxY, boxX + boxWidth, boxY + boxHeight);
-
-    surface()->DrawSetColor(0, 0, 0, 210);
-    surface()->DrawOutlinedRect(boxX, boxY, boxX + boxWidth, boxY + boxHeight);
-
-    surface()->DrawSetTextFont(m_hFont);
-
-    int textX = boxX + padding;
-    int textY = boxY + padding;
-
-    //---------------------------------------------------------
-    // HEADER
-    //---------------------------------------------------------
-
-    const wchar_t* modeNames[] =
+    struct ToolInfo { const wchar_t* title; const wchar_t* description; };
+    static const ToolInfo tools[] =
     {
-        L"Remove",
-        L"Distance",
-        L"Color",
-        L"Constraint",
-        L"Ignite",
-        L"Duplicate",
-        L"Explode",
-        L"Point Message",
-        L"Light Watermelon",
-        L"Decal",
-        L"Render FX",
-        L"Faceposer",
-        L"Balloon",
-        L"Thruster"
+        { L"Remove", L"Remove objects from the world." },
+        { L"Distance", L"Measure distances between points." },
+        { L"Color", L"Change the color of objects." },
+        { L"Constraint", L"Connect objects using physics constraints." },
+        { L"Ignite", L"Set objects on fire." },
+        { L"Duplicator", L"Duplicate objects." },
+        { L"Explode", L"Create explosions." },
+        { L"Point Message", L"Place messages in the world." },
+        { L"Light Watermelon", L"Create a colored watermelon light." },
+        { L"Decal", L"Apply decals to surfaces." },
+        { L"Render FX", L"Change the rendering effect of objects." },
+        { L"Faceposer", L"Change facial expressions." },
+        { L"Balloon", L"Create balloons with adjustable lift." },
+        { L"Thruster", L"Create thrusters with adjustable power." }
     };
 
-    if (m_iMode >= 0 && m_iMode < (int)(sizeof(modeNames) / sizeof(modeNames[0])))
+    if (m_iMode < 0 || m_iMode >= ARRAYSIZE(tools))
+        return;
+
+    int sw, sh;
+    surface()->GetScreenSize(sw, sh);
+    const int x = MAX(12, sw / 50);
+    int y = MAX(10, sh / 45);
+    DrawLine(m_hTitleFont, x, y, tools[m_iMode].title, Color(255, 255, 255, 255));
+    y += surface()->GetFontTall(m_hTitleFont) + 3;
+    DrawLine(m_hFont, x, y, tools[m_iMode].description, Color(240, 240, 240, 255));
+    y += surface()->GetFontTall(m_hFont) + 5;
+
+    static const wchar_t* colors[] =
     {
-        surface()->DrawSetTextColor(230, 230, 230, 220);
-        surface()->DrawSetTextPos(textX, textY);
-        surface()->DrawPrintText(modeNames[m_iMode], wcslen(modeNames[m_iMode]));
-        textY += 28;
-    }
+        L"Red", L"Orange", L"Yellow", L"Green",
+        L"Blue", L"Indigo", L"Purple", L"Violet",
+        L"Pink", L"Black", L"White", L"Rainbow"
+    };
 
-    //---------------------------------------------------------
-    // COLOR
-    //---------------------------------------------------------
-
-    if (m_iMode == MODE_COLOR || m_iMode == MODE_LIGHT_WATERMELON)
+    static const wchar_t* decals[] =
     {
-        const wchar_t* colors[] =
-        {
-            L"Red", L"Orange", L"Yellow", L"Green",
-            L"Blue", L"Indigo", L"Purple", L"Violet",
-            L"Pink", L"Black", L"White", L"Rainbow"
-        };
+        L"YellowBlood",
+        L"Bigshot",
+        L"RedGlowFade",
+        L"BeerSplash",
+        L"Blood",
+        L"Scorch",
+        L"ManhackCut",
+        L"FadingScorch",
+        L"Rollermine.Crater",
+        L"Impact.Concrete",
+        L"Impact.Metal",
+        L"Impact.Glass",
+        L"Impact.Sand"
+    };
 
-        for (int i = 0; i < 12; i++)
-        {
-            surface()->DrawSetTextColor(
-                (i == ((m_iMode == MODE_LIGHT_WATERMELON) ? m_iWatermelonColor : m_iColor)) ? 255 : 180,
-                (i == ((m_iMode == MODE_LIGHT_WATERMELON) ? m_iWatermelonColor : m_iColor)) ? 220 : 180,
-                (i == ((m_iMode == MODE_LIGHT_WATERMELON) ? m_iWatermelonColor : m_iColor)) ? 120 : 180,
-                220
-            );
-
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(colors[i], wcslen(colors[i]));
-            textY += 22;
-        }
-    }
-
-    //---------------------------------------------------------
-    // DECALS
-    //---------------------------------------------------------
-
-    if (m_iMode == MODE_DECAL)
+    static const wchar_t* fx[] =
     {
-        const wchar_t* decals[] =
-        {
-            L"YellowBlood",
-            L"Bigshot",
-            L"RedGlowFade",
-            L"BeerSplash",
-            L"Blood",
-            L"Scorch",
-            L"ManhackCut",
-            L"FadingScorch",
-            L"Rollermine.Crater",
-            L"Impact.Concrete",
-            L"Impact.Metal",
-            L"Impact.Glass",
-            L"Impact.Sand"
-        };
+        L"None",
+        L"Pulse Slow",
+        L"Pulse Fast",
+        L"Pulse Wide",
+        L"Fade Slow",
+        L"Fade Fast",
+        L"Solid Slow",
+        L"Solid Fast",
+        L"Strobe Slow",
+        L"Strobe Fast",
+        L"Strobe Faster",
+        L"Flicker Slow",
+        L"Flicker Fast",
+        L"No Dissipation",
+        L"Distort",
+        L"Hologram",
+        L"Explode",
+        L"Glow Shell",
+        L"Clamp Min Scale"
+    };
 
-        for (int i = 0; i < 13; i++)
-        {
-            surface()->DrawSetTextColor(
-                (i == m_iDecal) ? 255 : 180,
-                (i == m_iDecal) ? 220 : 180,
-                (i == m_iDecal) ? 120 : 180,
-                220
-            );
-
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(decals[i], wcslen(decals[i]));
-            textY += 22;
-        }
-    }
-
-    //---------------------------------------------------------
-    // RENDER FX
-    //---------------------------------------------------------
-
-    if (m_iMode == MODE_MATERIAL)
+    static const wchar_t* faces[] =
     {
-        const wchar_t* fx[] =
-        {
-            L"None",
-            L"Pulse Slow",
-            L"Pulse Fast",
-            L"Pulse Wide",
-            L"Fade Slow",
-            L"Fade Fast",
-            L"Solid Slow",
-            L"Solid Fast",
-            L"Strobe Slow",
-            L"Strobe Fast",
-            L"Strobe Faster",
-            L"Flicker Slow",
-            L"Flicker Fast",
-            L"No Dissipation",
-            L"Distort",
-            L"Hologram",
-            L"Explode",
-            L"Glow Shell",
-            L"Clamp Min Scale"
-        };
+        L"Smile", L"Sad", L"Angry",
+        L"Scared", L"Surprised", L"Neutral"
+    };
 
-        for (int i = 0; i < 19; i++)
-        {
-            surface()->DrawSetTextColor(
-                (i == m_iRenderFx) ? 255 : 180,
-                (i == m_iRenderFx) ? 220 : 180,
-                (i == m_iRenderFx) ? 120 : 180,
-                220
-            );
-
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(fx[i], wcslen(fx[i]));
-            textY += 22;
-        }
-    }
-
-    //---------------------------------------------------------
-    // FACE POSER
-    //---------------------------------------------------------
-
-    if (m_iMode == MODE_FACEPOSER)
+    static const wchar_t* constraints[] =
     {
-        const wchar_t* faces[] =
-        {
-            L"Smile", L"Sad", L"Angry",
-            L"Scared", L"Surprised", L"Neutral"
-        };
+        L"BallSocket", L"Weld", L"Rope", L"Slider", L"Hinge/Axis"
+    };
 
-        for (int i = 0; i < 6; i++)
-        {
-            surface()->DrawSetTextColor(
-                (i == m_iFace) ? 255 : 180,
-                (i == m_iFace) ? 220 : 180,
-                (i == m_iFace) ? 120 : 180,
-                220
-            );
-
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(faces[i], wcslen(faces[i]));
-            textY += 22;
-        }
-    }
-
-    //---------------------------------------------------------
-    // CONSTRAINTS
-    //---------------------------------------------------------
-
-    if (m_iMode == MODE_CONSTRAINT)
+    static const wchar_t* liftNames[] =
     {
-        const wchar_t* constraints[] =
-        {
-            L"BallSocket", L"Weld", L"Rope", L"Slider", L"Hinge/Axis"
-        };
+        L"100", L"200", L"300", L"400", L"500",
+        L"600", L"700", L"800", L"900", L"1000"
+    };
 
-        for (int i = 0; i < 5; i++)
-        {
-            surface()->DrawSetTextColor(
-                (i == m_iConstraint) ? 255 : 180,
-                (i == m_iConstraint) ? 220 : 180,
-                (i == m_iConstraint) ? 120 : 180,
-                220
-            );
-
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(constraints[i], wcslen(constraints[i]));
-            textY += 22;
-        }
-    }
-
-    //---------------------------------------------------------
-    // BALLOON LIFT (index 0..9 = 100..1000)
-    //---------------------------------------------------------
-    if (m_iMode == MODE_BALLOON)
+    static const wchar_t* powerNames[] =
     {
-        const wchar_t* liftNames[] =
-        {
-            L"100", L"200", L"300", L"400", L"500",
-            L"600", L"700", L"800", L"900", L"1000"
-        };
+        L"Low - Red (500)",
+        L"Medium - Green (1500)",
+        L"High - Blue (4000)"
+    };
 
-        for (int i = 0; i < 10; ++i)
-        {
-            const bool selected = (i == m_iBalloonLift);
-            surface()->DrawSetTextColor(
-                selected ? 255 : 180,
-                selected ? 220 : 180,
-                selected ? 120 : 180,
-                220
-            );
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(liftNames[i], wcslen(liftNames[i]));
-            textY += 22;
-        }
-    }
-
-    //---------------------------------------------------------
-    // THRUSTER POWER (R cycles red -> green -> blue)
-    //---------------------------------------------------------
-    if (m_iMode == MODE_THRUSTER)
+    // Show only the currently selected option, not the entire list.
+    switch (m_iMode)
     {
-        const wchar_t* powerNames[] =
-        {
-            L"Low - Red (500)",
-            L"Medium - Green (1500)",
-            L"High - Blue (4000)"
-        };
-
-        const int powerColors[3][3] =
-        {
-            {255, 80, 80},
-            {80, 255, 80},
-            {80, 150, 255}
-        };
-
-        for (int i = 0; i < 3; ++i)
-        {
-            const bool selected = (i == m_iThrusterPower);
-            surface()->DrawSetTextColor(
-                selected ? powerColors[i][0] : 180,
-                selected ? powerColors[i][1] : 180,
-                selected ? powerColors[i][2] : 180,
-                255
-            );
-            surface()->DrawSetTextPos(textX, textY);
-            surface()->DrawPrintText(powerNames[i], wcslen(powerNames[i]));
-            textY += 24;
-        }
+    case MODE_COLOR: DrawSelection(x, y, L"Color:", colors, ARRAYSIZE(colors), m_iColor); break;
+    case MODE_LIGHT_WATERMELON: DrawSelection(x, y, L"Light color:", colors, ARRAYSIZE(colors), m_iWatermelonColor); break;
+    case MODE_DECAL: DrawSelection(x, y, L"Decal:", decals, ARRAYSIZE(decals), m_iDecal); break;
+    case MODE_MATERIAL: DrawSelection(x, y, L"Effect:", fx, ARRAYSIZE(fx), m_iRenderFx); break;
+    case MODE_FACEPOSER: DrawSelection(x, y, L"Expression:", faces, ARRAYSIZE(faces), m_iFace); break;
+    case MODE_CONSTRAINT: DrawSelection(x, y, L"Constraint:", constraints, ARRAYSIZE(constraints), m_iConstraint); break;
+    case MODE_BALLOON: DrawSelection(x, y, L"Lift:", liftNames, ARRAYSIZE(liftNames), m_iBalloonLift); break;
+    case MODE_THRUSTER:
+        DrawSelection(x, y, L"Power:", powerNames, ARRAYSIZE(powerNames), m_iThrusterPower);
+        DrawLine(m_hFont, x, y, L"Reload: cycle thruster power", Color(230, 230, 230, 255));
+        break;
     }
+}
+
+void CHudMultitool::OnScreenSizeChanged(int oldWide, int oldTall)
+{
+    BaseClass::OnScreenSizeChanged(oldWide, oldTall);
+    int w, h;
+    surface()->GetScreenSize(w, h);
+    SetBounds(0, 0, w, h);
+    InvalidateLayout(true, true);
 }

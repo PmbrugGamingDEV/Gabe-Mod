@@ -462,6 +462,7 @@
             "c:\\program files (x86)\\windows kits\\10\\include\\10.0.26100.0\\ucrt\\assert.h",
             "c:\\gabemod\\src\\game\\client\\iinput.h",
             "c:\\gabemod\\src\\game\\client\\cl_camerablur.h",
+            "c:\\gabemod\\src\\game\\shared\\hl2\\basehlcombatweapon_shared.h",
             "c:\\gabemod\\src\\game\\client\\iviewrender.h",
             "c:\\gabemod\\src\\game\\client\\hud_basechat.h",
             "c:\\gabemod\\src\\game\\client\\hudelement.h",

@@ -1,3 +1,4 @@
+
 #include "cbase.h"
 #include "hud.h"
 #include "hudelement.h"
@@ -7,22 +8,29 @@
 #include "vgui/ISurface.h"
 #include "vgui/ILocalize.h"
 #include "vgui_controls/Panel.h"
+#include "tier1/strtools.h"
 
-// Memdbgon.h MUST be the last include in a .cpp file!!!!!
+// memdbgon.h must be the last include.
 #include "tier0/memdbgon.h"
 
 using namespace vgui;
 
 extern IClientMode* g_pClientMode;
 
-#define FONTFLAG_ANTIALIAS 0x010
+ConVar watermark_r("watermark_r", "150",
+    FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark red.");
 
-ConVar watermark_r("watermark_r", "255", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark color Red.");
-ConVar watermark_g("watermark_g", "255", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark color Green.");
-ConVar watermark_b("watermark_b", "255", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark color Blue.");
-ConVar watermark_a("watermark_a", "200", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark alpha.");
+ConVar watermark_g("watermark_g", "205",
+    FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark green.");
 
-// ----------------------------------------------------------------------
+ConVar watermark_b("watermark_b", "255",
+    FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark blue.");
+
+ConVar watermark_a("watermark_a", "210",
+    FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Watermark opacity.");
+
+ConVar watermark_enable("gabe_watermark_enable", "1",
+    FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Show watermark.");
 
 class CHudWatermark : public CHudElement, public Panel
 {
@@ -43,13 +51,23 @@ private:
 DECLARE_HUDELEMENT(CHudWatermark);
 
 CHudWatermark::CHudWatermark(const char* pElementName)
-    : CHudElement(pElementName), Panel(NULL, "HudWatermark")
+    : CHudElement(pElementName),
+    Panel(NULL, "HudWatermark")
 {
     SetParent(g_pClientMode->GetViewport());
     SetHiddenBits(0);
 
+    m_hFontTitle = INVALID_FONT;
+    m_hFontWebsite = INVALID_FONT;
+
+    SetPaintBackgroundEnabled(false);
+    SetPaintBorderEnabled(false);
+    SetMouseInputEnabled(false);
+    SetKeyBoardInputEnabled(false);
+
     int w, h;
     surface()->GetScreenSize(w, h);
+
     SetPos(0, 0);
     SetSize(w, h);
 }
@@ -58,119 +76,189 @@ void CHudWatermark::ApplySchemeSettings(IScheme* pScheme)
 {
     BaseClass::ApplySchemeSettings(pScheme);
 
-    m_hFontTitle = pScheme->GetFont("Tahoma", true);
-    if (!m_hFontTitle)
-    {
-        m_hFontTitle = surface()->CreateFont();
-        surface()->SetFontGlyphSet(m_hFontTitle, "Tahoma", 24, 700, 0, 0, FONTFLAG_ANTIALIAS);
-    }
+    SetPaintBackgroundEnabled(false);
+    SetPaintBorderEnabled(false);
 
-    m_hFontWebsite = pScheme->GetFont("Verdana", true);
-    if (!m_hFontWebsite)
-    {
-        m_hFontWebsite = surface()->CreateFont();
-        surface()->SetFontGlyphSet(m_hFontWebsite, "Verdana", 16, 500, 0, 0, FONTFLAG_ANTIALIAS);
-    }
+    m_hFontTitle = surface()->CreateFont();
+    surface()->SetFontGlyphSet(
+        m_hFontTitle,
+        "Tahoma",
+        16,
+        700,
+        0,
+        0,
+        ISurface::EFontFlags::FONTFLAG_ANTIALIAS
+    );
+
+    m_hFontWebsite = surface()->CreateFont();
+    surface()->SetFontGlyphSet(
+        m_hFontWebsite,
+        "Verdana",
+        11,
+        500,
+        0,
+        0,
+        ISurface::EFontFlags::FONTFLAG_ANTIALIAS
+    );
 
     int w, h;
     surface()->GetScreenSize(w, h);
+
     SetPos(0, 0);
     SetSize(w, h);
 }
 
 bool CHudWatermark::ShouldDraw(void)
 {
-    return true;
+    return watermark_enable.GetBool()
+        && CHudElement::ShouldDraw();
 }
 
 void CHudWatermark::Paint(void)
 {
+    if (!watermark_enable.GetBool())
+        return;
+
     int screenW, screenH;
     surface()->GetScreenSize(screenW, screenH);
 
-    wchar_t wszTitle[256];
-    g_pVGuiLocalize->ConvertANSIToUnicode("Gabe Mod", wszTitle, sizeof(wszTitle));
+    // ---------------------------------
+    // Text
+    // ---------------------------------
 
-    wchar_t wszWebsite[256] = L"";
-    V_wcsncpy(
-        wszWebsite,
-        L"https://sites.google.com/view/pmbruggaming",
-        sizeof(wszWebsite)
-    );
-
-    int r = watermark_r.GetInt();
-    int g = watermark_g.GetInt();
-    int b = watermark_b.GetInt();
-    int a = watermark_a.GetInt();
+    const wchar_t* title = L"GABE MOD";
+    const wchar_t* website =
+        L"sites.google.com/view/pmbruggaming";
 
     int titleW, titleH;
-    surface()->GetTextSize(m_hFontTitle, wszTitle, titleW, titleH);
+    int websiteW, websiteH;
 
-    int websiteW = 0, websiteH = 0;
-    if (wcslen(wszWebsite) > 0)
-        surface()->GetTextSize(m_hFontWebsite, wszWebsite, websiteW, websiteH);
+    surface()->GetTextSize(
+        m_hFontTitle,
+        title,
+        titleW,
+        titleH
+    );
 
-    const int padding = 6;
-    const int fadeSize = 8;
+    surface()->GetTextSize(
+        m_hFontWebsite,
+        website,
+        websiteW,
+        websiteH
+    );
 
-    int boxW = max(titleW, websiteW) + padding * 2;
-    int boxH = titleH + (websiteH ? websiteH + 2 : 0) + padding * 2;
+    // ---------------------------------
+    // Layout
+    // ---------------------------------
 
-    int x = screenW - boxW - 10;
-    int y = 10;
+    const int paddingX = 11;
+    const int paddingY = 7;
+    const int spacing = 2;
+    const int margin = 10;
 
-    // --------------------------------------------------
-    // Fade-out edges
-    // --------------------------------------------------
-    for (int i = fadeSize; i > 0; --i)
-    {
-        int alpha = (a * i) / (fadeSize * 2);
+    const int contentW = max(titleW, websiteW);
 
-        surface()->DrawSetColor(0, 0, 0, alpha);
-        surface()->DrawFilledRect(
-            x - i,
-            y - i,
-            x + boxW + i,
-            y + boxH + i
-        );
-    }
+    const int boxW = contentW + paddingX * 2;
+    const int boxH =
+        paddingY * 2 +
+        titleH +
+        spacing +
+        websiteH +
+        4;
 
-    // --------------------------------------------------
-    // Solid center box
-    // --------------------------------------------------
-    surface()->DrawSetColor(0, 0, 0, a);
+    const int x = screenW - boxW - margin;
+    const int y = margin;
+
+    const int a = clamp(watermark_a.GetInt(), 0, 255);
+    const int r = clamp(watermark_r.GetInt(), 0, 255);
+    const int g = clamp(watermark_g.GetInt(), 0, 255);
+    const int b = clamp(watermark_b.GetInt(), 0, 255);
+
+    // ---------------------------------
+    // Subtle shadow
+    // ---------------------------------
+
+    surface()->DrawSetColor(0, 0, 0, a / 3);
     surface()->DrawFilledRect(
-        x,
-        y,
+        x + 2, y + 3,
+        x + boxW + 2,
+        y + boxH + 3
+    );
+
+    // ---------------------------------
+    // Main dark background
+    // ---------------------------------
+
+    surface()->DrawSetColor(17, 21, 27, a);
+    surface()->DrawFilledRect(
+        x, y,
         x + boxW,
         y + boxH
     );
 
-    // --------------------------------------------------
-    // Text Positions
-    // --------------------------------------------------
-    int titleX = x + boxW - padding - titleW;
-    int titleY = y + padding;
+    // ---------------------------------
+    // Thin border
+    // ---------------------------------
 
-    int websiteX = x + boxW - padding - websiteW;
-    int websiteY = titleY + titleH + 2;
+    surface()->DrawSetColor(r, g, b, a / 3);
+    surface()->DrawOutlinedRect(
+        x, y,
+        x + boxW,
+        y + boxH
+    );
 
-    // --------------------------------------------------
+    // ---------------------------------
     // Title
-    // --------------------------------------------------
-    surface()->DrawSetTextFont(m_hFontTitle);
-    surface()->DrawSetTextColor(r, g, b, a);
-    surface()->DrawSetTextPos(titleX, titleY);
-    surface()->DrawPrintText(wszTitle, wcslen(wszTitle));
+    // ---------------------------------
 
-    // --------------------------------------------------
+    const int titleX =
+        x + boxW - paddingX - titleW;
+
+    const int titleY = y + paddingY;
+
+    surface()->DrawSetTextFont(m_hFontTitle);
+    surface()->DrawSetTextColor(r, g, b, 255);
+    surface()->DrawSetTextPos(titleX, titleY);
+    surface()->DrawPrintText(
+        title,
+        wcslen(title)
+    );
+
+    // ---------------------------------
     // Website
-    // --------------------------------------------------
-    if (wcslen(wszWebsite) > 0)
-    {
-        surface()->DrawSetTextFont(m_hFontWebsite);
-        surface()->DrawSetTextColor(r, g, b, a);
-        surface()->DrawSetTextPos(websiteX, websiteY);
-        surface()->DrawPrintText(wszWebsite, wcslen(wszWebsite));
-    }
+    // ---------------------------------
+
+    const int websiteX =
+        x + boxW - paddingX - websiteW;
+
+    const int websiteY =
+        titleY + titleH + spacing;
+
+    surface()->DrawSetTextFont(m_hFontWebsite);
+    surface()->DrawSetTextColor(
+        175, 185, 195, 235
+    );
+
+    surface()->DrawSetTextPos(
+        websiteX,
+        websiteY
+    );
+
+    surface()->DrawPrintText(
+        website,
+        wcslen(website)
+    );
+
+    // ---------------------------------
+    // Bottom accent line
+    // ---------------------------------
+
+    surface()->DrawSetColor(r, g, b, 220);
+
+    surface()->DrawFilledRect(
+        x + 1,
+        y + boxH - 2,
+        x + boxW - 1,
+        y + boxH - 1
+    );
 }

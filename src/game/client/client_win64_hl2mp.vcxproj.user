@@ -3,9 +3,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1280 -h 720 -windowed</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen -secure</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen -secure|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -windowed -secure|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1024 -h 768 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1024 -h 768 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1280 -h 720 -windowed|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1600 -h 900 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1900 -h 1080 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen|-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1920 -h 1080 -fullscreen -secure|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>
@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <LocalDebuggerCommand>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -novid -w 1280 -h 720 -windowed</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1024 -h 768 -fullscreen</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>D:\Steam\steamapps\common\Source SDK Base 2013 Multiplayer</LocalDebuggerWorkingDirectory>
     <LocalDebuggerCommandArgumentsHistory>-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 900 -refresh 144 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 850 -refresh 144 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 650 -refresh 144 -windowed -scriptlang python|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1600-h 650 -refresh 144 -windowed|-game "C:\GabeMod\game\mod_hl2mp" -dev -w 1920-h 1080 -refresh 144 -windowed|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>

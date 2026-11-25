@@ -11,6 +11,9 @@
 #include <vgui_controls/Panel.h>
 #include <vgui_controls/Button.h>
 #include <vgui_controls/ListPanel.h>
+#include <vgui_controls/PanelListPanel.h>
+#include <vgui_controls/ImagePanel.h>
+#include <vgui_controls/ScrollBar.h>
 #include <vgui_controls/CheckButton.h>
 #include <vgui_controls/MessageBox.h>
 #include <vgui_controls/ComboBox.h>
@@ -38,6 +41,62 @@ using namespace vgui;
 
 ConVar gabeplus_newgame_useampmclock("gabe_newgame_useampmclock", "1", FCVAR_ARCHIVE, "If set to 1, use the 12-hour clock (AM/PM)");
 
+// GabeMod visual theme. Customize these values in one place.
+static const Color NG_BG(24, 24, 24, 255);
+static const Color NG_PANEL(35, 35, 35, 255);
+static const Color NG_ACCENT(186, 186, 186, 255);
+static const Color NG_TEXT(235, 235, 235, 255);
+static const Color NG_MUTED(162, 162, 162, 255);
+
+static void NG_FillRect(int x, int y, int w, int h, const Color& col)
+{
+	surface()->DrawSetColor(col);
+	surface()->DrawFilledRect(x, y, x + w, y + h);
+}
+
+static void NG_OutlineRect(int x, int y, int w, int h, const Color& col)
+{
+	surface()->DrawSetColor(col);
+	surface()->DrawOutlinedRect(x, y, x + w, y + h);
+}
+
+static void NG_StyleLabel(Label* pLabel, bool muted = false)
+{
+	if (pLabel)
+		pLabel->SetFgColor(muted ? NG_MUTED : NG_TEXT);
+}
+
+// Custom-painted VGUI button: no external material or scheme required.
+class CNewGameButton : public Button
+{
+	DECLARE_CLASS_SIMPLE(CNewGameButton, Button);
+public:
+	CNewGameButton(Panel* parent, const char* name, const char* text,
+		Panel* target, const char* command, bool primary)
+		: BaseClass(parent, name, text, target, command), m_bPrimary(primary)
+	{
+		SetPaintBorderEnabled(false);
+		SetContentAlignment(Label::a_center);
+		SetArmedSound("ui/buttonrollover.wav");
+		SetDepressedSound("ui/buttonclick.wav");
+		SetDefaultColor(NG_TEXT, NG_TEXT);
+		SetArmedColor(Color(255, 255, 255, 255), Color(255, 255, 255, 255));
+	}
+
+	void PaintBackground()
+	{
+		Color bg = m_bPrimary ? Color(86, 86, 86, 255) : Color(47, 47, 47, 255);
+		if (IsSelected()) bg = Color(88, 88, 88, 255);
+		if (IsArmed()) bg = m_bPrimary ? Color(115, 115, 115, 255) : Color(72, 72, 72, 255);
+		if (IsDepressed()) bg = Color(48, 48, 48, 255);
+		NG_FillRect(0, 0, GetWide(), GetTall(), bg);
+		NG_OutlineRect(0, 0, GetWide(), GetTall(),
+			m_bPrimary ? NG_ACCENT : Color(92, 92, 92, 255));
+	}
+private:
+	bool m_bPrimary;
+};
+
 class CGamePadUIMapTab;
 
 static void StripExtensionInPlace(char* p)
@@ -63,7 +122,7 @@ static bool IsMapNameAllowed(const char* map)
 	// Keep it simple/safe: map name only, no spaces, no semicolons, no quotes.
 	for (const char* c = map; *c; ++c)
 	{
-		if (*c == ' ' || *c == ';' || *c == '"')
+		if (*c == ' ' || *c == ';' || *c == '"' || *c == '\n' || *c == '\r' || *c == '/' || *c == '\\')
 			return false;
 	}
 	return true;
@@ -128,6 +187,57 @@ private:
 // ------------------------------------------------------------
 // Map selection tab
 // ------------------------------------------------------------
+// A row of thumbnail buttons; PanelListPanel supplies vertical scrolling.
+class CGabeMapTileRow : public Panel
+{
+	DECLARE_CLASS_SIMPLE(CGabeMapTileRow, Panel);
+public:
+	CGabeMapTileRow(Panel* parent) : BaseClass(parent, "MapTileRow"), m_Count(0)
+	{
+		SetTall(126);
+		SetPaintBackgroundEnabled(false);
+	}
+	void AddMap(Panel* target, const char* map, const char* image, int index)
+	{
+		if (m_Count >= 3) return;
+		char cmd[64]; Q_snprintf(cmd, sizeof(cmd), "SelectTile %d", index);
+		Button* b = new CNewGameButton(this, map, map, target, cmd, false);
+		b->SetContentAlignment(Label::a_south);
+		b->SetArmedSound("ui/buttonrollover.wav");
+		b->SetDepressedSound("ui/buttonclick.wav");
+		ImagePanel* img = new ImagePanel(b, "Thumbnail");
+		img->SetImage(image);
+		img->SetShouldScaleImage(true);
+		img->SetMouseInputEnabled(false);
+		img->SetKeyBoardInputEnabled(false);
+		m_Indices[m_Count] = index;
+		m_Buttons[m_Count] = b;
+		m_Images[m_Count] = img;
+		++m_Count;
+		InvalidateLayout();
+	}
+	void UpdateSelection(int index)
+	{
+		for (int i = 0; i < m_Count; ++i)
+			m_Buttons[i]->SetSelected(m_Indices[i] == index);
+	}
+	virtual void PerformLayout()
+	{
+		BaseClass::PerformLayout();
+		int cell = MAX(1, (GetWide() - 12) / 3);
+		for (int i = 0; i < m_Count; ++i)
+		{
+			m_Buttons[i]->SetBounds(3 + i * (cell + 3), 3, cell, GetTall() - 6);
+			m_Images[i]->SetBounds(4, 4, MAX(1, cell - 8), MAX(1, GetTall() - 35));
+		}
+	}
+private:
+	int m_Count;
+	int m_Indices[3];
+	Button* m_Buttons[3];
+	ImagePanel* m_Images[3];
+};
+
 class CGamepadUIMapTab : public Panel
 {
 	DECLARE_CLASS_SIMPLE(CGamepadUIMapTab, Panel);
@@ -136,18 +246,22 @@ public:
 	CGamepadUIMapTab(Panel* parent)
 		: BaseClass(parent, "GamepadUIMapTab")
 	{
-		m_pMapList = new ListPanel(this, "MapList");
+		m_pMapSheet = new PropertySheet(this, "MapViews");
+		m_pTiles = new PanelListPanel(m_pMapSheet, "GameMaps");
+		m_pTiles->SetFirstColumnWidth(0);
+		m_pMapList = new ListPanel(m_pMapSheet, "MapList");
+		m_pMapSheet->AddPage(m_pTiles, "Game");
+		m_pMapSheet->AddPage(m_pMapList, "Browse All");
 
 		// Create image list for thumbnails/icons
 		m_pImageList = new ImageList(false);
 		m_pMapList->SetImageList(m_pImageList, false);
 
-		m_pMapList->AddColumnHeader(0, "icon", "", 256, ListPanel::COLUMN_IMAGE);
-		m_pMapList->AddColumnHeader(1, "map", "Map", 176, 0);
-		m_pMapList->AddColumnHeader(2, "category", "Category", 108, 0);
-		m_pMapList->AddColumnHeader(3, "lastplayed", "Last Played", 240, 0);
+		m_pMapList->AddColumnHeader(0, "map", "Map Name", 150, 60, 1200, ListPanel::COLUMN_RESIZEWITHWINDOW);
+		m_pMapList->AddColumnHeader(1, "category", "Category", 100, 50, 300, ListPanel::COLUMN_RESIZEWITHWINDOW);
 
-		m_pMapList->SetRowHeight(128);
+
+		m_pMapList->SetRowHeight(24);
 
 		m_pMapList->SetMultiselectEnabled(false);
 		m_pMapList->SetEmptyListText("No maps found.");
@@ -155,12 +269,46 @@ public:
 		m_pMapList->AddActionSignalTarget(this);
 
 		m_pFilter = new TextEntry(this, "Filter");
-		m_pFilterLabel = new Label(this, "FilterLabel", "Filter:");
+		m_pFilterLabel = new Label(this, "FilterLabel", "SEARCH MAPS");
+		m_pMapSummary = new Label(this, "MapSummary", "Select a map to view its details");
+		m_pMapSummary->SetContentAlignment(Label::a_west);
+		NG_StyleLabel(m_pFilterLabel, true);
+		NG_StyleLabel(m_pMapSummary, false);
+		m_pMapList->SetBgColor(NG_PANEL);
+		m_pMapList->SetFgColor(NG_TEXT);
+		m_pFilter->SetBgColor(Color(47, 47, 47, 255));
+		m_pFilter->SetFgColor(NG_TEXT);
 
 		m_szLastFilter[0] = 0;
+		m_szSelectedMap[0] = 0;
+		m_pHistory = new Label(this, "History", "Last played: -");
+		NG_StyleLabel(m_pHistory, true);
 
 		LoadMaps();
 		ApplyFilter();
+	}
+
+	virtual void OnCommand(const char* command)
+	{
+		if (!Q_strnicmp(command, "SelectTile ", 11))
+		{
+			int index = Q_atoi(command + 11);
+			if (m_Maps.IsValidIndex(index))
+			{
+				for (int row = 0; row < m_pMapList->GetItemCount(); ++row)
+				{
+					int id = m_pMapList->GetItemIDFromRow(row);
+					KeyValues* kv = m_pMapList->GetItem(id);
+					if (kv && !Q_stricmp(kv->GetString("map"), m_Maps[index].String()))
+					{
+						m_pMapList->SetSingleSelectedItem(id);
+						break;
+					}
+				}
+			}
+			return;
+		}
+		BaseClass::OnCommand(command);
 	}
 
 	virtual ~CGamepadUIMapTab()
@@ -168,6 +316,7 @@ public:
 		// 2007-safe cleanup
 		if (m_pImageList)
 		{
+			m_pMapList->SetImageList(NULL, false);
 			delete m_pImageList;
 			m_pImageList = NULL;
 		}
@@ -203,21 +352,19 @@ public:
 	virtual void PerformLayout()
 	{
 		BaseClass::PerformLayout();
+		int w, h; GetSize(w, h);
+		m_pFilterLabel->SetBounds(10, 8, w - 20, 18);
+		m_pFilter->SetBounds(10, 30, w - 20, 26);
+		m_pMapSheet->SetBounds(10, 64, w - 20, MAX(1, h - 126));
+		m_pMapSummary->SetBounds(16, h - 58, w - 32, 24);
+		m_pHistory->SetBounds(16, h - 32, w - 32, 22);
+	}
 
-		int w, h;
-		GetSize(w, h);
-
-		const int pad = 12;
-		const int filterH = 22;
-
-		m_pFilterLabel->SetPos(pad, pad);
-		m_pFilterLabel->SetSize(44, filterH);
-
-		m_pFilter->SetPos(pad + 48, pad);
-		m_pFilter->SetSize(w - (pad + 48) - pad, filterH);
-
-		m_pMapList->SetPos(pad, pad + filterH + 8);
-		m_pMapList->SetSize(w - pad * 2, h - (pad + filterH + 8) - pad);
+	void PaintBackground()
+	{
+		NG_FillRect(0, 0, GetWide(), GetTall(), NG_PANEL);
+		NG_FillRect(8, GetTall() - 60, GetWide() - 16, 54, NG_BG);
+		NG_FillRect(8, GetTall() - 60, 3, 54, NG_ACCENT);
 	}
 
 	void ShowMapInfo(const char* map)
@@ -272,6 +419,28 @@ public:
 			Q_strncpy(m_szLastFilter, text, sizeof(m_szLastFilter));
 			ApplyFilter();
 		}
+
+		const char* selected = GetSelectedMap();
+		char details[512];
+		if (selected && selected[0])
+			Q_snprintf(details, sizeof(details), "%s  |  %s",
+				selected, GetMapCategory(selected));
+		else
+			Q_snprintf(details, sizeof(details), "NO MAP SELECTED     |     %d maps available",
+				m_pMapList->GetItemCount());
+		m_pMapSummary->SetText(details);
+		if (Q_stricmp(m_szSelectedMap, selected))
+		{
+			Q_strncpy(m_szSelectedMap, selected, sizeof(m_szSelectedMap));
+			int selectedIndex = -1;
+			for (int i = 0; i < m_Maps.Count(); ++i)
+				if (!Q_stricmp(m_Maps[i].String(), selected)) { selectedIndex = i; break; }
+			for (int i = 0; i < m_TileRows.Count(); ++i)
+				m_TileRows[i]->UpdateSelection(selectedIndex);
+			char history[160];
+			Q_snprintf(history, sizeof(history), "Last played: %s", selected[0] ? GetMapLastPlayed(selected) : "-");
+			m_pHistory->SetText(history);
+		}
 	}
 
 	void OnMouseDoublePressed(int itemID)
@@ -280,13 +449,15 @@ public:
 			return;
 
 		PostMessage(
-			GetParent()->GetParent(),
+			GetParent(),
 			new KeyValues("Command", "command", "StartServer")
 		);
 	}
 
 	const char* GetSelectedMap() const
 	{
+		if (m_pMapList->GetSelectedItemsCount() <= 0)
+			return "";
 		int itemID = m_pMapList->GetSelectedItem(0);
 		if (itemID == -1)
 			return "";
@@ -428,6 +599,7 @@ private:
 		// 2007: no RemoveAllImages() so recreate the ImageList
 		if (m_pImageList)
 		{
+			m_pMapList->SetImageList(NULL, false);
 			delete m_pImageList;
 			m_pImageList = NULL;
 		}
@@ -439,6 +611,11 @@ private:
 	void ApplyFilter()
 	{
 		m_pMapList->DeleteAllItems();
+		m_szSelectedMap[0] = 0;
+		m_TileRows.RemoveAll();
+		m_pTiles->DeleteAllItems();
+		CGabeMapTileRow* tileRow = NULL;
+		int tileCount = 0;
 		RebuildImageList();
 
 		char filter[256];
@@ -474,8 +651,18 @@ private:
 			// If missing, use fallback logo (no .vmt extension here)
 			const char* finalMat = exists ? matPath : "maps/missing";
 
+			if (tileCount % 3 == 0)
+			{
+				tileRow = new CGabeMapTileRow(m_pTiles);
+				m_pTiles->AddItem(NULL, tileRow);
+				m_TileRows.AddToTail(tileRow);
+			}
+			tileRow->AddMap(this, map, finalMat, i);
+			++tileCount;
+
 			IImage* img = scheme()->GetImage(finalMat, true);
-			int imageIndex = m_pImageList->AddImage(img);
+			// Do not resize shared scheme images; thumbnail panels scale them.
+			int imageIndex = img ? m_pImageList->AddImage(img) : 0;
 
 			KeyValues* kv = new KeyValues("item");
 			kv->SetInt("icon", imageIndex);
@@ -493,11 +680,17 @@ private:
 	}
 
 private:
+	CUtlVector<CGabeMapTileRow*> m_TileRows;
+	PropertySheet* m_pMapSheet;
+	PanelListPanel* m_pTiles;
 	ListPanel* m_pMapList;
 	ImageList* m_pImageList;
 
 	TextEntry* m_pFilter;
 	Label* m_pFilterLabel;
+	Label* m_pMapSummary;
+	Label* m_pHistory;
+	char m_szSelectedMap[256];
 
 	CUtlVector<CUtlString> m_Maps;
 	char m_szLastFilter[256];
@@ -513,10 +706,10 @@ public:
 	CGamepadUIServerSettingsTab(Panel* parent)
 		: BaseClass(parent, "GamepadUIServerSettingsTab")
 	{
-		m_pSingleplayer = new CheckButton(this, "Singleplayer", "Singleplayer Game (Default)");
+		m_pSingleplayer = new CheckButton(this, "Singleplayer", "Singleplayer");
 		m_pSingleplayer->SetSelected(true);
 
-		m_pMaxPlayersLabel = new Label(this, "MaxPlayersLabel", "Max Players (including yourself):");
+		m_pMaxPlayersLabel = new Label(this, "MaxPlayersLabel", "Max Players:");
 		m_pMaxPlayers = new Slider(this, "MaxPlayers");
 		m_pMaxPlayers->SetRange(1, 33);
 		m_pMaxPlayers->SetValue(1);
@@ -535,37 +728,48 @@ public:
 		m_pTimeLimitValue = new Label(this, "TimeLimitValue", "");
 		m_pFragLimitValue = new Label(this, "FragLimitValue", "");
 
-		m_pTeamplay = new CheckButton(this, "Teamplay", "Checked = Team Based, Unchecked = Free for all");
+		m_pTeamplay = new CheckButton(this, "Teamplay", "Teamplay");
 		m_pTeamplay->SetSelected(false);
 
-		m_pFriendlyFire = new CheckButton(this, "FriendlyFire", "Friendly Fire (mp_friendlyfire)");
+		m_pFriendlyFire = new CheckButton(this, "FriendlyFire", "Friendly Fire");
 		m_pFriendlyFire->SetSelected(true);
 
-		m_pCheats = new CheckButton(this, "Cheats", "Allow Cheats (sv_cheats)");
+		m_pCheats = new CheckButton(this, "Cheats", "Allow Cheats");
 		m_pCheats->SetSelected(true);
 
-		m_pChangelogAtSpawn = new CheckButton(this, "Changelog At Spawn", "Show the changelog every time you spawn (Obsolete)");
+		m_pChangelogAtSpawn = new CheckButton(this, "Changelog At Spawn", "Changelog at spawn (obsolete)");
 		m_pChangelogAtSpawn->SetSelected(false);
 
-		m_pDeathmatchMode = new CheckButton(this, "Deathmatch Mode", "Deathmatch Gamemode (No sandbox, No godmode)");
+		m_pDeathmatchMode = new CheckButton(this, "Deathmatch Mode", "Deathmatch");
 		m_pDeathmatchMode->SetSelected(false);
 
-		m_pHL1Mode = new CheckButton(this, "Half-Life Mode", "Spawn With Half-Life 1 weapons");
+		m_pHL1Mode = new CheckButton(this, "Half-Life Mode", "Half-Life 1 loadout");
 		m_pHL1Mode->SetSelected(false);
 
-		m_pSandboxMode = new CheckButton(this, "Sandbox Mode", "Sandbox Gamemode (Default)");
+		m_pSandboxMode = new CheckButton(this, "Sandbox Mode", "Sandbox");
 		m_pSandboxMode->SetSelected(true);
 
-		m_pJBModMode = new CheckButton(this, "JBMod Mode", "JBMod Gamemode (Like the JBMod on Steam)");
+		m_pJBModMode = new CheckButton(this, "JBMod Mode", "JBMod");
 		m_pJBModMode->SetSelected(false);
 
-		m_pHL2Mode = new CheckButton(this, "Half-Life 2 Mode", "Spawn With all Half-Life 2 weapons");
+		m_pHL2Mode = new CheckButton(this, "Half-Life 2 Mode", "Half-Life 2 loadout");
 		m_pHL2Mode->SetSelected(false);
 
-		m_pBEModMode = new CheckButton(this, "BEMod Mode", "Buildemod Gamemode (Like the Buildemod on Moddb)");
+		m_pBEModMode = new CheckButton(this, "BEMod Mode", "BEMod");
 		m_pBEModMode->SetSelected(false);
 
 		ApplySingleplayerLock();
+
+		m_pSessionHeader = new Label(this, "SessionHeader", "SESSION OPTIONS");
+		m_pModeHeader = new Label(this, "ModeHeader", "GAME MODE & LOADOUT");
+		NG_StyleLabel(m_pSessionHeader);
+		NG_StyleLabel(m_pModeHeader);
+		NG_StyleLabel(m_pMaxPlayersLabel, true);
+		NG_StyleLabel(m_pTimeLimitLabel, true);
+		NG_StyleLabel(m_pFragLimitLabel, true);
+		NG_StyleLabel(m_pMaxPlayersValue);
+		NG_StyleLabel(m_pTimeLimitValue);
+		NG_StyleLabel(m_pFragLimitValue);
 
 		m_bLastSingleplayer = true;
 	}
@@ -573,39 +777,34 @@ public:
 	virtual void PerformLayout()
 	{
 		BaseClass::PerformLayout();
-
-		int w, h;
-		GetSize(w, h);
-
+		int w, h; GetSize(w, h);
 		const int pad = 12;
-		const int rowH = 24;
-		int y = pad;
-
-		m_pSingleplayer->SetPos(pad, y);
-		m_pSingleplayer->SetSize(w - pad * 2, rowH);
-		y += rowH + 10;
-
-		LayoutSliderRow(m_pMaxPlayersLabel, m_pMaxPlayers, m_pMaxPlayersValue, pad, y, w, rowH);
-		y += rowH + 8;
-
-		LayoutSliderRow(m_pTimeLimitLabel, m_pTimeLimit, m_pTimeLimitValue, pad, y, w, rowH);
-		y += rowH + 8;
-
-		LayoutSliderRow(m_pFragLimitLabel, m_pFragLimit, m_pFragLimitValue, pad, y, w, rowH);
-		y += rowH + 12;
-
-		m_pTeamplay->SetPos(pad, y);          m_pTeamplay->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pFriendlyFire->SetPos(pad, y);      m_pFriendlyFire->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pCheats->SetPos(pad, y);            m_pCheats->SetSize(w - pad * 2, rowH); y += rowH + 10;
-		m_pChangelogAtSpawn->SetPos(pad, y);  m_pChangelogAtSpawn->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pDeathmatchMode->SetPos(pad, y);	  m_pDeathmatchMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pHL1Mode->SetPos(pad, y);			  m_pHL1Mode->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pSandboxMode->SetPos(pad, y);		  m_pSandboxMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pJBModMode->SetPos(pad, y);		  m_pJBModMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pHL2Mode->SetPos(pad, y);			  m_pHL2Mode->SetSize(w - pad * 2, rowH); y += rowH + 4;
-		m_pBEModMode->SetPos(pad, y);		  m_pBEModMode->SetSize(w - pad * 2, rowH); y += rowH + 4;
-
+		const int row = clamp((h - 16) / 16, 15, 28);
+		int y = 8;
+		m_pSessionHeader->SetBounds(pad, y, w - 2 * pad, row); y += row;
+		m_pSingleplayer->SetBounds(pad, y, w - 2 * pad, row); y += row;
+		LayoutSliderRow(m_pMaxPlayersLabel, m_pMaxPlayers, m_pMaxPlayersValue, pad, y, w - pad, row); y += row;
+		LayoutSliderRow(m_pTimeLimitLabel, m_pTimeLimit, m_pTimeLimitValue, pad, y, w - pad, row); y += row;
+		LayoutSliderRow(m_pFragLimitLabel, m_pFragLimit, m_pFragLimitValue, pad, y, w - pad, row); y += row;
+		CheckButton* session[] = { m_pTeamplay, m_pFriendlyFire, m_pCheats };
+		for (int i = 0; i < ARRAYSIZE(session); ++i)
+		{
+			session[i]->SetBounds(pad, y, w - 2 * pad, row); y += row;
+		}
+		y += 6;
+		m_pModeHeader->SetBounds(pad, y, w - 2 * pad, row); y += row;
+		CheckButton* modes[] = { m_pSandboxMode, m_pDeathmatchMode, m_pHL1Mode, m_pHL2Mode, m_pJBModMode, m_pBEModMode, m_pChangelogAtSpawn };
+		for (int i = 0; i < ARRAYSIZE(modes); ++i)
+		{
+			modes[i]->SetBounds(pad, y, w - 2 * pad, row); y += row;
+		}
 		UpdateValueLabels();
+	}
+
+	void PaintBackground()
+	{
+		NG_FillRect(0, 0, GetWide(), GetTall(), NG_BG);
+		NG_FillRect(8, 8, GetWide() - 16, 2, NG_ACCENT);
 	}
 
 	void UpdateValueLabels()
@@ -704,6 +903,8 @@ private:
 	}
 
 private:
+	Label* m_pSessionHeader;
+	Label* m_pModeHeader;
 	CheckButton* m_pSingleplayer;
 	bool m_bLastSingleplayer;
 
@@ -748,7 +949,7 @@ public:
 
 		m_pPasswordLabel = new Label(this, "PasswordLabel", "Password:");
 		m_pPassword = new TextEntry(this, "Password");
-		m_pPassword->SetText("Your Password Goes Here");
+		m_pPassword->SetText("");
 
 		m_pLANOnly = new CheckButton(this, "LANOnly", "LAN Only?");
 		m_pLANOnly->SetSelected(true);
@@ -757,6 +958,14 @@ public:
 		m_pPublic = new CheckButton(this, "Public", "Show in Server Browser?");
 		m_pPublic->SetSelected(false);
 		m_pPublic->SetEnabled(true);
+		m_pInfoHeader = new Label(this, "InfoHeader", "SERVER IDENTITY");
+		NG_StyleLabel(m_pInfoHeader);
+		NG_StyleLabel(m_pNameLabel, true);
+		NG_StyleLabel(m_pPasswordLabel, true);
+		m_pName->SetBgColor(NG_PANEL);
+		m_pName->SetFgColor(NG_TEXT);
+		m_pPassword->SetBgColor(NG_PANEL);
+		m_pPassword->SetFgColor(NG_TEXT);
 	}
 
 	virtual void PerformLayout()
@@ -769,6 +978,8 @@ public:
 		const int pad = 12;
 		const int rowH = 22;
 		int y = pad;
+		m_pInfoHeader->SetBounds(pad, y, w - pad * 2, 23);
+		y += 32;
 
 		m_pNameLabel->SetPos(pad, y);
 		m_pNameLabel->SetSize(100, rowH);
@@ -793,6 +1004,12 @@ public:
 		y += rowH + 10;
 	}
 
+	void PaintBackground()
+	{
+		NG_FillRect(0, 0, GetWide(), GetTall(), NG_BG);
+		NG_FillRect(8, 8, GetWide() - 16, 2, NG_ACCENT);
+	}
+
 	// ------------------------------------------------------------
 	// Getters
 	// ------------------------------------------------------------
@@ -810,6 +1027,7 @@ public:
 	bool IsPublic()  const { return m_pPublic->IsSelected(); }
 
 private:
+	Label* m_pInfoHeader;
 	Label* m_pNameLabel;
 	TextEntry* m_pName;
 
@@ -820,38 +1038,36 @@ private:
 	CheckButton* m_pPublic;
 };
 
-// ------------------------------------------------------------
-// Main frame (IMPORTANT: VPANEL parenting in 2007)
-// ------------------------------------------------------------
 class CGamepadUINewServer : public Frame
 {
 	DECLARE_CLASS_SIMPLE(CGamepadUINewServer, Frame);
 public:
 	CGamepadUINewServer(VPANEL parent)
-		: BaseClass(NULL, "GamepadUINewServer") // 2007: Frame ctor does NOT take VPANEL
+		: BaseClass(NULL, "GamepadUINewServer")
 	{
-		SetParent(parent); // 2007-correct parenting
+		SetParent(parent);
 
-		SetTitle("NEW GAME", true);
-		SetSize(780, 600);
-		SetMinimumSize(640, 480);
+		SetTitle("New Game", false);
+		SetSize(1100, 720);
+		SetMinimumSize(640, 400);
+		SetDeleteSelfOnClose(false);
+		SetProportional(false);
 		SetSizeable(true);
 		SetMoveable(true);
 		SetCloseButtonVisible(true);
 
-		m_pSheet = new PropertySheet(this, "Sheet");
-		m_pMapTab = new CGamepadUIMapTab(m_pSheet);
-		m_pSettingsTab = new CGamepadUIServerSettingsTab(m_pSheet);
-
-		m_pSheet->AddPage(m_pMapTab, "Select Map");
-		m_pSheet->AddPage(m_pSettingsTab, "Settings");
-
-		m_pStart = new Button(this, "Start", "Create New Game", this, "StartServer");
-		m_pCancel = new Button(this, "Cancel", "Cancel", this, "Cancel");
-
-		m_pServerInfoTab = new CGamepadUIServerInfoTab(m_pSheet);
-		m_pSheet->AddPage(m_pServerInfoTab, "Server Info");
-
+		m_pMapTab = new CGamepadUIMapTab(this);
+		m_pSettingsTab = new CGamepadUIServerSettingsTab(this);
+		m_pServerInfoTab = new CGamepadUIServerInfoTab(this);
+		m_pSettingsButton = new CNewGameButton(this, "Settings", "Settings", this, "Settings", false);
+		m_pInfoButton = new CNewGameButton(this, "ServerInfo", "Server Info", this, "ServerInfo", false);
+		m_pStart = new CNewGameButton(this, "Start", "Create Game", this, "StartServer", true);
+		m_pCancel = new CNewGameButton(this, "Cancel", "Cancel", this, "Cancel", false);
+		m_pServerInfoTab->SetVisible(false);
+		m_pSettingsTab->SetVisible(true);
+		m_iScreenW = m_iScreenH = 0;
+		FitToScreen();
+		SetVisible(false);
 		CenterOnScreen();
 		InvalidateLayout(true, true);
 	}
@@ -859,27 +1075,57 @@ public:
 	virtual void PerformLayout()
 	{
 		BaseClass::PerformLayout();
+		int w, h; GetSize(w, h);
+		const int pad = 10, top = 34, bottom = 50;
+		int left = (w - 3 * pad) * 54 / 100;
+		int rightX = left + 2 * pad;
+		int rightW = w - rightX - pad;
+		int contentH = MAX(1, h - top - bottom);
+		m_pMapTab->SetBounds(pad, top, left, contentH);
+		m_pSettingsButton->SetBounds(rightX, top, (rightW - 4) / 2, 28);
+		m_pInfoButton->SetBounds(rightX + (rightW + 4) / 2, top, (rightW - 4) / 2, 28);
+		m_pSettingsTab->SetBounds(rightX, top + 34, rightW, MAX(1, contentH - 34));
+		m_pServerInfoTab->SetBounds(rightX, top + 34, rightW, MAX(1, contentH - 34));
+		m_pCancel->SetBounds(w - 110, h - 40, 100, 30);
+		m_pStart->SetBounds(w - 282, h - 40, 164, 30);
+	}
 
-		int w, h;
-		GetSize(w, h);
+	void FitToScreen()
+	{
+		int sw, sh; surface()->GetScreenSize(sw, sh);
+		if (sw <= 0 || sh <= 0) return;
+		m_iScreenW = sw; m_iScreenH = sh;
+		SetMinimumSize(MIN(640, sw - 16), MIN(400, sh - 16));
+		SetSize(MIN(1200, sw - 24), MIN(820, sh - 24));
+		CenterOnScreen();
+		InvalidateLayout(true, true);
+	}
 
-		const int pad = 12;
-		const int btnH = 26;
+	virtual void OnThink()
+	{
+		BaseClass::OnThink();
+		int sw, sh; surface()->GetScreenSize(sw, sh);
+		if (sw != m_iScreenW || sh != m_iScreenH) FitToScreen();
+		m_pStart->SetEnabled(GetSelectedMap()[0] != 0);
+	}
 
-		m_pSheet->SetPos(pad, pad + 24);
-		m_pSheet->SetSize(w - pad * 2, h - (pad + 24) - (pad + btnH + 6));
-
-		const int btnW = 140;
-
-		m_pCancel->SetSize(btnW, btnH);
-		m_pStart->SetSize(btnW + 40, btnH);
-
-		m_pCancel->SetPos(w - pad - btnW, h - pad - btnH);
-		m_pStart->SetPos(w - pad - btnW - 10 - (btnW + 40), h - pad - btnH);
+	virtual void PaintBackground()
+	{
+		NG_FillRect(0, 0, GetWide(), GetTall(), NG_BG);
+		NG_FillRect(10, GetTall() - 48, GetWide() - 20, 1, NG_ACCENT);
+		NG_OutlineRect(0, 0, GetWide(), GetTall(), Color(92, 92, 92, 255));
 	}
 
 	virtual void OnCommand(const char* command)
 	{
+		if (!Q_stricmp(command, "Settings") || !Q_stricmp(command, "ServerInfo"))
+		{
+			bool settings = !Q_stricmp(command, "Settings");
+			m_pSettingsTab->SetVisible(settings);
+			m_pServerInfoTab->SetVisible(!settings);
+			return;
+		}
+
 		if (!Q_stricmp(command, "Cancel"))
 		{
 			SetVisible(false);
@@ -1217,7 +1463,9 @@ private:
 	}
 
 private:
-	PropertySheet* m_pSheet;
+	Button* m_pSettingsButton;
+	Button* m_pInfoButton;
+	int m_iScreenW, m_iScreenH;
 	CGamepadUIMapTab* m_pMapTab;
 	CGamepadUIServerSettingsTab* m_pSettingsTab;
 

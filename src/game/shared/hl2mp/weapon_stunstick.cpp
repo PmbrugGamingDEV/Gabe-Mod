@@ -429,29 +429,48 @@ void CWeaponStunStick::Operator_HandleAnimEvent(animevent_t* pEvent, CBaseCombat
 //-----------------------------------------------------------------------------
 // Purpose: Sets the state of the stun stick
 //-----------------------------------------------------------------------------
-void CWeaponStunStick::SetStunState( bool state )
+
+void CWeaponStunStick::SetStunState(bool state)
 {
+	if (m_bActive == state)
+		return;
+
 	m_bActive = state;
 
-	if ( m_bActive )
+#ifndef CLIENT_DLL
+	EmitSound(m_bActive ?
+		"Weapon_StunStick.Activate" :
+		"Weapon_StunStick.Deactivate");
+#else
+	if (m_bActive)
 	{
-		//FIXME: START - Move to client-side
+		C_BasePlayer* pOwner = ToBasePlayer(GetOwner());
 
-		Vector vecAttachment;
-		QAngle vecAttachmentAngles;
+		if (pOwner && pOwner->IsLocalPlayer())
+		{
+			C_BaseViewModel* pViewModel =
+				pOwner->GetViewModel();
 
-		GetAttachment( 1, vecAttachment, vecAttachmentAngles );
-		g_pEffects->Sparks( vecAttachment );
+			if (pViewModel)
+			{
+				Vector vecOrigin;
+				QAngle angAttachment;
 
-		//FIXME: END - Move to client-side
+				int nAttachment =
+					pViewModel->LookupAttachment("sparkrear");
 
-		EmitSound( "Weapon_StunStick.Activate" );
+				if (nAttachment > 0 &&
+					pViewModel->GetAttachment(
+						nAttachment, vecOrigin, angAttachment))
+				{
+					g_pEffects->Sparks(vecOrigin);
+				}
+			}
+		}
 	}
-	else
-	{
-		EmitSound( "Weapon_StunStick.Deactivate" );
-	}
+#endif
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -626,7 +645,15 @@ void C_WeaponStunStick::ClientThink( void )
 			// Inner beams
 			BeamInfo_t beamInfo;
 
-			int attachment = random->RandomInt( 0, 15 );
+
+			int nIndex = random->RandomInt(0, NUM_BEAM_ATTACHMENTS - 1);
+			int nSide = random->RandomInt(0, 1);
+
+			int attachment = m_BeamAttachments[nIndex].IDs[nSide];
+
+			if (attachment <= 0)
+				return;
+
 
 			UTIL_GetWeaponAttachment( this, attachment, vecOrigin, vecAngles );
 			::FormatViewModelAttachment( vecOrigin, false );
@@ -882,17 +909,18 @@ void C_WeaponStunStick::DrawEffects( void )
 //-----------------------------------------------------------------------------
 // Purpose: Viewmodel was drawn
 //-----------------------------------------------------------------------------
-void C_WeaponStunStick::ViewModelDrawn( C_BaseViewModel *pBaseViewModel )
-{
-	// Don't bother when we're not deployed
-	if ( IsWeaponVisible() )
-	{
-		// Do all our special effects
-		DrawEffects();
-	}
 
-	BaseClass::ViewModelDrawn( pBaseViewModel );
+void C_WeaponStunStick::ViewModelDrawn(
+	C_BaseViewModel* pBaseViewModel)
+{
+	BaseClass::ViewModelDrawn(pBaseViewModel);
+
+	if (m_bActive)
+	{
+		DrawFirstPersonEffects();
+	}
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Draw a cheap glow quad at our impact point (with sparks)

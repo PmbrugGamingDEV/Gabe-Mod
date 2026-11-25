@@ -10,8 +10,15 @@
 #include "c_weapon__stubs.h"
 #include "cl_camerablur.h"
 #include "cdll_util.h"
+#include "input.h"
+#include "c_baseplayer.h"
 #include "in_buttons.h"
+#include "usercmd.h"
+#include "viewpostprocess.h"
 #include "con_nprint.h"
+#include "view_scene.h"
+#include "materialsystem/itexture.h"
+#include "materialsystem/imaterialsystem.h"
 
 extern IViewRender* view;
 
@@ -19,84 +26,45 @@ extern IViewRender* view;
 
 #include "basehlcombatweapon_shared.h"
 
-class C_WeaponCamera : public C_BaseHLCombatWeapon
-{
-    DECLARE_CLASS(C_WeaponCamera, C_BaseHLCombatWeapon);
-
-public:
-    DECLARE_PREDICTABLE();
-    DECLARE_CLIENTCLASS();
-
-    C_WeaponCamera() : m_bViewLocked(false), m_bLocalViewLocked(false) {}
-
-    virtual bool ShouldDrawViewModel() { return false; }
-    virtual bool ShouldDraw() { return false; }
-    virtual bool IsPredicted() const { return true; }
-
-    void CreateMove(float flInputSampleTime, CUserCmd* pCmd, const QAngle& vecOldViewAngles)
-    {
-        BaseClass::CreateMove(flInputSampleTime, pCmd, vecOldViewAngles);
-
-        if (!pCmd)
-            return;
-
-        C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
-        if (!pPlayer)
-            return;
-
-        if (pPlayer->GetActiveWeapon() != this)
-        {
-            m_bLocalViewLocked = false;
-            return;
-        }
-
-        // Unlock when right-click is released.
-        if (!(pCmd->buttons & IN_ATTACK2))
-        {
-            m_bLocalViewLocked = false;
-            return;
-        }
-
-        // Capture view angles when right-click begins.
-        if (!m_bLocalViewLocked)
-        {
-            pPlayer->m_vecUseAngles = vecOldViewAngles;
-            m_bLocalViewLocked = true;
-        }
-
-        // Preserve mouse movement for server-side zoom.
-        const short nMouseX = pCmd->mousedx;
-        const short nMouseY = pCmd->mousedy;
-
-        // Lock view angles using m_vecUseAngles.
-        pCmd->viewangles = pPlayer->m_vecUseAngles;
-
-        QAngle localViewAngles = pPlayer->m_vecUseAngles;
-        engine->SetViewAngles(localViewAngles);
-
-        // Keep raw mouse movement available.
-        pCmd->mousedx = nMouseX;
-        pCmd->mousedy = nMouseY;
-    }
-
-    bool OverrideViewAngles(void)
-    {
-        return m_bLocalViewLocked;
-    }
-
-private:
-    bool m_bViewLocked;       // Networked from server
-    bool m_bLocalViewLocked;  // Local angle-lock state
-    QAngle m_angLockedView;
-
-    C_WeaponCamera(const C_WeaponCamera&);
-};
-
 STUB_WEAPON_CLASS_IMPLEMENT(weapon_camera, C_WeaponCamera);
 
 IMPLEMENT_CLIENTCLASS_DT(C_WeaponCamera, DT_WeaponCamera, CWeaponCamera)
 RecvPropBool(RECVINFO(m_bViewLocked)),
+RecvPropBool(RECVINFO(m_bAttack2Held)),
+RecvPropFloat(RECVINFO(m_flRollAngle)),
 END_RECV_TABLE()
+
+bool C_WeaponCamera::OverrideViewAngles(void)
+{
+    C_BasePlayer* pPlayer = C_BasePlayer::GetLocalPlayer();
+
+    if (!pPlayer || pPlayer->GetActiveWeapon() != this)
+    {
+        m_bLocalViewLocked = false;
+        return false;
+    }
+
+    if (!m_bAttack2Held)
+    {
+        m_bLocalViewLocked = false;
+        return false;
+    }
+
+    if (!m_bLocalViewLocked)
+    {
+        engine->GetViewAngles(m_angLockedView);
+
+        pPlayer->m_vecUseAngles = m_angLockedView;
+        m_bLocalViewLocked = true;
+    }
+
+    return true;
+}
+
+float C_WeaponCamera::GetCameraRoll() const
+{
+    return m_flRollAngle;
+}
 
 // --------------------------------------------------
 // State
@@ -108,6 +76,24 @@ static float g_flCurrentStrength = 0.0f;
 static float g_flFadeSpeed = 3.0f;
 
 static IMaterial* g_pScreenMat = NULL;
+
+static void InitCamBlurMaterial()
+{
+    if (g_pScreenMat)
+        return;
+
+    IMaterial* pMaterial = materials->FindMaterial(
+        "effects/camerablur",
+        TEXTURE_GROUP_CLIENT_EFFECTS
+    );
+
+    if (!pMaterial || pMaterial->IsErrorMaterial())
+        return;
+
+    pMaterial->IncrementReferenceCount();
+
+    g_pScreenMat = pMaterial;
+}
 
 // --------------------------------------------------
 // Mode Strength
@@ -184,100 +170,240 @@ static const char* g_pszCamFXNames[] =
     "Reality Melting"
 };
 
+
 static void DrawFX(float strength)
 {
-    if (!g_pScreenMat)
-    {
-        g_pScreenMat = materials->FindMaterial(
-            "effects/camerablur",
-            TEXTURE_GROUP_CLIENT_EFFECTS
-        );
-    }
+    InitCamBlurMaterial();
 
     if (!g_pScreenMat || g_pScreenMat->IsErrorMaterial())
         return;
 
-    CMatRenderContextPtr pRenderContext(materials);
+    const int w = ScreenWidth();
+    const int h = ScreenHeight();
 
-    int w = ScreenWidth();
-    int h = ScreenHeight();
+    if (w <= 0 || h <= 0)
+        return;
 
-    pRenderContext->CopyRenderTargetToTexture(
-        pRenderContext->GetRenderTarget()
+    // Capture the screen into the framebuffer texture.
+    Rect_t actualRect;
+
+    UpdateScreenEffectTexture(
+        0, 0, 0, w, h, false, &actualRect
     );
 
-    float t = gpGlobals->curtime;
+    ITexture* pTexture = GetFullFrameFrameBufferTexture(0);
+
+    if (!pTexture || pTexture->IsError())
+        return;
+
+    CMatRenderContextPtr pRenderContext(materials);
+
+    const float t = gpGlobals->curtime;
     const int samples = 14;
 
-    for (int i = 0; i < samples; ++i)
+    // Alpha parameter for progressive blending.
+    bool bFoundAlpha = false;
+
+    IMaterialVar* pAlpha = g_pScreenMat->FindVar(
+        "$alpha", &bFoundAlpha, false
+    );
+
+    // Only perform screen effects when active.
+    if (g_iMode != 0 && strength > 0.01f)
     {
-        float offset = ((float)i / samples) * strength;
-
-        float xOff = 0;
-        float yOff = 0;
-
-        switch (g_iMode)
+        for (int i = 0; i < samples; ++i)
         {
-        case 1: xOff = offset; break;
-        case 2: xOff = sin(t * 3.0f) * strength; break;
-        case 3: xOff = (rand() % 20 - 10) * 0.2f; break;
-        case 4: xOff = sin(t * 5.0f) * offset;
-            yOff = cos(t * 5.0f) * offset; break;
-        case 5: xOff = offset; yOff = offset; break;
-        case 6: xOff = sin(i + t) * offset;
-            yOff = cos(i + t) * offset; break;
-        case 7: xOff = offset * 4.0f; break;
-        case 8: yOff = offset * 4.0f; break;
-        case 9: xOff = sin(t * 30.0f) * strength;
-            yOff = cos(t * 25.0f) * strength; break;
-        case 10: xOff = (rand() % 50 - 25) * 0.1f;
-            yOff = (rand() % 50 - 25) * 0.1f; break;
-        case 11: xOff = sin(t * 2.0f) * offset * 3.0f;
-            yOff = cos(t * 1.5f) * offset * 3.0f; break;
-        case 12: xOff = sin(t * i) * offset * 5.0f;
-            yOff = cos(t * i) * offset * 5.0f; break;
-        }
+            const float fraction =
+                (float)i / (float)(samples - 1);
 
-        pRenderContext->DrawScreenSpaceRectangle(
-            g_pScreenMat,
-            0, 0,
-            w, h,
-            xOff, yOff,
-            w - 1 + xOff, h - 1 + yOff,
-            w,
-            h
-        );
+            const float offset = fraction * strength;
+
+            float xOff = 0.0f;
+            float yOff = 0.0f;
+
+            switch (g_iMode)
+            {
+            case 1: // Soft Smear
+                xOff = offset;
+                break;
+
+            case 2: // Double Vision
+                xOff = (i % 2 == 0 ? -1.0f : 1.0f)
+                    * strength * 2.0f;
+                break;
+
+            case 3: // Screen Tear
+                xOff = sin(t * 8.0f + i * 2.0f)
+                    * offset * 2.0f;
+                break;
+
+            case 4: // Pulse Warp
+                xOff = sin(t * 5.0f) * offset;
+                yOff = cos(t * 5.0f) * offset;
+                break;
+
+            case 5: // Heavy Blur
+                xOff = offset;
+                yOff = offset;
+                break;
+
+            case 6: // Spiral Drift
+                xOff = sin(i + t) * offset;
+                yOff = cos(i + t) * offset;
+                break;
+
+            case 7: // Horizontal Collapse
+                xOff = offset * 4.0f;
+                break;
+
+            case 8: // Vertical Collapse
+                yOff = offset * 4.0f;
+                break;
+
+            case 9: // Shake Distortion
+                xOff = sin(t * 30.0f + i) * strength;
+                yOff = cos(t * 25.0f + i) * strength;
+                break;
+
+            case 10: // TV Static
+                xOff = sin(i * 12.9898f + t * 30.0f)
+                    * offset;
+                yOff = cos(i * 78.233f + t * 30.0f)
+                    * offset;
+                break;
+
+            case 11: // Too Much Beer
+                xOff = sin(t * 2.0f) * offset * 3.0f;
+                yOff = cos(t * 1.5f) * offset * 3.0f;
+                break;
+
+            case 12: // Reality Melting
+                xOff = sin(t * i) * offset * 5.0f;
+                yOff = cos(t * i) * offset * 5.0f;
+                break;
+            }
+
+            // Running average of framebuffer samples.
+            // Requires an alpha-blended VMT.
+            if (bFoundAlpha && pAlpha)
+            {
+                pAlpha->SetFloatValue(
+                    1.0f / (float)(i + 1)
+                );
+            }
+
+            pRenderContext->DrawScreenSpaceRectangle(
+                g_pScreenMat,
+                0, 0,
+                w, h,
+                actualRect.x + xOff,
+                actualRect.y + yOff,
+                actualRect.x + actualRect.width - 1 + xOff,
+                actualRect.y + actualRect.height - 1 + yOff,
+                pTexture->GetActualWidth(),
+                pTexture->GetActualHeight()
+            );
+        }
     }
 
-    // -------------------------
-    // Draw Mode Name (Colored)
-    // -------------------------
+    // Restore the material alpha.
+    if (bFoundAlpha && pAlpha)
+    {
+        pAlpha->SetFloatValue(1.0f);
+    }
+
+    // --------------------------------------
+    // Draw mode name (colored)
+    // --------------------------------------
 
     con_nprint_s info;
     info.index = 0;
     info.time_to_live = 0.1f;
     info.fixed_width_font = false;
 
-    // Default white
     info.color[0] = 255;
     info.color[1] = 255;
     info.color[2] = 255;
 
     switch (g_iMode)
     {
-    case 0:  info.color[0] = 150; info.color[1] = 255; info.color[2] = 150; break;
-    case 1:  info.color[0] = 200; info.color[1] = 200; info.color[2] = 255; break;
-    case 2:  info.color[0] = 255; info.color[1] = 255; info.color[2] = 200; break;
-    case 3:  info.color[0] = 255; info.color[1] = 100; info.color[2] = 100; break;
-    case 4:  info.color[0] = 255; info.color[1] = 0;   info.color[2] = 255; break;
-    case 5:  info.color[0] = 255; info.color[1] = 180; info.color[2] = 0;   break;
-    case 6:  info.color[0] = 0;   info.color[1] = 255; info.color[2] = 255; break;
-    case 7:  info.color[0] = 255; info.color[1] = 255; info.color[2] = 0;   break;
-    case 8:  info.color[0] = 180; info.color[1] = 180; info.color[2] = 255; break;
-    case 9:  info.color[0] = 255; info.color[1] = 120; info.color[2] = 0;   break;
-    case 10: info.color[0] = 200; info.color[1] = 200; info.color[2] = 200; break;
-    case 11: info.color[0] = 255; info.color[1] = 0;   info.color[2] = 0;   break;
-    case 12: info.color[0] = 255; info.color[1] = 0;   info.color[2] = 150; break;
+    case 0:
+        info.color[0] = 150;
+        info.color[1] = 255;
+        info.color[2] = 150;
+        break;
+
+    case 1:
+        info.color[0] = 200;
+        info.color[1] = 200;
+        info.color[2] = 255;
+        break;
+
+    case 2:
+        info.color[0] = 255;
+        info.color[1] = 255;
+        info.color[2] = 200;
+        break;
+
+    case 3:
+        info.color[0] = 255;
+        info.color[1] = 100;
+        info.color[2] = 100;
+        break;
+
+    case 4:
+        info.color[0] = 255;
+        info.color[1] = 0;
+        info.color[2] = 255;
+        break;
+
+    case 5:
+        info.color[0] = 255;
+        info.color[1] = 180;
+        info.color[2] = 0;
+        break;
+
+    case 6:
+        info.color[0] = 0;
+        info.color[1] = 255;
+        info.color[2] = 255;
+        break;
+
+    case 7:
+        info.color[0] = 255;
+        info.color[1] = 255;
+        info.color[2] = 0;
+        break;
+
+    case 8:
+        info.color[0] = 180;
+        info.color[1] = 180;
+        info.color[2] = 255;
+        break;
+
+    case 9:
+        info.color[0] = 255;
+        info.color[1] = 120;
+        info.color[2] = 0;
+        break;
+
+    case 10:
+        info.color[0] = 200;
+        info.color[1] = 200;
+        info.color[2] = 200;
+        break;
+
+    case 11:
+        info.color[0] = 255;
+        info.color[1] = 0;
+        info.color[2] = 0;
+        break;
+
+    case 12:
+        info.color[0] = 255;
+        info.color[1] = 0;
+        info.color[2] = 150;
+        break;
     }
 
     engine->Con_NXPrintf(
@@ -286,6 +412,7 @@ static void DrawFX(float strength)
         g_pszCamFXNames[g_iMode]
     );
 }
+
 
 // --------------------------------------------------
 // Public Hooks

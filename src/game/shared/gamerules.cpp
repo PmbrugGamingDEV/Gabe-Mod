@@ -26,6 +26,7 @@
 	#include "basecombatweapon.h"
 	#include "voice_gamemgr.h"
 	#include "globalstate.h"
+	#include "world.h"
 	#include "player_resource.h"
 	#include "tactical_mission.h"
 	#include "gamestats.h"
@@ -184,19 +185,62 @@ bool CGameRules::CanHaveAmmo( CBaseCombatCharacter *pPlayer, const char *szName 
 	return CanHaveAmmo( pPlayer, GetAmmoDef()->Index(szName) );
 }
 
-//=========================================================
-//=========================================================
-CBaseEntity *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
+class RandomLocation : public CBaseEntity
 {
-	CBaseEntity *pSpawnSpot = pPlayer->EntSelectSpawnPoint();
-	Assert( pSpawnSpot );
+public:
+	DECLARE_CLASS(RandomLocation, CBaseEntity);
 
-	pPlayer->SetLocalOrigin( pSpawnSpot->GetAbsOrigin() + Vector(0,0,1) );
-	pPlayer->SetAbsVelocity( vec3_origin );
-	pPlayer->SetLocalAngles( pSpawnSpot->GetLocalAngles() );
+	void Spawn(void)
+	{
+		Precache();
+
+		SetSolid(SOLID_NONE);
+		SetMoveType(MOVETYPE_NONE);
+
+		SetModel("models/debug/debugempty.mdl");
+
+		CBaseEntity* pWorld = GetWorldEntity();
+		if (pWorld)
+		{
+			Vector vecCenter =
+				(pWorld->WorldAlignMins() + pWorld->WorldAlignMaxs()) * 0.5f;
+
+			SetAbsOrigin(vecCenter);
+		}
+	}
+};
+
+LINK_ENTITY_TO_CLASS(random_location, RandomLocation);
+
+//=========================================================
+//=========================================================
+CBaseEntity* CGameRules::GetPlayerSpawnSpot(CBasePlayer* pPlayer)
+{
+	CBaseEntity* pSpawnSpot = pPlayer->EntSelectSpawnPoint();
+
+	if (!pSpawnSpot)
+	{
+		pSpawnSpot = CreateEntityByName("random_location");
+
+		if (pSpawnSpot)
+		{
+			DispatchSpawn(pSpawnSpot);
+		}
+		else
+		{
+			Warning("Failed to create random_location!\n");
+			return NULL;
+		}
+	}
+
+	pPlayer->SetLocalOrigin(pSpawnSpot->GetAbsOrigin() + Vector(0, 0, 1));
+	pPlayer->SetAbsVelocity(vec3_origin);
+	pPlayer->SetLocalAngles(pSpawnSpot->GetLocalAngles());
+
 	pPlayer->m_Local.m_vecPunchAngle = vec3_angle;
 	pPlayer->m_Local.m_vecPunchAngleVel = vec3_angle;
-	pPlayer->SnapEyeAngles( pSpawnSpot->GetLocalAngles() );
+
+	pPlayer->SnapEyeAngles(pSpawnSpot->GetLocalAngles());
 
 	return pSpawnSpot;
 }

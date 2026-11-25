@@ -2,19 +2,19 @@
 {
 	"1"
 	{
-		"label" "#GameUI_GameMenu_ResumeGame"
+		"label" "Resume Game"
 		"command" "ResumeGame"
 		"OnlyInGame" "1"
 	}
 	"2"
 	{
-		"label" "#GameUI_GameMenu_Disconnect"
+		"label" "Disconnect"
 		"command" "Disconnect"
 		"OnlyInGame" "1"
 	}
 	"3"
 	{
-		"label" "#GameUI_GameMenu_PlayerList"
+		"label" "Player List"
 		"command" "OpenPlayerListDialog"
 		"OnlyInGame" "1"
 	}
@@ -26,57 +26,57 @@
 	}
 	"5"
 	{
-		"label" "#GameUI_GameMenu_FindServers"
+		"label" "Find Servers"
 		"command" "OpenServerBrowser"
 	}
 	"6"
 	{
-		"label" "#GameUI_GameMenu_CreateServer"
+		"label" "New Game"
 		"command" "engine gabe_newgame"
 	}
 	"6"
 	{
-		"label" "LOAD GAME"
+		"label" "Load Game"
 		"command" "OpenLoadGameDialog"
 	}
 	"7"
 	{
-		"label" "SAVE GAME"
+		"label" "Save Game"
 		"command" "OpenSaveGameDialog"
 		"OnlyInGame" "1"
 	}
 	"7"
 	{
-		"label"	"FRIENDS"
+		"label"	"Friends"
 		"command"	"engine gabe_friends"
 		"ingameorder"	"7"
 	}
 	"8"
 	{
-		"label"	"TOGGLE CREDITS"
+		"label"	"Toggle Credits"
 		"command"	"engine gabe_thanks"
 		"ingameorder"	"8"
 	}
 	"9"
 	{
-		"label"	"TUTORIALS"
+		"label"	"Tutorials"
 		"command"	"engine gabe_tutorial"
 		"ingameorder"	"9"
 	}
 	"10"
 	{
-		"label" "#GameUI_GameMenu_Achievements"
+		"label" "Achievements"
 		"command" "OpenAchievementsDialog"
 		"InGameOrder" "10"
 	}
 	"11"
 	{
-		"label" "#GameUI_GameMenu_Options"
+		"label" "Options"
 		"command" "OpenOptionsDialog"
 	}
 	"12"
 	{
-		"label" "#GameUI_GameMenu_Quit"
+		"label" "Quit"
 		"command" "Quit"
 	}
 	"13"
@@ -86,12 +86,12 @@
 	}
 	"14"
 	{
-		"label" "SCRIPT MENU"
+		"label" "Script Menu"
 		"command" "engine gabe_loadscripts"
 	}
 	"15"
 	{
-		"label" "CITY 17 WEBBROWSER"
+		"label" "Web Browser"
 		"command" "engine gabe_showbrowser"
 	}
 }
